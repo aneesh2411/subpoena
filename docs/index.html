@@ -199,7 +199,7 @@ function initHero() {
   scene.add(rim);
 
   // A receipt card, drawn on a 2D canvas and used as a texture.
-  function receiptTexture(stamp, stampColor, rows) {
+  function receiptTexture({ lines, color, tilt }, rows) {
     const c = document.createElement('canvas');
     c.width = 256; c.height = 340;
     const g = c.getContext('2d');
@@ -226,39 +226,55 @@ function initHero() {
       g.moveTo(x, 340); g.lineTo(x + 8, 332); g.lineTo(x + 16, 340);
       g.fill();
     }
-    // stamp
-    if (stamp) {
-      g.save();
-      g.translate(128, 268);
-      g.rotate(-0.18);
-      g.strokeStyle = stampColor; g.fillStyle = stampColor; g.lineWidth = 3;
-      g.font = '700 20px ui-monospace, Menlo, monospace';
-      const w = g.measureText(stamp).width;
-      g.strokeRect(-w / 2 - 12, -22, w + 24, 36);
-      g.fillText(stamp, -w / 2, 4);
-      g.restore();
-    }
+    // Bake the stamp into the receipt's existing texture.
+    g.save();
+    g.translate(128, 250);
+    g.rotate(tilt);
+    g.strokeStyle = color;
+    g.fillStyle = color;
+    g.lineWidth = 3;
+    g.font = '700 20px ui-monospace, Menlo, monospace';
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    const lineHeight = 24;
+    const width = Math.max(...lines.map((line) => g.measureText(line).width)) + 24;
+    const height = lines.length * lineHeight + 12;
+    g.beginPath();
+    g.roundRect(-width / 2, -height / 2, width, height, 6);
+    g.stroke();
+    lines.forEach((line, i) => g.fillText(line, 0, (i - (lines.length - 1) / 2) * lineHeight));
+    g.restore();
     const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = 4;
     return tex;
   }
 
+  const palette = getComputedStyle(document.documentElement);
+  const green = palette.getPropertyValue('--ok').trim();
+  const red = palette.getPropertyValue('--bad').trim();
+  const found = { lines: ['RECEIPT FOUND'], color: green, tilt: -0.10 };
+  const missing = { lines: ['NO RECEIPT'], color: red, tilt: -0.10 };
+  const mismatch = { lines: ['RECEIPT DOES', 'NOT MATCH'], color: red, tilt: -0.10 };
+  const unverifiable = { lines: ['UNVERIFIABLE'], color: '#a86110', tilt: 0.08 };
   const CARDS = [
-    { stamp: 'NO RECEIPT', color: '#d03b3b', rows: [['ticket', 'claimed: created'], ['', 'record: none']] },
-    { stamp: 'RECEIPT FOUND', color: '#1f9d55', rows: [['cancelled', 'claimed: Mar 10 3:00 PM'], ['', 'record: Mar 10 3:00 PM']] },
-    { stamp: 'MISMATCH', color: '#d03b3b', rows: [['start', 'claimed: 2:30 PM'], ['', 'record: 3:30 PM']] },
-    { stamp: '', color: '#1d1b16', rows: [['journal #7', 'apt_0002 created'], ['actor', 'receptionist-agent']] },
-    { stamp: 'NO RECEIPT', color: '#d03b3b', rows: [['sms', 'claimed: sent'], ['', 'record: none']] },
-    { stamp: '', color: '#1d1b16', rows: [['journal #12', 'msg_0003 sent'], ['actor', 'receptionist-agent']] },
+    { verdict: missing, rows: [['ticket', 'claimed: created'], ['', 'record: none']] },
+    { verdict: found, rows: [['cancelled', 'claimed: Mar 10 3:00 PM'], ['', 'record: Mar 10 3:00 PM']] },
+    { verdict: mismatch, rows: [['start', 'claimed: 2:30 PM'], ['', 'record: 3:30 PM']] },
+    { verdict: found, rows: [['appointment', 'claimed: apt_0002 created'], ['journal #7', 'record: apt_0002 created']] },
+    { verdict: unverifiable, rows: [['sms', 'claimed: sent'], ['', 'record: unavailable']] },
+    { verdict: found, rows: [['message', 'claimed: msg_0003 sent'], ['journal #12', 'record: msg_0003 sent']] },
+    { verdict: found, rows: [['callback', 'claimed: scheduled'], ['', 'record: scheduled']] },
   ];
 
   const group = new THREE.Group();
   scene.add(group);
   const cards = [];
+  const cardGeometry = new THREE.PlaneGeometry(1.5, 2);
   CARDS.forEach((def, i) => {
-    const tex = receiptTexture(def.stamp, def.color, def.rows);
+    const tex = receiptTexture(def.verdict, def.rows);
     const mesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(1.5, 2),
+      cardGeometry,
       new THREE.MeshStandardMaterial({ map: tex, side: THREE.DoubleSide, roughness: 0.9 })
     );
     const ring = i / CARDS.length * Math.PI * 2;
@@ -274,9 +290,12 @@ function initHero() {
     cards.push(mesh);
   });
 
+  let renderWidth = 0, renderHeight = 0;
   function resize() {
     const w = canvas.clientWidth, h = canvas.clientHeight;
-    if (canvas.width !== w || canvas.height !== h) {
+    if (renderWidth !== w || renderHeight !== h) {
+      renderWidth = w;
+      renderHeight = h;
       renderer.setSize(w, h, false);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
@@ -309,10 +328,11 @@ function initHero() {
     lastFrameTime = now;
     resize();
     if (!visible) return;
-    cards.forEach((m) => {
+    for (let i = 0; i < cards.length; i++) {
+      const m = cards[i];
       m.position.y = m.userData.baseY + Math.sin(t * m.userData.speed + m.userData.phase) * 0.35;
       m.rotation.y += 0.0016;
-    });
+    }
     group.rotation.y = t * 0.05;
     camera.position.x += (mx * 1.1 - camera.position.x) * 0.04;
     camera.position.y += (-my * 0.7 - camera.position.y) * 0.04;
