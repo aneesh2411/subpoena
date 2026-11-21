@@ -337,7 +337,10 @@ $("play").onclick = () => {
 };
 $("step").onclick = () => { stop(); if (queue.length) render(queue.shift(), false); else runSelected(); };
 $("end").onclick = () => { stop(); while (queue.length) render(queue.shift(), true); };
-$("scenario").onchange = runSelected;
+$("scenario").onchange = () => {
+  history.replaceState(history.state, "", "#" + encodeURIComponent($("scenario").value));
+  runSelected();
+};
 
 (async function init() {
   const audit = new URLSearchParams(location.search).get("audit");
@@ -358,6 +361,13 @@ $("scenario").onchange = runSelected;
       if (group.children.length) sel.append(group);
     });
     sel.value = "edge-three-lies";
+    const hash = location.hash.slice(1);
+    const linkedOption = [...sel.options].find((o) => encodeURIComponent(o.value) === hash);
+    if (linkedOption) {
+      sel.value = linkedOption.value;
+      runSelected();
+      return;
+    }
   } catch (e) { $("err").textContent = "Scenarios unavailable: " + e.message; }
   if (audit) load(() => api(`/audit/${encodeURIComponent(audit)}/report`));
 })();
