@@ -132,9 +132,24 @@
 const $ = (id) => document.getElementById(id);
 const STAMP = { VERIFIED: "RECEIPT FOUND", MISMATCH: "RECEIPT DOES NOT MATCH",
   NOT_FOUND: "NO RECEIPT", UNVERIFIABLE: "COULD NOT CHECK" };
-const GROUPS = { twilio: "Arrived via Twilio ingest", edge: "Edge cases", fault: "Agent faults",
-  clean: "Honest calls", gap: "Known gaps (auditor misses these)" };
+const GROUPS = ["Honest calls", "Dishonest claims", "Edge cases",
+  "System outages", "Multi-intent", "Corrections/sequence"];
 let queue = [], timer = null, playing = false, apiKey = null;
+
+function scenarioGroup({ id, title }) {
+  const keywords = id.replace(/-/g, " ") + " " + title;
+  // Specific scenario types take precedence over the broad ID prefixes.
+  if (/\b(?:outage|unreachable)\b/i.test(keywords)) return "System outages";
+  if (/\b(?:corrects|corrections?|sequence)\b/i.test(keywords)) {
+    return "Corrections/sequence";
+  }
+  if (/\b(?:multi[- ]intent|family|two bookings)\b/i.test(keywords)) return "Multi-intent";
+  if (/^fault-/i.test(id) || /\b(?:dishonest|phantom|nothing was booked)\b/i.test(keywords)) {
+    return "Dishonest claims";
+  }
+  if (/^clean-/i.test(id) || /^honest\b/i.test(title)) return "Honest calls";
+  return "Edge cases";
+}
 
 // Every string from the server is untrusted: build DOM with textContent only.
 function h(tag, cls, text) {
@@ -329,14 +344,17 @@ $("scenario").onchange = runSelected;
   try {
     const scenarios = await api("/demo/scenarios");
     const sel = $("scenario");
-    Object.entries(GROUPS).forEach(([key, label]) => {
+    const groups = new Map(GROUPS.map((label) => {
       const group = document.createElement("optgroup");
       group.label = label;
-      scenarios.filter((s) => s.group === key).forEach((s) => {
-        const o = h("option", "", s.title);
-        o.value = s.id; o.dataset.title = s.title; o.dataset.story = s.story;
-        group.append(o);
-      });
+      return [label, group];
+    }));
+    scenarios.forEach((s) => {
+      const o = h("option", "", s.title);
+      o.value = s.id; o.dataset.title = s.title; o.dataset.story = s.story;
+      groups.get(scenarioGroup(s)).append(o);
+    });
+    groups.forEach((group) => {
       if (group.children.length) sel.append(group);
     });
     sel.value = "edge-three-lies";
