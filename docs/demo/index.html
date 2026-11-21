@@ -98,11 +98,23 @@
   .err { color: var(--bad); padding: 12px 0; }
   .mobile-label { display: none; }
   @media (max-width: 760px) {
-    .cols { grid-template-columns: 1fr; }
+    .cols { grid-template-columns: minmax(0, 1fr); }
     .colhead { display: none; }
     .cell:empty { display: none; }
     .mobile-label { display: block; font: 600 10px var(--mono); letter-spacing: .14em;
       color: var(--dim); text-transform: uppercase; margin: 6px 0 4px; }
+  }
+  @media (max-width: 600px), (max-width: 900px) and (max-height: 500px) and (hover: none) {
+    header { position: static; }
+    .bar { gap: 8px; }
+    select, button { min-height: 44px; font-size: 16px; }
+    select { flex-basis: 100%; }
+    button { flex: 1 1 auto; }
+    a { display: inline-flex; align-items: center; min-height: 44px; padding-inline: 4px; }
+    main { font-size: 16px; overflow-wrap: anywhere; }
+    .turn { max-width: 100%; }
+    .receipt th { font-size: 11px; letter-spacing: .04em; }
+    .stamp { max-width: 100%; }
   }
   @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
 </style>

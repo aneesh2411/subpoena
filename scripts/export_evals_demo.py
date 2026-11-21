@@ -52,6 +52,30 @@ PAGE = """<!doctype html>
   table {{ width: 100%; border-collapse: collapse; }}
   th, td {{ padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--line); }}
   td {{ font-family: var(--mono); white-space: nowrap; }}
+  .metric-label {{ display: none; }}
+  @media (max-width: 600px), (max-width: 900px) and (max-height: 500px) and (hover: none) {{
+    body {{ font-size: 16px; overflow-wrap: anywhere; }}
+    .bar {{ flex-wrap: wrap; gap: 4px 12px; }}
+    a {{ display: inline-flex; align-items: center; min-height: 44px; }}
+    .panel {{ padding: 12px; }}
+    th, td {{ padding: 6px; }}
+    td {{ white-space: normal; }}
+
+    .stacked, .stacked tbody {{ display: block; }}
+    .stacked thead {{
+      position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%);
+    }}
+    .stacked tbody tr {{
+      display: block; margin-top: 12px; border: 1px solid var(--line); border-radius: 8px;
+    }}
+    .stacked th[scope=row] {{ display: block; padding: 8px 10px; }}
+    .stacked td {{
+      display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px;
+      padding: 6px 10px;
+    }}
+    .stacked td:last-child {{ border-bottom: 0; }}
+    .metric-label {{ display: block; font-family: system-ui; color: var(--dim); }}
+  }}
   .failures {{ overflow-wrap: anywhere; }}
   .failures h3 {{ margin-top: 16px; }}
   .failures strong {{ color: var(--bad); font-family: var(--mono); }}
@@ -70,6 +94,23 @@ PAGE = """<!doctype html>
   <p><a href="data-evals/scorecard.json">Download the scorecard JSON</a></p>
 {content}
 </main>
+<script>
+  for (const table of document.querySelectorAll(".table-scroll table")) {{
+    const headings = table.tHead.rows[0].cells;
+    for (const row of table.tBodies[0].rows) {{
+      for (const cell of [...row.cells].slice(1)) {{
+        const label = document.createElement("span");
+        label.className = "metric-label";
+        label.setAttribute("aria-hidden", "true");
+        label.textContent = headings[cell.cellIndex].textContent;
+        const value = document.createElement("span");
+        value.textContent = cell.textContent;
+        cell.replaceChildren(label, value);
+      }}
+    }}
+    table.classList.add("stacked");
+  }}
+</script>
 </body>
 </html>
 """
@@ -101,14 +142,14 @@ def table(title: str, columns: tuple[str, ...], rows: list[tuple[str, ...]]) -> 
     body = []
     for label, *values in rows:
         cells = "".join(f"<td>{escape(value)}</td>" for value in values)
-        body.append(f'        <tr><th scope="row">{escape(label)}</th>{cells}</tr>')
+        body.append(f'        <tr role="row"><th scope="row">{escape(label)}</th>{cells}</tr>')
     return (
         '  <section class="panel">\n'
         f"    <h2>{title}</h2>\n"
         f'    <div class="table-scroll" tabindex="0" role="region" aria-label="{title}">\n'
-        "      <table>\n"
-        f"        <thead><tr>{heading}</tr></thead>\n"
-        "        <tbody>\n" + "\n".join(body) + "\n"
+        "      <table role=\"table\">\n"
+        f"        <thead role=\"rowgroup\"><tr role=\"row\">{heading}</tr></thead>\n"
+        "        <tbody role=\"rowgroup\">\n" + "\n".join(body) + "\n"
         "        </tbody>\n"
         "      </table>\n"
         "    </div>\n"

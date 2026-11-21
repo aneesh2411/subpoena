@@ -45,7 +45,12 @@
   .verdict { color: var(--amber); }
   .evidence { padding-left: 1.25rem; }
   .why { margin-top: 1.25rem; }
-  @media (max-width: 38rem) { .comparison { grid-template-columns: 1fr; } }
+  @media (max-width: 38rem) {
+    .comparison { grid-template-columns: minmax(0, 1fr); }
+    a { display: inline-flex; align-items: center; min-height: 44px; }
+    h1 { font-size: clamp(2rem, 10vw, 2.4rem); }
+    .turn strong { font-size: .9375rem; }
+  }
 </style>
 </head>
 <body>

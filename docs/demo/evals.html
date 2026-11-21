@@ -31,6 +31,30 @@
   table { width: 100%; border-collapse: collapse; }
   th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--line); }
   td { font-family: var(--mono); white-space: nowrap; }
+  .metric-label { display: none; }
+  @media (max-width: 600px), (max-width: 900px) and (max-height: 500px) and (hover: none) {
+    body { font-size: 16px; overflow-wrap: anywhere; }
+    .bar { flex-wrap: wrap; gap: 4px 12px; }
+    a { display: inline-flex; align-items: center; min-height: 44px; }
+    .panel { padding: 12px; }
+    th, td { padding: 6px; }
+    td { white-space: normal; }
+
+    .stacked, .stacked tbody { display: block; }
+    .stacked thead {
+      position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%);
+    }
+    .stacked tbody tr {
+      display: block; margin-top: 12px; border: 1px solid var(--line); border-radius: 8px;
+    }
+    .stacked th[scope=row] { display: block; padding: 8px 10px; }
+    .stacked td {
+      display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px;
+      padding: 6px 10px;
+    }
+    .stacked td:last-child { border-bottom: 0; }
+    .metric-label { display: block; font-family: system-ui; color: var(--dim); }
+  }
   .failures { overflow-wrap: anywhere; }
   .failures h3 { margin-top: 16px; }
   .failures strong { color: var(--bad); font-family: var(--mono); }
@@ -50,12 +74,12 @@
   <section class="panel">
     <h2>Golden results and naive baseline</h2>
     <div class="table-scroll" tabindex="0" role="region" aria-label="Golden results and naive baseline">
-      <table>
-        <thead><tr><th scope="col">Suite and system</th><th scope="col">Calls</th><th scope="col">Strict call accuracy</th><th scope="col">Claim-level precision</th><th scope="col">Claim-level recall</th></tr></thead>
-        <tbody>
-        <tr><th scope="row">Golden · Subpoena</th><td>59</td><td>96.61%</td><td>100.00%</td><td>94.44%</td></tr>
-        <tr><th scope="row">Golden · Naive existence check</th><td>59</td><td>50.85%</td><td>90.91%</td><td>55.56%</td></tr>
-        <tr><th scope="row">Golden v2-semantic · Subpoena</th><td>57</td><td>96.49%</td><td>100.00%</td><td>94.44%</td></tr>
+      <table role="table">
+        <thead role="rowgroup"><tr role="row"><th scope="col">Suite and system</th><th scope="col">Calls</th><th scope="col">Strict call accuracy</th><th scope="col">Claim-level precision</th><th scope="col">Claim-level recall</th></tr></thead>
+        <tbody role="rowgroup">
+        <tr role="row"><th scope="row">Golden · Subpoena</th><td>59</td><td>96.61%</td><td>100.00%</td><td>94.44%</td></tr>
+        <tr role="row"><th scope="row">Golden · Naive existence check</th><td>59</td><td>50.85%</td><td>90.91%</td><td>55.56%</td></tr>
+        <tr role="row"><th scope="row">Golden v2-semantic · Subpoena</th><td>57</td><td>96.49%</td><td>100.00%</td><td>94.44%</td></tr>
         </tbody>
       </table>
     </div>
@@ -63,11 +87,11 @@
   <section class="panel">
     <h2>Fuzz pass rates</h2>
     <div class="table-scroll" tabindex="0" role="region" aria-label="Fuzz pass rates">
-      <table>
-        <thead><tr><th scope="col">Mode</th><th scope="col">Calls</th><th scope="col">Seed</th><th scope="col">Strict pass rate</th></tr></thead>
-        <tbody>
-        <tr><th scope="row">Fuzz</th><td>500</td><td>7</td><td>100.00%</td></tr>
-        <tr><th scope="row">Fuzz v2-semantic</th><td>500</td><td>7</td><td>100.00%</td></tr>
+      <table role="table">
+        <thead role="rowgroup"><tr role="row"><th scope="col">Mode</th><th scope="col">Calls</th><th scope="col">Seed</th><th scope="col">Strict pass rate</th></tr></thead>
+        <tbody role="rowgroup">
+        <tr role="row"><th scope="row">Fuzz</th><td>500</td><td>7</td><td>100.00%</td></tr>
+        <tr role="row"><th scope="row">Fuzz v2-semantic</th><td>500</td><td>7</td><td>100.00%</td></tr>
         </tbody>
       </table>
     </div>
@@ -100,16 +124,33 @@
   <section class="panel">
     <h2>Ablations</h2>
     <div class="table-scroll" tabindex="0" role="region" aria-label="Ablations">
-      <table>
-        <thead><tr><th scope="col">Configuration</th><th scope="col">Calls</th><th scope="col">Strict call accuracy</th><th scope="col">Claim-level precision</th><th scope="col">Claim-level recall</th><th scope="col">Finding-level recall</th></tr></thead>
-        <tbody>
-        <tr><th scope="row">Subpoena</th><td>59</td><td>96.61%</td><td>100.00%</td><td>94.44%</td><td>100.00%</td></tr>
-        <tr><th scope="row">Subpoena without the transcript reader</th><td>59</td><td>89.83%</td><td>100.00%</td><td>77.78%</td><td>100.00%</td></tr>
-        <tr><th scope="row">Subpoena without policy checks</th><td>59</td><td>89.83%</td><td>100.00%</td><td>94.44%</td><td>42.86%</td></tr>
+      <table role="table">
+        <thead role="rowgroup"><tr role="row"><th scope="col">Configuration</th><th scope="col">Calls</th><th scope="col">Strict call accuracy</th><th scope="col">Claim-level precision</th><th scope="col">Claim-level recall</th><th scope="col">Finding-level recall</th></tr></thead>
+        <tbody role="rowgroup">
+        <tr role="row"><th scope="row">Subpoena</th><td>59</td><td>96.61%</td><td>100.00%</td><td>94.44%</td><td>100.00%</td></tr>
+        <tr role="row"><th scope="row">Subpoena without the transcript reader</th><td>59</td><td>89.83%</td><td>100.00%</td><td>77.78%</td><td>100.00%</td></tr>
+        <tr role="row"><th scope="row">Subpoena without policy checks</th><td>59</td><td>89.83%</td><td>100.00%</td><td>94.44%</td><td>42.86%</td></tr>
         </tbody>
       </table>
     </div>
   </section>
 </main>
+<script>
+  for (const table of document.querySelectorAll(".table-scroll table")) {
+    const headings = table.tHead.rows[0].cells;
+    for (const row of table.tBodies[0].rows) {
+      for (const cell of [...row.cells].slice(1)) {
+        const label = document.createElement("span");
+        label.className = "metric-label";
+        label.setAttribute("aria-hidden", "true");
+        label.textContent = headings[cell.cellIndex].textContent;
+        const value = document.createElement("span");
+        value.textContent = cell.textContent;
+        cell.replaceChildren(label, value);
+      }
+    }
+    table.classList.add("stacked");
+  }
+</script>
 </body>
 </html>
