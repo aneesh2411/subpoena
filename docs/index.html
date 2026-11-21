@@ -162,133 +162,163 @@ footer a { margin:0 10px; }
 <script type="module">
 import * as THREE from 'three';
 
-const canvas = document.getElementById('scene');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-const scene = new THREE.Scene();
-scene.fog = new THREE.Fog(0x14161a, 9, 20);
-const camera = new THREE.PerspectiveCamera(50, 2, 0.1, 100);
-camera.position.set(0, 0, 9);
+function initHero() {
+  const canvas = document.getElementById('scene');
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  } catch {
+    canvas.style.display = 'none';
+    return;
+  }
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(0x14161a, 9, 20);
+  const camera = new THREE.PerspectiveCamera(50, 2, 0.1, 100);
+  camera.position.set(0, 0, 9);
 
-scene.add(new THREE.AmbientLight(0xffffff, 0.75));
-const key = new THREE.DirectionalLight(0xfff4e0, 1.1);
-key.position.set(3, 5, 6);
-scene.add(key);
-const rim = new THREE.DirectionalLight(0x4f8cff, 0.6);
-rim.position.set(-4, -2, -3);
-scene.add(rim);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+  const key = new THREE.DirectionalLight(0xfff4e0, 1.1);
+  key.position.set(3, 5, 6);
+  scene.add(key);
+  const rim = new THREE.DirectionalLight(0x4f8cff, 0.6);
+  rim.position.set(-4, -2, -3);
+  scene.add(rim);
 
-// A receipt card, drawn on a 2D canvas and used as a texture.
-function receiptTexture(stamp, stampColor, rows) {
-  const c = document.createElement('canvas');
-  c.width = 256; c.height = 340;
-  const g = c.getContext('2d');
-  g.fillStyle = '#f6f1e4';
-  g.fillRect(0, 0, 256, 340);
-  g.strokeStyle = '#d9d0b8'; g.setLineDash([5, 4]); g.lineWidth = 2;
-  g.strokeRect(9, 9, 238, 322);
-  g.setLineDash([]);
-  g.fillStyle = '#6f6a5c';
-  g.font = '700 15px ui-monospace, Menlo, monospace';
-  g.fillText('SYSTEM OF RECORD', 24, 40);
-  g.fillStyle = '#1d1b16';
-  g.font = '12px ui-monospace, Menlo, monospace';
-  rows.forEach((row, i) => {
-    g.fillText(row[0], 24, 78 + i * 34);
+  // A receipt card, drawn on a 2D canvas and used as a texture.
+  function receiptTexture(stamp, stampColor, rows) {
+    const c = document.createElement('canvas');
+    c.width = 256; c.height = 340;
+    const g = c.getContext('2d');
+    g.fillStyle = '#f6f1e4';
+    g.fillRect(0, 0, 256, 340);
+    g.strokeStyle = '#d9d0b8'; g.setLineDash([5, 4]); g.lineWidth = 2;
+    g.strokeRect(9, 9, 238, 322);
+    g.setLineDash([]);
     g.fillStyle = '#6f6a5c';
-    g.fillText(row[1], 24, 94 + i * 34);
+    g.font = '700 15px ui-monospace, Menlo, monospace';
+    g.fillText('SYSTEM OF RECORD', 24, 40);
     g.fillStyle = '#1d1b16';
+    g.font = '12px ui-monospace, Menlo, monospace';
+    rows.forEach((row, i) => {
+      g.fillText(row[0], 24, 78 + i * 34);
+      g.fillStyle = '#6f6a5c';
+      g.fillText(row[1], 24, 94 + i * 34);
+      g.fillStyle = '#1d1b16';
+    });
+    // torn edge
+    g.fillStyle = '#14161a';
+    for (let x = 0; x < 256; x += 16) {
+      g.beginPath();
+      g.moveTo(x, 340); g.lineTo(x + 8, 332); g.lineTo(x + 16, 340);
+      g.fill();
+    }
+    // stamp
+    if (stamp) {
+      g.save();
+      g.translate(128, 268);
+      g.rotate(-0.18);
+      g.strokeStyle = stampColor; g.fillStyle = stampColor; g.lineWidth = 3;
+      g.font = '700 20px ui-monospace, Menlo, monospace';
+      const w = g.measureText(stamp).width;
+      g.strokeRect(-w / 2 - 12, -22, w + 24, 36);
+      g.fillText(stamp, -w / 2, 4);
+      g.restore();
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.anisotropy = 4;
+    return tex;
+  }
+
+  const CARDS = [
+    { stamp: 'NO RECEIPT', color: '#d03b3b', rows: [['ticket', 'claimed: created'], ['', 'record: none']] },
+    { stamp: 'RECEIPT FOUND', color: '#1f9d55', rows: [['cancelled', 'claimed: Mar 10 3:00 PM'], ['', 'record: Mar 10 3:00 PM']] },
+    { stamp: 'MISMATCH', color: '#d03b3b', rows: [['start', 'claimed: 2:30 PM'], ['', 'record: 3:30 PM']] },
+    { stamp: '', color: '#1d1b16', rows: [['journal #7', 'apt_0002 created'], ['actor', 'receptionist-agent']] },
+    { stamp: 'NO RECEIPT', color: '#d03b3b', rows: [['sms', 'claimed: sent'], ['', 'record: none']] },
+    { stamp: '', color: '#1d1b16', rows: [['journal #12', 'msg_0003 sent'], ['actor', 'receptionist-agent']] },
+  ];
+
+  const group = new THREE.Group();
+  scene.add(group);
+  const cards = [];
+  CARDS.forEach((def, i) => {
+    const tex = receiptTexture(def.stamp, def.color, def.rows);
+    const mesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.5, 2),
+      new THREE.MeshStandardMaterial({ map: tex, side: THREE.DoubleSide, roughness: 0.9 })
+    );
+    const ring = i / CARDS.length * Math.PI * 2;
+    const radius = 5.4 + (i % 2) * 1.4;
+    mesh.position.set(
+      Math.cos(ring) * radius,
+      Math.sin(ring * 1.7) * 2.2,
+      -1.5 + Math.sin(ring) * 2.4
+    );
+    mesh.rotation.set((Math.random() - 0.5) * 0.5, (Math.random() - 0.5) * 0.9, (Math.random() - 0.5) * 0.2);
+    mesh.userData = { phase: Math.random() * Math.PI * 2, speed: 0.4 + Math.random() * 0.4, baseY: mesh.position.y };
+    group.add(mesh);
+    cards.push(mesh);
   });
-  // torn edge
-  g.fillStyle = '#14161a';
-  for (let x = 0; x < 256; x += 16) {
-    g.beginPath();
-    g.moveTo(x, 340); g.lineTo(x + 8, 332); g.lineTo(x + 16, 340);
-    g.fill();
+
+  function resize() {
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (canvas.width !== w || canvas.height !== h) {
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
   }
-  // stamp
-  if (stamp) {
-    g.save();
-    g.translate(128, 268);
-    g.rotate(-0.18);
-    g.strokeStyle = stampColor; g.fillStyle = stampColor; g.lineWidth = 3;
-    g.font = '700 20px ui-monospace, Menlo, monospace';
-    const w = g.measureText(stamp).width;
-    g.strokeRect(-w / 2 - 12, -22, w + 24, 36);
-    g.fillText(stamp, -w / 2, 4);
-    g.restore();
+
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    resize();
+    renderer.render(scene, camera);
+    return;
   }
-  const tex = new THREE.CanvasTexture(c);
-  tex.anisotropy = 4;
-  return tex;
-}
 
-const CARDS = [
-  { stamp: 'NO RECEIPT', color: '#d03b3b', rows: [['ticket', 'claimed: created'], ['', 'record: none']] },
-  { stamp: 'RECEIPT FOUND', color: '#1f9d55', rows: [['cancelled', 'claimed: Mar 10 3:00 PM'], ['', 'record: Mar 10 3:00 PM']] },
-  { stamp: 'MISMATCH', color: '#d03b3b', rows: [['start', 'claimed: 2:30 PM'], ['', 'record: 3:30 PM']] },
-  { stamp: '', color: '#1d1b16', rows: [['journal #7', 'apt_0002 created'], ['actor', 'receptionist-agent']] },
-  { stamp: 'NO RECEIPT', color: '#d03b3b', rows: [['sms', 'claimed: sent'], ['', 'record: none']] },
-  { stamp: '', color: '#1d1b16', rows: [['journal #12', 'msg_0003 sent'], ['actor', 'receptionist-agent']] },
-];
-
-const group = new THREE.Group();
-scene.add(group);
-const cards = [];
-CARDS.forEach((def, i) => {
-  const tex = receiptTexture(def.stamp, def.color, def.rows);
-  const mesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(1.5, 2),
-    new THREE.MeshStandardMaterial({ map: tex, side: THREE.DoubleSide, roughness: 0.9 })
-  );
-  const ring = i / CARDS.length * Math.PI * 2;
-  const radius = 5.4 + (i % 2) * 1.4;
-  mesh.position.set(
-    Math.cos(ring) * radius,
-    Math.sin(ring * 1.7) * 2.2,
-    -1.5 + Math.sin(ring) * 2.4
-  );
-  mesh.rotation.set((Math.random() - 0.5) * 0.5, (Math.random() - 0.5) * 0.9, (Math.random() - 0.5) * 0.2);
-  mesh.userData = { phase: Math.random() * Math.PI * 2, speed: 0.4 + Math.random() * 0.4, baseY: mesh.position.y };
-  group.add(mesh);
-  cards.push(mesh);
-});
-
-let mx = 0, my = 0;
-addEventListener('pointermove', (e) => {
-  mx = (e.clientX / innerWidth) * 2 - 1;
-  my = (e.clientY / innerHeight) * 2 - 1;
-});
-
-function resize() {
-  const w = canvas.clientWidth, h = canvas.clientHeight;
-  if (canvas.width !== w || canvas.height !== h) {
-    renderer.setSize(w, h, false);
-    camera.aspect = w / h;
-    camera.updateProjectionMatrix();
-  }
-}
-
-let visible = true;
-new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(canvas);
-
-const clock = new THREE.Clock();
-function frame() {
-  requestAnimationFrame(frame);
-  resize();
-  if (!visible) return;
-  const t = clock.getElapsedTime();
-  cards.forEach((m) => {
-    m.position.y = m.userData.baseY + Math.sin(t * m.userData.speed + m.userData.phase) * 0.35;
-    m.rotation.y += 0.0016;
+  let mx = 0, my = 0;
+  addEventListener('pointermove', (e) => {
+    mx = (e.clientX / innerWidth) * 2 - 1;
+    my = (e.clientY / innerHeight) * 2 - 1;
   });
-  group.rotation.y = t * 0.05;
-  camera.position.x += (mx * 1.1 - camera.position.x) * 0.04;
-  camera.position.y += (-my * 0.7 - camera.position.y) * 0.04;
-  camera.lookAt(0, 0, 0);
-  renderer.render(scene, camera);
+
+  let visible = true;
+  new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(canvas);
+
+  let frameId = null;
+  let lastFrameTime = null;
+  let t = 0;
+  function frame(now) {
+    frameId = null;
+    if (document.hidden) return;
+    frameId = requestAnimationFrame(frame);
+    if (lastFrameTime !== null) t += (now - lastFrameTime) / 1000;
+    lastFrameTime = now;
+    resize();
+    if (!visible) return;
+    cards.forEach((m) => {
+      m.position.y = m.userData.baseY + Math.sin(t * m.userData.speed + m.userData.phase) * 0.35;
+      m.rotation.y += 0.0016;
+    });
+    group.rotation.y = t * 0.05;
+    camera.position.x += (mx * 1.1 - camera.position.x) * 0.04;
+    camera.position.y += (-my * 0.7 - camera.position.y) * 0.04;
+    camera.lookAt(0, 0, 0);
+    renderer.render(scene, camera);
+  }
+  function syncVisibility() {
+    if (document.hidden) {
+      if (frameId !== null) cancelAnimationFrame(frameId);
+      frameId = null;
+      lastFrameTime = null;
+    } else if (frameId === null) {
+      frameId = requestAnimationFrame(frame);
+    }
+  }
+  document.addEventListener('visibilitychange', syncVisibility);
+  syncVisibility();
 }
-frame();
+initHero();
 </script>
 </body>
 </html>
