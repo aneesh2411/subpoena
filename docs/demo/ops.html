@@ -37,6 +37,7 @@
     border-left: 1px solid var(--line); display: grid; gap: 8px; }
   .timeline li { background: var(--desk); border-radius: 6px; padding: 10px; }
   .timeline li:target { outline: 2px solid var(--accent); }
+  .coverage-gaps { margin-bottom: 16px; overflow-wrap: anywhere; }
   .label { color: var(--dim); }
   .delivery { display: grid; gap: 12px; }
   table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
@@ -100,8 +101,25 @@
   };
 
   function renderReview(review) {
-    document.getElementById("audit").textContent =
+    const audit = document.getElementById("audit");
+    audit.textContent =
       "Sealed audit · " + review.audit.audit_id + " · " + review.audit.seal.chain_hash;
+    const gaps = review.audit.coverage_gaps;
+    if (gaps?.length) {
+      const panel = add(audit.parentElement, "section", null, "panel coverage-gaps");
+      panel.setAttribute("aria-labelledby", "coverage-gaps-heading");
+      add(panel, "h3", "Coverage gaps").id = "coverage-gaps-heading";
+      const list = add(panel, "ul", null, "timeline");
+      for (const gap of gaps) {
+        const entry = add(list, "li");
+        add(entry, "strong", `${gap.source} (${gap.kind})`);
+        add(entry, "div", gap.detail);
+        if (gap.claim_ids.length) {
+          field(entry, "Affected claims", gap.claim_ids.join(", "));
+        }
+      }
+      audit.after(panel);
+    }
     const root = document.getElementById("reviews");
     for (const item of review.items) {
       const [, collection, index] = item.result_pointer.split("/");
