@@ -32,8 +32,14 @@ def test_revisions_export_is_reproducible(tmp_path: Path) -> None:
     page = (first / "revisions.html").read_text(encoding="utf-8")
     assert f'fetch("{relative_data}")' in page
     for label in (
-        "First audit", "NO RECEIPT", "Ticket lands", "Re-audit", "VERIFIED",
-        "Signed revision receipt", "GENESIS", "Verification passed at export",
+        "First audit",
+        "NO RECEIPT",
+        "Ticket lands",
+        "Re-audit",
+        "VERIFIED",
+        "Signed revision receipt",
+        "GENESIS",
+        "Verification passed at export",
     ):
         assert label in page
 
