@@ -3,6 +3,7 @@
 Core:
     POST /calls                  ingest a call (transcript + claims)
     POST /audit                  audit a stored or inline call against the system of record
+    POST /audit/{id}/claims/{claim_id}/recheck   re-check a sealed claim
     GET  /audit/{id}/report      the sealed report (JSON, or Markdown with ?format=md)
 
 Supporting:
@@ -230,6 +231,35 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         report = append_report(auditor.audit(call))
         log.info("audit %s for call %s: %s", report.audit_id, call.call_id, report.outcome.value)
         return _ok(report.model_dump(mode="json"), 201)
+
+    @app.post("/audit/{audit_id}/claims/{claim_id}/recheck", dependencies=guarded)
+    def recheck_claim(audit_id: str, claim_id: str) -> JSONResponse:
+        original = store().get_audit(audit_id)
+        if original is None:
+            raise HTTPException(404, f"audit {audit_id} not found")
+        claim = next((v.claim for v in original.verdicts if v.claim.claim_id == claim_id), None)
+        if claim is None:
+            raise HTTPException(404, f"claim {claim_id} not found in audit {audit_id}")
+        if original.seal is None:
+            raise HTTPException(409, f"audit {audit_id} is not sealed")
+
+        # Keep the reader alive if a demo request stages another system of record.
+        with app.state.stage_lock:
+            auditor = Auditor(
+                app.state.sor.session("auditor", utcnow),
+                sealer=app.state.sealer,
+                clock=utcnow,
+                use_transcript=False,
+            )
+            checked = auditor.recheck(original.call, claim, prev_hash=original.seal.chain_hash)
+        assert checked.seal is not None
+        return _ok(
+            {
+                "audit_id": checked.audit_id,
+                "verdict": checked.verdicts[0].model_dump(mode="json"),
+                "seal": checked.seal.model_dump(mode="json"),
+            }
+        )
 
     @app.get("/audit/{audit_id}/report", dependencies=guarded, response_model=None)
     def report(

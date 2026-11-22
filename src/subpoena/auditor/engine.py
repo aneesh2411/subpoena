@@ -188,6 +188,32 @@ class Auditor:
         )
         return self._sealer.seal(report, prev_hash)
 
+    def recheck(self, call: CallRecord, claim: Claim, *, prev_hash: str) -> AuditReport:
+        """Re-evaluate a previously judged claim through the current evidence cutoff."""
+        now = self._clock()
+        ctx = AuditContext.open(call, self._sor, self._clinic, now - call.ended_at)
+        matches, blocked = self._reconcile((claim,), ctx)
+        try:
+            verdict = self._judge(claim, matches.get(claim.claim_id), blocked, ctx)
+        except AdapterUnavailable as exc:
+            verdict = unverifiable(claim, str(exc))
+            ctx.log("verdict", f"{claim.claim_id} ({claim.type}): {verdict.status.value}")
+        verdicts = (verdict,)
+        report = AuditReport(
+            audit_id=f"aud_{uuid.uuid4().hex[:12]}",
+            auditor=self.NAME,
+            created_at=now,
+            call=call,
+            outcome=_outcome(verdicts, (), ctx),
+            verdicts=verdicts,
+            findings=(),
+            trail=tuple(ctx.trail),
+            stats=_stats(verdicts, ()),
+            extraction=ExtractionHealth(extractor="none"),
+            coverage_gaps=_coverage_gaps((claim,), ctx),
+        )
+        return self._sealer.seal(report, prev_hash)
+
     # -- pipeline stages ---------------------------------------------------- #
 
     def _fulfillments(

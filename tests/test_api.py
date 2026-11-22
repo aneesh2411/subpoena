@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta
+
 import pytest
 from fastapi.testclient import TestClient
 
 from subpoena.api import Settings, create_app
+from subpoena.models import AppointmentBooked
 from subpoena.scenarios import BY_ID, HERO, build_world, run_suspect
+from subpoena.sor.base import with_outage
 
 
 @pytest.fixture
@@ -41,7 +45,7 @@ def test_health(client):
     assert _data(client.get("/healthz")) == {"status": "ok", "version": "0.1.0", "signed": True}
 
 
-def test_ingest_audit_report_flow_against_the_live_system_of_record(client):
+def test_ingest_audit_report_flow_against_the_live_system_of_record(client, monkeypatch):
     """Stage a scenario, then drive the three core endpoints the way an integrator would."""
     call = _data(client.post("/demo/scenarios/fault-wrong-time/stage"), 201)
     assert _data(client.post("/calls", json=call), 201) == {"call_id": call["call_id"], "claims": 2}
@@ -58,6 +62,51 @@ def test_ingest_audit_report_flow_against_the_live_system_of_record(client):
     assert md.status_code == 200 and md.headers["content-type"].startswith("text/markdown")
     assert "RECEIPT DOES NOT MATCH" in md.text
 
+    claim = AppointmentBooked.model_validate(report["verdicts"][0]["claim"])
+    path = f"/audit/{report['audit_id']}/claims/{claim.claim_id}/recheck"
+    ended = datetime.fromisoformat(call["ended_at"])
+    monkeypatch.setattr("subpoena.api.app.utcnow", lambda: ended + timedelta(minutes=2))
+    sor = client.app.state.sor
+    store = client.app.state.store
+    sor_changes = sor._conn.total_changes
+    audit_changes = store._conn.total_changes
+
+    checked = _data(client.post(path))
+    assert checked["verdict"] == report["verdicts"][0]
+    assert checked["audit_id"] != report["audit_id"]
+    assert checked["seal"]["prev_hash"] == report["seal"]["chain_hash"]
+    assert checked["seal"]["signature"]
+    assert sor._conn.total_changes == sor_changes
+
+    # A call-linked retry lands beyond the original audit's grace period.
+    writer = sor.session(
+        f"{call['agent_id']}:{call['call_id']}", lambda: ended + timedelta(minutes=1)
+    )
+    (patient,) = writer.crm.find_patients(phone=claim.patient.phone)
+    retry = writer.calendar.create_appointment(
+        patient_id=patient.id,
+        start=claim.start,
+        provider=claim.provider,
+        duration_min=claim.duration_min,
+        reason=claim.reason,
+    )
+    sor_changes = sor._conn.total_changes
+    checked = _data(client.post(path))
+    verdict = checked["verdict"]
+    assert verdict["status"] == "VERIFIED"
+    assert verdict["claim"] == report["verdicts"][0]["claim"]
+    assert retry.id in str(verdict["evidence"])
+    assert checked["seal"]["prev_hash"] == report["seal"]["chain_hash"]
+
+    session = sor.session
+    monkeypatch.setattr(
+        sor, "session", lambda actor, clock: with_outage(session(actor, clock), "calendar")
+    )
+    assert _data(client.post(path))["verdict"]["status"] == "UNVERIFIABLE"
+    assert sor._conn.total_changes == sor_changes
+    assert store._conn.total_changes == audit_changes
+    assert _data(client.get(f"/audit/{report['audit_id']}/report")) == report
+
 
 def test_claims_with_no_backing_writes_are_not_found(client):
     """An empty system of record: every claim in the call is a claim without a receipt."""
@@ -73,6 +122,9 @@ def test_duplicate_and_missing_resources(client):
     assert "not found" in _error(client.post("/audit", json={"call_id": "nope"}), 404)
     assert "not found" in _error(client.get("/audit/nope/report"), 404)
     assert "not found" in _error(client.post("/demo/scenarios/nope/run"), 404)
+    assert "audit" in _error(client.post("/audit/nope/claims/nope/recheck"), 404)
+    report = _data(client.post("/audit", json={"call_id": call["call_id"]}), 201)
+    assert "claim" in _error(client.post(f"/audit/{report['audit_id']}/claims/nope/recheck"), 404)
 
 
 def test_conflicting_inline_call_is_rejected_identical_is_idempotent(client):
@@ -176,7 +228,8 @@ def test_api_key_is_enforced_when_configured():
     assert client.get("/healthz").status_code == 200
     assert client.get("/").status_code == 200
     for method, path in (("get", "/audits"), ("post", "/calls"), ("get", "/demo/scenarios"),
-                         ("get", "/scorecard"), ("get", "/audit/x/report")):  # fmt: skip
+                         ("get", "/scorecard"), ("get", "/audit/x/report"),
+                         ("post", "/audit/x/claims/y/recheck")):  # fmt: skip
         assert "X-API-Key" in _error(getattr(client, method)(path), 401)
     assert "X-API-Key" in _error(client.get("/audits", headers={"X-API-Key": "wrong"}), 401)
     assert _data(client.get("/audits", headers={"X-API-Key": "s3cret"})) == []
