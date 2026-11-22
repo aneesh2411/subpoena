@@ -22,6 +22,14 @@
     max-width: 100%; color: var(--accent); text-underline-offset: .18em;
   }
   a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .rechecks { display: grid; gap: .75rem; margin-bottom: 2rem; }
+  .rechecks article {
+    padding: .875rem; background: var(--panel); border: 1px solid var(--line);
+    border-radius: .65rem; overflow-wrap: anywhere;
+  }
+  .rechecks h3, .rechecks p { margin: 0 0 .5rem; }
+  .closed { color: #8bd9b4; }
+  .open { color: #ffc095; }
   table { width: 100%; table-layout: fixed; border-collapse: collapse; }
   th, td { padding: .625rem .75rem; text-align: left; overflow-wrap: anywhere; }
   th:first-child { width: 44%; }
@@ -36,7 +44,8 @@
       position: absolute; width: 1px; height: 1px; padding: 0;
       overflow: hidden; clip-path: inset(50%); white-space: nowrap;
     }
-    tr {
+    thead th { padding: 0; }
+    tbody tr {
       display: block; margin-block: .75rem; padding: .625rem .875rem;
       background: var(--panel); border: 1px solid var(--line); border-radius: .65rem;
     }
@@ -49,9 +58,36 @@
 <main>
   <a href="hub.html#operations">Back to demo hub</a>
   <h1 id="queue-title">Remediation queue</h1>
-  <p>These are the auditor’s suggested one-step fixes for open items in the demo audits.
-    Each item’s resolution is unconfirmed.</p>
-  <table role="table" aria-labelledby="queue-title">
+  <p>A task closes only when the re-check passes. In this offline replay, the simulated booking
+    system retries the write in its calendar. The auditor reads the result and re-audits the
+    original call with an evidence window long enough to include the retry.</p>
+  <section class="rechecks" aria-labelledby="rechecks-title">
+    <h2 id="rechecks-title">Re-checked tasks</h2>
+    <article>
+      <h3>Claims a booking it never wrote (no confirmation)</h3>
+      <p>Initially open · NOT_FOUND</p>
+      <p>Create the appointment or call the patient back before they show up.</p>
+      <p><strong class="closed">Closed</strong>
+        · <strong>VERIFIED</strong></p>
+      <p>Booking for Maya Chen on Tue Mar 3 2026, 2:30 PM EST exists exactly as claimed (apt_0001).</p>
+      <p>Re-check evidence · calendar · apt_0001</p>
+      <a href="data/audit-aud-fault-phantom-booking-bare-recheck.json">aud-fault-phantom-booking-bare-recheck</a>
+      <a href="index.html#fault-phantom-booking-bare">Original call</a>
+    </article>
+    <article>
+      <h3>Claims a booking it never wrote</h3>
+      <p>Initially open · NOT_FOUND</p>
+      <p>Create the appointment or call the patient back before they show up.</p>
+      <p><strong class="open">Still open</strong>
+        · <strong>MISMATCH</strong></p>
+      <p>A booking was written (apt_0001) but it is not what the caller was told. start: claimed Tue Mar 3 2026, 2:30 PM EST, actual Tue Mar 3 2026, 3:30 PM EST.</p>
+      <p>Re-check evidence · calendar · apt_0001</p>
+      <a href="data/audit-aud-fault-phantom-booking-recheck.json">aud-fault-phantom-booking-recheck</a>
+      <a href="index.html#fault-phantom-booking">Original call</a>
+    </article>
+  </section>
+  <h2 id="queue-items">Other open tasks</h2>
+  <table role="table" aria-labelledby="queue-items">
     <thead role="rowgroup">
       <tr role="row">
         <th role="columnheader" scope="col">Suggested fix</th>
@@ -138,22 +174,6 @@
         <td role="cell"><span class="label" aria-hidden="true">Claim type</span>AppointmentBooked</td>
         <td role="cell"><span class="label" aria-hidden="true">Severity</span>CRITICAL</td>
         <td role="cell">
-          <span class="label" aria-hidden="true">Scenario</span><a href="index.html#fault-phantom-booking-bare">Claims a booking it never wrote (no confirmation)</a>
-        </td>
-      </tr>
-      <tr role="row">
-        <td role="cell"><span class="label" aria-hidden="true">Suggested fix</span>Create the appointment or call the patient back before they show up.</td>
-        <td role="cell"><span class="label" aria-hidden="true">Claim type</span>AppointmentBooked</td>
-        <td role="cell"><span class="label" aria-hidden="true">Severity</span>CRITICAL</td>
-        <td role="cell">
-          <span class="label" aria-hidden="true">Scenario</span><a href="index.html#fault-phantom-booking">Claims a booking it never wrote</a>
-        </td>
-      </tr>
-      <tr role="row">
-        <td role="cell"><span class="label" aria-hidden="true">Suggested fix</span>Create the appointment or call the patient back before they show up.</td>
-        <td role="cell"><span class="label" aria-hidden="true">Claim type</span>AppointmentBooked</td>
-        <td role="cell"><span class="label" aria-hidden="true">Severity</span>CRITICAL</td>
-        <td role="cell">
           <span class="label" aria-hidden="true">Scenario</span><a href="index.html#fault-rollback">Writes the booking, then removes it</a>
         </td>
       </tr>
@@ -162,7 +182,7 @@
         <td role="cell"><span class="label" aria-hidden="true">Claim type</span>AppointmentBooked</td>
         <td role="cell"><span class="label" aria-hidden="true">Severity</span>CRITICAL</td>
         <td role="cell">
-          <span class="label" aria-hidden="true">Scenario</span><a href="index.html#fault-spoken-only-with-confirmation">Two spoken promises, neither logged nor kept</a>
+          <span class="label" aria-hidden="true">Scenario</span><a href="index.html#fault-spoken-only">Tells the caller &#x27;booked&#x27;, logs nothing, writes nothing</a>
         </td>
       </tr>
       <tr role="row">
@@ -170,7 +190,7 @@
         <td role="cell"><span class="label" aria-hidden="true">Claim type</span>AppointmentBooked</td>
         <td role="cell"><span class="label" aria-hidden="true">Severity</span>CRITICAL</td>
         <td role="cell">
-          <span class="label" aria-hidden="true">Scenario</span><a href="index.html#fault-spoken-only">Tells the caller &#x27;booked&#x27;, logs nothing, writes nothing</a>
+          <span class="label" aria-hidden="true">Scenario</span><a href="index.html#fault-spoken-only-with-confirmation">Two spoken promises, neither logged nor kept</a>
         </td>
       </tr>
       <tr role="row">

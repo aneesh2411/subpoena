@@ -1,0 +1,238 @@
+{
+ "audit_id": "aud-fault-phantom-booking-bare-recheck",
+ "auditor": "subpoena/0.1.0",
+ "created_at": "2026-03-02T09:06:18-05:00",
+ "call": {
+  "call_id": "call-fault-phantom-booking-bare",
+  "agent_id": "agent:receptionist",
+  "caller": {
+   "name": "Maya Chen",
+   "phone": "+15550101001"
+  },
+  "started_at": "2026-03-02T09:05:00-05:00",
+  "ended_at": "2026-03-02T09:05:16-05:00",
+  "transcript": [
+   {
+    "index": 0,
+    "speaker": "agent",
+    "text": "Thank you for calling Brightside Dental. How can I help?",
+    "at": "2026-03-02T09:05:04-05:00"
+   },
+   {
+    "index": 1,
+    "speaker": "caller",
+    "text": "Hi, I'd like to book a cleaning with Dr. Patel on Tuesday, March 3 at 2:30 PM.",
+    "at": "2026-03-02T09:05:08-05:00"
+   },
+   {
+    "index": 2,
+    "speaker": "agent",
+    "text": "You're all set. I've booked your cleaning with Dr. Patel on Tuesday, March 3 at 2:30 PM.",
+    "at": "2026-03-02T09:05:12-05:00"
+   },
+   {
+    "index": 3,
+    "speaker": "agent",
+    "text": "Is there anything else? Have a great day.",
+    "at": "2026-03-02T09:05:16-05:00"
+   }
+  ],
+  "raw_transcript": null,
+  "claims": [
+   {
+    "claim_id": "call-fault-phantom-booking-bare-c1",
+    "turn_index": 2,
+    "source": "structured",
+    "utterance": "You're all set. I've booked your cleaning with Dr. Patel on Tuesday, March 3 at 2:30 PM.",
+    "corrects_prior": false,
+    "type": "AppointmentBooked",
+    "patient": {
+     "name": "Maya Chen",
+     "phone": "+15550101001"
+    },
+    "start": "2026-03-03T14:30:00-05:00",
+    "provider": "Dr. Patel",
+    "duration_min": 30,
+    "reason": "cleaning"
+   }
+  ],
+  "provenance": {
+   "agent_version": "receptionist-sim/0.1.0",
+   "model": null,
+   "prompt_version": "narrator:standard",
+   "human_handoffs": [],
+   "platform": null,
+   "from_address": null,
+   "to_address": null,
+   "completion_callback_at": null
+  }
+ },
+ "outcome": "CLEAN",
+ "verdicts": [
+  {
+   "claim": {
+    "claim_id": "call-fault-phantom-booking-bare-c1",
+    "turn_index": 2,
+    "source": "structured",
+    "utterance": "You're all set. I've booked your cleaning with Dr. Patel on Tuesday, March 3 at 2:30 PM.",
+    "corrects_prior": false,
+    "type": "AppointmentBooked",
+    "patient": {
+     "name": "Maya Chen",
+     "phone": "+15550101001"
+    },
+    "start": "2026-03-03T14:30:00-05:00",
+    "provider": "Dr. Patel",
+    "duration_min": 30,
+    "reason": "cleaning"
+   },
+   "status": "VERIFIED",
+   "severity": "INFO",
+   "summary": "Booking for Maya Chen on Tue Mar 3 2026, 2:30 PM EST exists exactly as claimed (apt_0001).",
+   "checks": [
+    {
+     "name": "existence",
+     "passed": true,
+     "detail": "A write by the agent during the call corresponds to this claim."
+    },
+    {
+     "name": "exactness",
+     "passed": true,
+     "detail": "All fields match."
+    },
+    {
+     "name": "side_effects",
+     "passed": null,
+     "detail": "Not applicable."
+    },
+    {
+     "name": "attribution",
+     "passed": true,
+     "detail": "Every backing write carries this call's own stamp."
+    },
+    {
+     "name": "coverage",
+     "passed": true,
+     "detail": "The calendar change history for the call window was fully observed."
+    }
+   ],
+   "diffs": [
+    {
+     "field": "patient",
+     "claimed": "Maya Chen (+15550101001)",
+     "actual": "Maya Chen (+15550101001)",
+     "match": true
+    },
+    {
+     "field": "start",
+     "claimed": "Tue Mar 3 2026, 2:30 PM EST",
+     "actual": "Tue Mar 3 2026, 2:30 PM EST",
+     "match": true
+    },
+    {
+     "field": "provider",
+     "claimed": "Dr. Patel",
+     "actual": "Dr. Patel",
+     "match": true
+    },
+    {
+     "field": "duration",
+     "claimed": "30 min",
+     "actual": "30 min",
+     "match": true
+    },
+    {
+     "field": "reason",
+     "claimed": "cleaning",
+     "actual": "cleaning",
+     "match": true
+    }
+   ],
+   "evidence": [
+    {
+     "source": "calendar",
+     "ref": "apt_0001",
+     "note": "Appointment written by the agent during the call (journal #6; net: created)",
+     "record": {
+      "id": "apt_0001",
+      "patient_id": "pat_0001",
+      "provider": "Dr. Patel",
+      "start": "2026-03-03T19:30:00+00:00",
+      "duration_min": 30,
+      "reason": "cleaning",
+      "status": "booked"
+     }
+    }
+   ],
+   "remediation": null
+  }
+ ],
+ "findings": [],
+ "trail": [
+  {
+   "seq": 1,
+   "stage": "evidence",
+   "message": "calendar: 1 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 2,
+   "stage": "evidence",
+   "message": "crm: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 3,
+   "stage": "evidence",
+   "message": "messages: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 4,
+   "stage": "evidence",
+   "message": "tickets: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 5,
+   "stage": "claims",
+   "message": "1 structured claim(s); 1 recovered from the transcript, 0 of them never logged by the agent"
+  },
+  {
+   "seq": 6,
+   "stage": "reconcile",
+   "message": "call-fault-phantom-booking-bare-c1 (AppointmentBooked): exact match -> apt_0001"
+  },
+  {
+   "seq": 7,
+   "stage": "verdict",
+   "message": "call-fault-phantom-booking-bare-c1 (AppointmentBooked): VERIFIED"
+  },
+  {
+   "seq": 8,
+   "stage": "verdict",
+   "message": "Outcome: CLEAN"
+  }
+ ],
+ "stats": {
+  "claims": 1,
+  "verified": 1,
+  "mismatch": 0,
+  "not_found": 0,
+  "unverifiable": 0,
+  "findings": 0,
+  "trust_score": 1.0,
+  "max_severity": "INFO"
+ },
+ "extraction": {
+  "extractor": "rules",
+  "degraded": false,
+  "detail": null
+ },
+ "fulfillments": [],
+ "coverage_gaps": [],
+ "seal": {
+  "algorithm": "sha256",
+  "content_hash": "b192ec2fe797c835d2c4a216c7d3a356f9706d0d41a561eb70970b6e6f954768",
+  "prev_hash": "760aeb8c0ce60134822e29fa5bfdc2db48ccb42e00fdc3f2635b99212842dea6",
+  "chain_hash": "99f0a43412cb6e479f135acd7713905ed564c58df7cf6f01daa6b752ca10b9ee",
+  "signature": "f3ee5417b3f142484abbe1dc905435161df6dddd0207ca64d1d9f3fa8d20ca60",
+  "key_id": "6508b98a7ace"
+ }
+}
