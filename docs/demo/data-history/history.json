@@ -35,6 +35,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 60
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 1,
+          "tn": 26
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -62,6 +94,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 60
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 1,
+          "tn": 26
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -79,6 +143,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 60
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 1,
+          "tn": 26
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -96,6 +192,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 60
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 1,
+          "tn": 26
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -123,6 +251,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 60
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 1,
+          "tn": 26
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -140,6 +300,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 60
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 1,
+          "tn": 26
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -157,6 +349,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 60
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 1,
+          "tn": 26
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -174,6 +398,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 60
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 1,
+          "tn": 26
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -201,6 +457,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 60
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 1,
+          "tn": 26
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -218,6 +506,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 60
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 1,
+          "tn": 26
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -235,6 +555,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 60
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 1,
+          "tn": 26
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -252,6 +604,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 60
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 1,
+          "tn": 26
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -279,6 +663,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 60
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 1,
+          "tn": 26
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -296,6 +712,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 60
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 1,
+          "tn": 26
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -313,6 +761,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 60
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 1,
+          "tn": 26
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -330,6 +810,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 60
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 1,
+          "tn": 26
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -357,6 +869,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 60
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 1,
+          "tn": 26
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -374,6 +918,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 60
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 1,
+          "tn": 26
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -391,6 +967,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 60
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 1,
+          "tn": 26
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -408,6 +1016,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 60
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 1,
+          "tn": 26
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -435,6 +1075,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 61
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 1,
+          "tn": 27
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -462,6 +1134,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 61
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 1,
+          "tn": 27
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -479,6 +1183,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 61
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 1,
+          "tn": 27
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -496,6 +1232,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 61
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 1,
+          "tn": 27
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -513,6 +1281,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 61
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 1,
+          "tn": 27
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -530,6 +1330,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 61
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 1,
+          "tn": 27
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -547,6 +1379,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 61
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 1,
+          "tn": 27
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -564,6 +1428,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 61
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 1,
+          "tn": 27
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -581,6 +1477,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 61
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 1,
+          "tn": 27
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -598,6 +1526,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 61
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 1,
+          "tn": 27
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -615,6 +1575,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 61
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 1,
+          "tn": 27
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -632,6 +1624,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 61
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 1,
+          "tn": 27
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -649,6 +1673,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 61
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 1,
+          "tn": 27
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 1,
+          "tn": 3
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -676,6 +1732,38 @@
         "fp": 0,
         "fn": 2,
         "tn": 62
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 1,
+          "tn": 27
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 4,
+          "fp": 0,
+          "fn": 1,
+          "tn": 4
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -703,6 +1791,44 @@
         "fp": 0,
         "fn": 2,
         "tn": 63
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 1,
+          "tn": 27
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 4,
+          "fp": 0,
+          "fn": 1,
+          "tn": 4
+        },
+        "PaymentCollected": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "tn": 1
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -730,6 +1856,50 @@
         "fp": 0,
         "fn": 2,
         "tn": 64
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 1,
+          "tn": 27
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 4,
+          "fp": 0,
+          "fn": 1,
+          "tn": 4
+        },
+        "PaymentCollected": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "tn": 1
+        },
+        "RecordsUpdated": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "tn": 1
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -757,6 +1927,56 @@
         "fp": 0,
         "fn": 2,
         "tn": 65
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 1,
+          "tn": 27
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 4,
+          "fp": 0,
+          "fn": 1,
+          "tn": 4
+        },
+        "PaymentCollected": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "tn": 1
+        },
+        "PrescriptionRefilled": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "tn": 1
+        },
+        "RecordsUpdated": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "tn": 1
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
       }
     },
     {
@@ -791,6 +2011,108 @@
           "fp": 0,
           "fn": 4,
           "tn": 67
+        }
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 1,
+          "tn": 27
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 4,
+          "fp": 0,
+          "fn": 1,
+          "tn": 4
+        },
+        "PaymentCollected": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "tn": 1
+        },
+        "PrescriptionRefilled": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "tn": 1
+        },
+        "RecordsUpdated": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "tn": 1
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
+      },
+      "variant_claim_levels_by_type": {
+        "receptionist-v2-chatty": {
+          "AppointmentBooked": {
+            "tp": 13,
+            "fp": 0,
+            "fn": 3,
+            "tn": 28
+          },
+          "Cancelled": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 0,
+            "tn": 2
+          },
+          "ConfirmationSent": {
+            "tp": 7,
+            "fp": 0,
+            "fn": 0,
+            "tn": 26
+          },
+          "HandoffCreated": {
+            "tp": 4,
+            "fp": 0,
+            "fn": 1,
+            "tn": 4
+          },
+          "PaymentCollected": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 0,
+            "tn": 1
+          },
+          "PrescriptionRefilled": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 0,
+            "tn": 1
+          },
+          "RecordsUpdated": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 0,
+            "tn": 1
+          },
+          "Rescheduled": {
+            "tp": 5,
+            "fp": 0,
+            "fn": 0,
+            "tn": 4
+          }
         }
       }
     }

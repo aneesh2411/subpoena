@@ -43,8 +43,8 @@
   .evaluation h2 { margin-top: 1.5rem; }
   .evaluation p { margin-block: .5rem; color: var(--dim); }
   select { background: var(--panel); color: var(--ink); font: inherit; min-height: 44px; }
-  #honesty-chart[hidden] { display: none; }
-  #honesty-chart { display: block; width: 100%; height: 10rem; color: var(--verified); }
+  .trend-chart[hidden] { display: none; }
+  .trend-chart { display: block; width: 100%; height: 10rem; color: var(--verified); }
   .trend-dates { display: flex; justify-content: space-between; color: var(--dim); }
   .table-scroll { overflow-x: auto; }
   table { border-collapse: collapse; width: 100%; margin-top: .5rem; }
@@ -68,9 +68,19 @@
     <p>(TN + FP) / (TP + FP + FN + TN) from committed golden claim counts.
       Runs without claim counts are excluded.</p>
     <p id="honesty-summary" role="status">Loading committed scorecards…</p>
-    <svg id="honesty-chart" role="group" aria-label="Ground-truth honesty rate by commit time"
+    <svg class="trend-chart" id="honesty-chart" role="group"
+      aria-label="Ground-truth honesty rate by commit time"
       viewBox="0 0 600 100" preserveAspectRatio="none" hidden></svg>
     <div class="trend-dates" id="trend-dates"></div>
+    <h2>Ground-truth honesty by claim type over time</h2>
+    <p>Runs without claim counts for the selected type and agent version are excluded.</p>
+    <label for="claim-type">Claim type</label>
+    <select id="claim-type" disabled></select>
+    <p id="claim-trend-summary" role="status">Loading committed scorecards…</p>
+    <svg class="trend-chart" id="claim-trend-chart" role="group"
+      aria-label="Ground-truth honesty rate for the selected claim type by commit time"
+      viewBox="0 0 600 100" preserveAspectRatio="none" hidden></svg>
+    <div class="trend-dates" id="claim-trend-dates"></div>
     <h2>Auditor accuracy by claim type</h2>
     <p>Strict accuracy requires an exact verdict. Safe rate excludes incorrect verified verdicts.
       Known gaps count misses in labelled scenarios.</p>
@@ -133,6 +143,9 @@
   const versionPicker = document.querySelector("#agent-version");
   const chart = document.querySelector("#honesty-chart");
   const historyStatus = document.querySelector("#honesty-summary");
+  const claimPicker = document.querySelector("#claim-type");
+  const claimChart = document.querySelector("#claim-trend-chart");
+  const claimStatus = document.querySelector("#claim-trend-summary");
   const accuracyStatus = document.querySelector("#accuracy-status");
   const accuracyTable = document.querySelector("#claim-accuracy");
 
@@ -143,30 +156,31 @@
     });
   }
 
-  function draw(tag, attributes, parent = chart) {
+  function draw(tag, attributes, parent) {
     const node = document.createElementNS("http://www.w3.org/2000/svg", tag);
     for (const [key, value] of Object.entries(attributes)) node.setAttribute(key, value);
     parent.append(node);
     return node;
   }
 
-  function showTrend(snapshots, version) {
-    const points = snapshots.flatMap(point => {
+  function trendPoints(snapshots, countsFor) {
+    return snapshots.flatMap(point => {
       if (point.series !== "scorecards") return [];
       const path = point.paths.find(path => !path.endsWith("/latest.json"));
-      const counts = version === baseline
-        ? point.claim_level : point.variant_claim_levels?.[version];
+      const counts = countsFor(point);
       if (!path || !counts) return [];
       const {tp, fp, fn, tn} = counts;
       const total = tp + fp + fn + tn;
       return total ? [{...point, path, rate: (tn + fp) / total}] : [];
     });
-    chart.replaceChildren();
-    const dates = document.querySelector("#trend-dates");
+  }
+
+  function showTrend(points, label, svg, status, dates) {
+    svg.replaceChildren();
     dates.replaceChildren();
-    chart.toggleAttribute("hidden", !points.length);
+    svg.toggleAttribute("hidden", !points.length);
     if (!points.length) {
-      historyStatus.textContent = "No committed runs with claim counts for " + version + ".";
+      status.textContent = "No committed runs with claim counts for " + label + ".";
       return;
     }
 
@@ -176,18 +190,18 @@
     const percent = rate => (rate * 100).toFixed(1) + "%";
     const x = point => span ? 12 + 576 * (point.commit_time - first.commit_time) / span : 300;
     const y = point => 92 - 84 * point.rate;
-    historyStatus.textContent = version + " · Latest " + percent(last.rate)
+    status.textContent = label + " · Latest " + percent(last.rate)
       + " · " + points.length + (points.length === 1 ? " scored run" : " scored runs");
     for (const point of span ? [first, last] : [first]) addText(dates, "span", date(point));
     draw("polyline", {
       points: points.map(point => x(point) + "," + y(point)).join(" "),
       fill: "none", stroke: "currentColor", "vector-effect": "non-scaling-stroke"
-    });
+    }, svg);
     for (const point of points) {
       const link = draw("a", {
         href: "https://github.com/aneesh2411/subpoena/blob/" + point.commit + "/" + point.path,
         "aria-label": date(point) + " · " + percent(point.rate) + " · " + point.commit.slice(0, 7)
-      });
+      }, svg);
       draw("title", {}, link).textContent = link.getAttribute("aria-label");
       draw("circle", {cx: x(point), cy: y(point), r: 5, fill: "currentColor"}, link);
     }
@@ -225,14 +239,37 @@
       if (point.claim_level) versions.add(baseline);
       for (const version of Object.keys(point.variant_claim_levels ?? {})) versions.add(version);
     }
-    if (!snapshots) historyStatus.textContent = "Could not load committed scorecards.";
+    if (!snapshots) {
+      historyStatus.textContent = claimStatus.textContent = "Could not load committed scorecards.";
+    }
     if (!accuracy) accuracyStatus.textContent = "Could not load golden claim accuracy.";
     for (const version of [...versions].sort()) versionPicker.add(new Option(version, version));
     versionPicker.disabled = !versions.size;
-    const update = () => {
-      if (snapshots) showTrend(snapshots, versionPicker.value);
-      if (accuracy) showAccuracy(accuracy, versionPicker.value);
+    const typesFor = point => versionPicker.value === baseline
+      ? point.claim_levels_by_type : point.variant_claim_levels_by_type?.[versionPicker.value];
+    const updateClaimTrend = () => {
+      const claimType = claimPicker.value;
+      const points = trendPoints(snapshots, point => typesFor(point)?.[claimType]);
+      showTrend(points, claimType || versionPicker.value, claimChart, claimStatus,
+        document.querySelector("#claim-trend-dates"));
     };
+    const update = () => {
+      const version = versionPicker.value;
+      if (snapshots) {
+        const points = trendPoints(snapshots, point => version === baseline
+          ? point.claim_level : point.variant_claim_levels?.[version]);
+        showTrend(points, version, chart, historyStatus, document.querySelector("#trend-dates"));
+
+        const previous = claimPicker.value;
+        const types = new Set(snapshots.flatMap(point => Object.keys(typesFor(point) ?? {})));
+        claimPicker.replaceChildren(...[...types].sort().map(type => new Option(type, type)));
+        claimPicker.disabled = !types.size;
+        if (types.has(previous)) claimPicker.value = previous;
+        updateClaimTrend();
+      }
+      if (accuracy) showAccuracy(accuracy, version);
+    };
+    claimPicker.addEventListener("change", updateClaimTrend);
     versionPicker.addEventListener("change", update);
     update();
   });

@@ -31,6 +31,10 @@ def test_scorecard_export_is_reproducible(tmp_path: Path) -> None:
     assert f'fetch("{data_path}")' in page
     assert "suspect agent" in page
     assert 'href="evals.html"' in page
+    assert page.index('id="honesty-chart"') < page.index('id="claim-trend-chart"')
+    assert page.index('id="claim-trend-chart"') < page.index('id="claim-accuracy"')
+    assert '<label for="claim-type">Claim type</label>' in page
+    assert "Runs without claim counts for the selected type and agent version are excluded." in page
 
     audits = list((DEMO / "data").glob("audit-*.json"))
     observed = Counter(
