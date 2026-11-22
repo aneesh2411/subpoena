@@ -56,6 +56,14 @@
   "known_gap": null
  },
  {
+  "id": "clean-prescription-refill",
+  "title": "Prescription refilled as stated",
+  "story": "The agent records a Lisinopril refill and tells the caller it was refilled.",
+  "group": "clean",
+  "faults": [],
+  "known_gap": null
+ },
+ {
   "id": "clean-records-update",
   "title": "Mailing address updated as stated",
   "story": "The agent reports the new mailing address it recorded for the caller.",
@@ -195,6 +203,14 @@
   "faults": [
    "double_book"
   ],
+  "known_gap": null
+ },
+ {
+  "id": "fault-wrong-refill-medication",
+  "title": "Agent states the wrong refill medication",
+  "story": "The agent tells the caller Lisinopril was refilled but records an Amlodipine refill.",
+  "group": "fault",
+  "faults": [],
   "known_gap": null
  },
  {

@@ -24,11 +24,13 @@ from subpoena.models import (
     ConfirmationSent,
     HandoffCreated,
     HandoffTopic,
+    Medication,
     Patient,
     PatientRef,
     PaymentAmount,
     PaymentCollected,
     PaymentMethod,
+    PrescriptionRefilled,
     Priority,
     Provenance,
     RecordField,
@@ -132,6 +134,12 @@ class UpdateRecords:
 
 
 @dataclass(frozen=True)
+class RefillPrescription:
+    medication: Medication
+    spoken_medication: Medication | None = None
+
+
+@dataclass(frozen=True)
 class Recap:
     """The agent restates an earlier booking in a later turn."""
 
@@ -155,6 +163,7 @@ Step = (
     | Correct
     | CollectPayment
     | UpdateRecords
+    | RefillPrescription
 )
 
 
@@ -223,6 +232,7 @@ class _Call:
             Reschedule: (self._reschedule, RESCHEDULE_FAULTS),
             Cancel: (self._cancel, CANCEL_FAULTS),
             Handoff: (self._handoff, HANDOFF_FAULTS),
+            RefillPrescription: (self._refill_prescription, frozenset()),
             UpdateRecords: (self._update_records, frozenset()),
             CollectPayment: (self._collect_payment, frozenset()),
             Recap: (self._recap, frozenset()),
@@ -555,6 +565,23 @@ class _Call:
         self.claims.append(
             PaymentCollected(
                 **self._claim_meta(line), patient=ref, amount_cents=amount, method=step.method
+            )
+        )
+        self._say("agent", line)
+
+    def _refill_prescription(self, step: RefillPrescription, _modes: frozenset[FaultMode]) -> None:
+        medication = step.spoken_medication or step.medication
+        self._say("caller", f"Please refill my {medication}.")
+        patient = self._patient(self.caller, create=False)
+        prescriptions = self.a.sor.prescriptions
+        if patient is None or prescriptions is None:
+            self._say("agent", "I couldn't refill your prescription.")
+            return
+        prescriptions.refill(patient_id=patient.id, medication=step.medication)
+        line = f"{medication} refilled."
+        self.claims.append(
+            PrescriptionRefilled(
+                **self._claim_meta(line), patient=self.caller, medication=medication
             )
         )
         self._say("agent", line)

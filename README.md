@@ -130,19 +130,19 @@ an authenticated signature.
 
 ## Does it work
 
-`subpoena eval` scores the auditor on 57 hand-labelled scenarios and 500 fuzzed calls, next
-to a naive "does a matching record exist" baseline.
+`subpoena eval` scores the auditor on hand-labelled scenarios and fuzzed calls, next to a
+naive "does a matching record exist" baseline.
 
 <!-- metrics:readme:start -->
-Golden set, 65 calls:
+Golden set, 67 calls:
 
 | Metric | Subpoena | Naive lookup |
 |---|---|---|
-| False claims caught (recall) | 94.9% | 56.4% |
-| False accusations (1 - precision) | 0% | 8.3% |
-| Exact verdict | 98.1% | 72.8% |
+| False claims caught (recall) | 95.0% | 57.5% |
+| False accusations (1 - precision) | 0% | 8.0% |
+| Exact verdict | 98.1% | 72.4% |
 | Unclaimed writes and policy (recall) | 100% | 0% |
-| Calls fully correct | 96.9% | 50.8% |
+| Calls fully correct | 97.0% | 50.7% |
 
 Fuzzed, 500 calls: 100% on every metric.
 <!-- metrics:readme:end -->

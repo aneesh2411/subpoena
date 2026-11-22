@@ -20,6 +20,8 @@ SCENARIO_IDS = (
     "clean-handoff-topic",
     "fault-wrong-handoff-topic",
     "clean-payment",
+    "clean-prescription-refill",
+    "fault-wrong-refill-medication",
     "clean-records-update",
     "fault-records-field-not-written",
     "fault-wrong-payment-amount",
@@ -131,6 +133,7 @@ PAGE = """<!doctype html>
     HandoffCreated: "Handoff",
     PaymentCollected: "Payment",
     RecordsUpdated: "Record update",
+    PrescriptionRefilled: "Prescription refill",
   };
 
   function add(parent, tag, text, className) {

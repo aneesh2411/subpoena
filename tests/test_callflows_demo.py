@@ -41,8 +41,9 @@ def test_callflows_export_matches_golden_runs(tmp_path: Path) -> None:
     handoff_ids = {"clean-handoff-topic", "fault-wrong-handoff-topic"}
     payment_ids = {"clean-payment", "fault-wrong-payment-amount"}
     records_ids = {"clean-records-update", "fault-records-field-not-written"}
-    added_ids = handoff_ids | payment_ids | records_ids
-    assert len(cases) == len(ids) == 9
+    refill_ids = {"clean-prescription-refill", "fault-wrong-refill-medication"}
+    added_ids = handoff_ids | payment_ids | records_ids | refill_ids
+    assert len(cases) == len(ids) == 11
     assert added_ids <= ids
     for artifact in (relative_data, "walkthrough-callflows.html"):
         assert (tmp_path / artifact).read_bytes() == (ROOT / "docs/demo" / artifact).read_bytes()
@@ -70,6 +71,12 @@ def test_callflows_export_matches_golden_runs(tmp_path: Path) -> None:
             assert diffs["field"]["actual"] == "address"
             assert diffs["field"]["match"] is (scenario.id == "clean-records-update")
             assert diffs["new_value"]["match"] is (scenario.id == "clean-records-update")
+        elif scenario.id in refill_ids:
+            (verdict,) = case["verdicts"]
+            assert verdict["claim"]["type"] == "PrescriptionRefilled"
+            diffs = {diff["field"]: diff for diff in verdict["diffs"]}
+            assert diffs["patient"]["match"] is True
+            assert diffs["medication"]["match"] is (scenario.id == "clean-prescription-refill")
         else:
             status_profiles.add(tuple(sorted(statuses)))
         assert case["title"] == scenario.title

@@ -32,6 +32,7 @@ from subpoena.models import (
     HandoffTopic,
     PaymentCollected,
     PaymentMethod,
+    PrescriptionRefilled,
     RecordField,
     RecordsUpdated,
     Rescheduled,
@@ -96,6 +97,21 @@ _RECORD_UPDATE = re.compile(
     r"(?: to (?P<value>\S.*?))?[.!]?\s*$",
     re.IGNORECASE,
 )
+_REFILL_SENT = re.compile(
+    r"\s*(?:i|we)(?:['’]ve| have)? sent (?:the|your) refill to your pharmacy[.!]?\s*",
+    re.IGNORECASE,
+)
+_REFILL_NAMED = re.compile(
+    r"\s*(?:(?:i|we)(?:['’]ve| have)? refilled (?:your )?(?P<active>[^!?]{1,4000}?)"
+    r"|(?:your )?(?P<passive>[^!?]{1,4000}?)(?: is| was| has been)? refilled)[.!]?\s*",
+    re.IGNORECASE,
+)
+_REFILL_UNNAMED = {"prescription", "refill", "medication"}
+_REFILL_INCOMPLETE = re.compile(
+    r"\b(?:not|never|be|been|can|could|will|would|should|please|need|already|is|if|i|we)\b"
+    r"|n['’]t\b",
+    re.IGNORECASE,
+)
 _URGENT = re.compile(r"\b(?:urgent|right away|emergency)\b", re.IGNORECASE)
 _PROVIDER = re.compile(r"\bDr\.\s+[A-Z][A-Za-z'-]+")
 _CORRECTION = re.compile(
@@ -145,6 +161,21 @@ def _record_update_claim(call: CallRecord, meta: dict[str, Any]) -> RecordsUpdat
     return None
 
 
+def _prescription_claim(call: CallRecord, meta: dict[str, Any]) -> PrescriptionRefilled | None:
+    sentence = meta["utterance"]
+    if _NEGATED.search(sentence):
+        return None
+    if _REFILL_SENT.fullmatch(sentence):
+        return PrescriptionRefilled(**meta, patient=call.caller)
+    if match := _REFILL_NAMED.fullmatch(sentence):
+        medication = (match["active"] or match["passive"]).strip()
+        if medication and not _REFILL_INCOMPLETE.search(medication):
+            if norm_text(medication) in _REFILL_UNNAMED:
+                medication = None
+            return PrescriptionRefilled(**meta, patient=call.caller, medication=medication)
+    return None
+
+
 class RuleBasedExtractor:
     """Deterministic, offline. Reads explicit statements; misses vague ones by design."""
 
@@ -174,6 +205,8 @@ class RuleBasedExtractor:
                 }
                 if (record_update := _record_update_claim(call, meta)) is not None:
                     claims.append(record_update)
+                elif (refill := _prescription_claim(call, meta)) is not None:
+                    claims.append(refill)
                 elif _RESCHEDULED.search(sentence) and len(times) >= 2:
                     if corrected:
                         # The caller re-stated a value; this replaces the earlier claim.
@@ -248,6 +281,7 @@ class _Extracted(BaseModel):
         "HandoffCreated",
         "PaymentCollected",
         "RecordsUpdated",
+        "PrescriptionRefilled",
     ]
     start: AwareDatetime | None = None
     old_start: AwareDatetime | None = None
@@ -268,11 +302,12 @@ class LLMClaimExtractor:
     _SYSTEM = (
         "You read phone-call transcripts from an AI receptionist. List every action the AGENT "
         "tells the caller it has COMPLETED (booked, rescheduled, cancelled, sent a confirmation, "
-        "created a handoff ticket, collected a payment, updated a patient record). "
+        "created a handoff ticket, collected a payment, updated a patient record, "
+        "refilled a prescription). "
         "Ignore offers, questions, and failures. "
         'Reply with a JSON array only. Each item: {"turn_index": int, "type": '
         '"AppointmentBooked|Rescheduled|Cancelled|ConfirmationSent|HandoffCreated|'
-        'PaymentCollected|RecordsUpdated", '
+        'PaymentCollected|RecordsUpdated|PrescriptionRefilled", '
         '"start"|"old_start"|"new_start": ISO-8601 with UTC offset or null, '
         '"provider": string or null, "channel": "sms|email", '
         '"priority": "low|normal|urgent"}.'
@@ -353,6 +388,10 @@ class LLMClaimExtractor:
                     return PaymentCollected(
                         **meta, patient=call.caller, amount_cents=amount, method=method
                     )
+        if item.type == "PrescriptionRefilled":
+            for sentence in _SENTENCE.split(meta["utterance"]):
+                if claim := _prescription_claim(call, {**meta, "utterance": sentence}):
+                    return claim
         if item.type == "RecordsUpdated":
             for sentence in _SENTENCE.split(meta["utterance"]):
                 if claim := _record_update_claim(call, {**meta, "utterance": sentence}):
@@ -423,6 +462,12 @@ def _same_promise(spoken: Claim, logged: Claim) -> bool:
             and (spoken.amount_cents is None or spoken.amount_cents == logged.amount_cents)
             and (spoken.method is None or spoken.method == logged.method)
         )
+    if isinstance(spoken, PrescriptionRefilled) and isinstance(logged, PrescriptionRefilled):
+        return spoken.patient == logged.patient and (
+            spoken.medication is None
+            or logged.medication is None
+            or norm_text(spoken.medication) == norm_text(logged.medication)
+        )
     if isinstance(spoken, RecordsUpdated) and isinstance(logged, RecordsUpdated):
         if spoken.patient != logged.patient or spoken.field != logged.field:
             return False
@@ -485,6 +530,7 @@ def merge_claims(structured: Sequence[Claim], spoken: Sequence[Claim]) -> tuple[
     used: set[str] = set()
     extra: list[Claim] = []
     spoken_topics: dict[str, HandoffTopic] = {}
+    spoken_medications: dict[str, str] = {}
     flagged: set[str] = set()  # structured claims a spoken correction corroborates
     seen_spoken: dict[tuple, int] = {}
     for claim in spoken:
@@ -509,6 +555,13 @@ def merge_claims(structured: Sequence[Claim], spoken: Sequence[Claim]) -> tuple[
             used.add(partner.claim_id)
             if isinstance(claim, HandoffCreated) and claim.topic is not None:
                 spoken_topics[partner.claim_id] = claim.topic
+            if (
+                isinstance(claim, PrescriptionRefilled)
+                and isinstance(partner, PrescriptionRefilled)
+                and partner.medication is None
+                and claim.medication is not None
+            ):
+                spoken_medications[partner.claim_id] = claim.medication
             if claim.corrects_prior:
                 flagged.add(partner.claim_id)
         elif earlier_turn is None or earlier_turn == claim.turn_index:
@@ -520,6 +573,8 @@ def merge_claims(structured: Sequence[Claim], spoken: Sequence[Claim]) -> tuple[
             updates["corrects_prior"] = True
         if claim.claim_id in spoken_topics:
             updates["topic"] = spoken_topics[claim.claim_id]
+        if claim.claim_id in spoken_medications:
+            updates["medication"] = spoken_medications[claim.claim_id]
         merged.append(claim.model_copy(update=updates) if updates else claim)
     merged.extend(extra)
     order = {c.claim_id: i for i, c in enumerate(merged)}

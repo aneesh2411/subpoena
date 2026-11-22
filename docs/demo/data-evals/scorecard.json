@@ -1,25 +1,25 @@
 {
   "provenance": {
     "check_in_date": "2026-11-22",
-    "sha256": "a4b870667615d1cde07a603a9aa926777910510adabc8437d8c67969dc3ef6aa",
+    "sha256": "b22e6300b4b504da441b0f9e5dabab0b464e3dfaa9c61f4b5948eb28b6c23000",
     "source": "evals/results/latest.json"
   },
   "results": {
     "ablations": [
       {
-        "call_accuracy": 0.9077,
-        "call_strict_accuracy": 0.9077,
-        "calls": 65,
+        "call_accuracy": 0.9104,
+        "call_strict_accuracy": 0.9104,
+        "calls": 67,
         "claim_level": {
-          "f1": 0.8857,
+          "f1": 0.8889,
           "fn": 8,
           "fp": 0,
           "precision": 1.0,
-          "recall": 0.7949,
-          "tn": 64,
-          "tp": 31
+          "recall": 0.8,
+          "tn": 65,
+          "tp": 32
         },
-        "claim_status_accuracy": 0.9223,
+        "claim_status_accuracy": 0.9238,
         "failures": [
           {
             "problems": [
@@ -72,19 +72,19 @@
         "label": "Subpoena without the transcript reader"
       },
       {
-        "call_accuracy": 0.9231,
-        "call_strict_accuracy": 0.9077,
-        "calls": 65,
+        "call_accuracy": 0.9254,
+        "call_strict_accuracy": 0.9104,
+        "calls": 67,
         "claim_level": {
-          "f1": 0.9737,
+          "f1": 0.9744,
           "fn": 2,
           "fp": 0,
           "precision": 1.0,
-          "recall": 0.9487,
-          "tn": 64,
-          "tp": 37
+          "recall": 0.95,
+          "tn": 65,
+          "tp": 38
         },
-        "claim_status_accuracy": 0.9806,
+        "claim_status_accuracy": 0.981,
         "failures": [
           {
             "problems": [
@@ -136,19 +136,19 @@
       }
     ],
     "baseline_naive_existence_check": {
-      "call_accuracy": 0.6769,
-      "call_strict_accuracy": 0.5077,
-      "calls": 65,
+      "call_accuracy": 0.6866,
+      "call_strict_accuracy": 0.5075,
+      "calls": 67,
       "claim_level": {
-        "f1": 0.6984,
+        "f1": 0.7077,
         "fn": 17,
         "fp": 2,
-        "precision": 0.9167,
-        "recall": 0.5641,
-        "tn": 63,
-        "tp": 22
+        "precision": 0.92,
+        "recall": 0.575,
+        "tn": 64,
+        "tp": 23
       },
-      "claim_status_accuracy": 0.7282,
+      "claim_status_accuracy": 0.7238,
       "failures": [
         {
           "problems": [
@@ -167,6 +167,12 @@
             "double_booking: expected 1, got 0"
           ],
           "scenario": "fault-double-book"
+        },
+        {
+          "problems": [
+            "PrescriptionRefilled[0]: expected MISMATCH, got NOT_FOUND"
+          ],
+          "scenario": "fault-wrong-refill-medication"
         },
         {
           "problems": [
@@ -546,19 +552,19 @@
       "seed": 7
     },
     "golden": {
-      "call_accuracy": 0.9692,
-      "call_strict_accuracy": 0.9692,
-      "calls": 65,
+      "call_accuracy": 0.9701,
+      "call_strict_accuracy": 0.9701,
+      "calls": 67,
       "claim_level": {
-        "f1": 0.9737,
+        "f1": 0.9744,
         "fn": 2,
         "fp": 0,
         "precision": 1.0,
-        "recall": 0.9487,
-        "tn": 64,
-        "tp": 37
+        "recall": 0.95,
+        "tn": 65,
+        "tp": 38
       },
-      "claim_status_accuracy": 0.9806,
+      "claim_status_accuracy": 0.981,
       "failures": [
         {
           "problems": [
@@ -585,19 +591,19 @@
       "label": "Subpoena"
     },
     "golden_v2_semantic": {
-      "call_accuracy": 0.9683,
-      "call_strict_accuracy": 0.9683,
-      "calls": 63,
+      "call_accuracy": 0.9692,
+      "call_strict_accuracy": 0.9692,
+      "calls": 65,
       "claim_level": {
-        "f1": 0.9737,
+        "f1": 0.9744,
         "fn": 2,
         "fp": 0,
         "precision": 1.0,
-        "recall": 0.9487,
-        "tn": 64,
-        "tp": 37
+        "recall": 0.95,
+        "tn": 65,
+        "tp": 38
       },
-      "claim_status_accuracy": 0.9806,
+      "claim_status_accuracy": 0.981,
       "failures": [
         {
           "problems": [

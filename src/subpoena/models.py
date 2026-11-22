@@ -16,6 +16,7 @@ from pydantic import (
     ConfigDict,
     Field,
     SerializerFunctionWrapHandler,
+    StringConstraints,
     model_serializer,
     model_validator,
 )
@@ -43,6 +44,7 @@ class Entity(StrEnum):
     MESSAGE = "message"
     TICKET = "ticket"
     PAYMENT = "payment"
+    PRESCRIPTION = "prescription"
 
 
 class AppointmentStatus(StrEnum):
@@ -99,6 +101,16 @@ class Payment(Frozen):
     amount_cents: PaymentAmount
     method: PaymentMethod
     collected_at: AwareDatetime
+
+
+Medication = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=4000)]
+
+
+class Prescription(Frozen):
+    id: str
+    patient_id: str
+    medication: Medication
+    refilled_at: AwareDatetime
 
 
 class Change(Frozen):
@@ -199,6 +211,12 @@ class RecordsUpdated(ClaimBase):
     new_value: str | None = Field(default=None, min_length=1, max_length=4000)
 
 
+class PrescriptionRefilled(ClaimBase):
+    type: Literal["PrescriptionRefilled"] = "PrescriptionRefilled"
+    patient: PatientRef
+    medication: Medication | None = None
+
+
 Claim = Annotated[
     AppointmentBooked
     | Rescheduled
@@ -206,7 +224,8 @@ Claim = Annotated[
     | ConfirmationSent
     | HandoffCreated
     | PaymentCollected
-    | RecordsUpdated,
+    | RecordsUpdated
+    | PrescriptionRefilled,
     Field(discriminator="type"),
 ]
 
@@ -218,6 +237,7 @@ CLAIM_TYPES: tuple[str, ...] = (
     "HandoffCreated",
     "PaymentCollected",
     "RecordsUpdated",
+    "PrescriptionRefilled",
 )
 
 

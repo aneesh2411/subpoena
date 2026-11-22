@@ -35,12 +35,13 @@ from subpoena.suspect import (
     Handoff,
     Inquiry,
     Recap,
+    RefillPrescription,
     Reschedule,
     UpdateRecords,
 )
 
 F = FaultMode
-B, R, X, C, H, P, U = (
+B, R, X, C, H, P, U, RX = (
     "AppointmentBooked",
     "Rescheduled",
     "Cancelled",
@@ -48,6 +49,7 @@ B, R, X, C, H, P, U = (
     "HandoffCreated",
     "PaymentCollected",
     "RecordsUpdated",
+    "PrescriptionRefilled",
 )
 V, MM, NF, UV = (
     VerdictStatus.VERIFIED,
@@ -132,6 +134,13 @@ CLEAN: tuple[Scenario, ...] = (
         "A billing question becomes a ticket.",
         (Handoff(BILLING),),
         ((H, V),),
+    ),
+    Scenario(
+        "clean-prescription-refill",
+        "Prescription refilled as stated",
+        "The agent records a Lisinopril refill and tells the caller it was refilled.",
+        (RefillPrescription("Lisinopril"),),
+        ((RX, V),),
     ),
     Scenario(
         "clean-records-update",
@@ -266,6 +275,13 @@ REQUIRED: tuple[Scenario, ...] = (
 )
 
 EXTENDED: tuple[Scenario, ...] = (
+    Scenario(
+        "fault-wrong-refill-medication",
+        "Agent states the wrong refill medication",
+        "The agent tells the caller Lisinopril was refilled but records an Amlodipine refill.",
+        (RefillPrescription("Amlodipine", spoken_medication="Lisinopril"),),
+        ((RX, MM),),
+    ),
     Scenario(
         "fault-records-field-not-written",
         "Agent says insurance was updated",
@@ -722,6 +738,8 @@ _V2: dict[str, tuple[ExpectedV2, ...]] = {
             "handoff|+15550101001|normal",
         ),
     ),
+    "clean-prescription-refill": ((RX, V, "refill|+15550101001|lisinopril"),),
+    "fault-wrong-refill-medication": ((RX, MM, "refill|+15550101001|lisinopril"),),
     "clean-records-update": ((U, V, "records|+15550101001|address|42 Cedar Lane"),),
     "fault-records-field-not-written": ((U, MM, "records|+15550101001|insurance|Example Health"),),
     "clean-payment": ((P, V, "payment|+15550101001|4000|card"),),

@@ -1,0 +1,216 @@
+{
+ "audit_id": "aud-clean-prescription-refill",
+ "auditor": "subpoena/0.1.0",
+ "created_at": "2026-03-02T09:06:16-05:00",
+ "call": {
+  "call_id": "call-clean-prescription-refill",
+  "agent_id": "agent:receptionist",
+  "caller": {
+   "name": "Maya Chen",
+   "phone": "+15550101001"
+  },
+  "started_at": "2026-03-02T09:05:00-05:00",
+  "ended_at": "2026-03-02T09:05:16-05:00",
+  "transcript": [
+   {
+    "index": 0,
+    "speaker": "agent",
+    "text": "Thank you for calling Brightside Dental. How can I help?",
+    "at": "2026-03-02T09:05:04-05:00"
+   },
+   {
+    "index": 1,
+    "speaker": "caller",
+    "text": "Please refill my Lisinopril.",
+    "at": "2026-03-02T09:05:08-05:00"
+   },
+   {
+    "index": 2,
+    "speaker": "agent",
+    "text": "Lisinopril refilled.",
+    "at": "2026-03-02T09:05:12-05:00"
+   },
+   {
+    "index": 3,
+    "speaker": "agent",
+    "text": "Is there anything else? Have a great day.",
+    "at": "2026-03-02T09:05:16-05:00"
+   }
+  ],
+  "raw_transcript": null,
+  "claims": [
+   {
+    "claim_id": "call-clean-prescription-refill-c1",
+    "turn_index": 2,
+    "source": "structured",
+    "utterance": "Lisinopril refilled.",
+    "corrects_prior": false,
+    "type": "PrescriptionRefilled",
+    "patient": {
+     "name": "Maya Chen",
+     "phone": "+15550101001"
+    },
+    "medication": "Lisinopril"
+   }
+  ],
+  "provenance": {
+   "agent_version": "receptionist-sim/0.1.0",
+   "model": null,
+   "prompt_version": "narrator:standard",
+   "human_handoffs": [],
+   "platform": null,
+   "from_address": null,
+   "to_address": null,
+   "completion_callback_at": null
+  }
+ },
+ "outcome": "CLEAN",
+ "verdicts": [
+  {
+   "claim": {
+    "claim_id": "call-clean-prescription-refill-c1",
+    "turn_index": 2,
+    "source": "structured",
+    "utterance": "Lisinopril refilled.",
+    "corrects_prior": false,
+    "type": "PrescriptionRefilled",
+    "patient": {
+     "name": "Maya Chen",
+     "phone": "+15550101001"
+    },
+    "medication": "Lisinopril"
+   },
+   "status": "VERIFIED",
+   "severity": "INFO",
+   "summary": "The prescription was refilled as claimed (rx_0001).",
+   "checks": [
+    {
+     "name": "existence",
+     "passed": true,
+     "detail": "A write by the agent during the call corresponds to this claim."
+    },
+    {
+     "name": "exactness",
+     "passed": true,
+     "detail": "All fields match."
+    },
+    {
+     "name": "side_effects",
+     "passed": null,
+     "detail": "Not applicable."
+    },
+    {
+     "name": "attribution",
+     "passed": true,
+     "detail": "Every backing write carries this call's own stamp."
+    },
+    {
+     "name": "coverage",
+     "passed": true,
+     "detail": "The prescriptions change history for the call window was fully observed."
+    }
+   ],
+   "diffs": [
+    {
+     "field": "patient",
+     "claimed": "Maya Chen (+15550101001)",
+     "actual": "Maya Chen (+15550101001)",
+     "match": true
+    },
+    {
+     "field": "medication",
+     "claimed": "Lisinopril",
+     "actual": "Lisinopril",
+     "match": true
+    }
+   ],
+   "evidence": [
+    {
+     "source": "prescriptions",
+     "ref": "rx_0001",
+     "note": "Prescription refill recorded during the call (journal #6; net: created)",
+     "record": {
+      "id": "rx_0001",
+      "patient_id": "pat_0001",
+      "medication": "Lisinopril",
+      "refilled_at": "2026-03-02T14:05:08+00:00"
+     }
+    }
+   ],
+   "remediation": null
+  }
+ ],
+ "findings": [],
+ "trail": [
+  {
+   "seq": 1,
+   "stage": "evidence",
+   "message": "calendar: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 2,
+   "stage": "evidence",
+   "message": "crm: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 3,
+   "stage": "evidence",
+   "message": "messages: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 4,
+   "stage": "evidence",
+   "message": "tickets: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 5,
+   "stage": "evidence",
+   "message": "prescriptions: 1 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 6,
+   "stage": "claims",
+   "message": "1 structured claim(s); 1 recovered from the transcript, 0 of them never logged by the agent"
+  },
+  {
+   "seq": 7,
+   "stage": "reconcile",
+   "message": "call-clean-prescription-refill-c1 (PrescriptionRefilled): exact match -> rx_0001"
+  },
+  {
+   "seq": 8,
+   "stage": "verdict",
+   "message": "call-clean-prescription-refill-c1 (PrescriptionRefilled): VERIFIED"
+  },
+  {
+   "seq": 9,
+   "stage": "verdict",
+   "message": "Outcome: CLEAN"
+  }
+ ],
+ "stats": {
+  "claims": 1,
+  "verified": 1,
+  "mismatch": 0,
+  "not_found": 0,
+  "unverifiable": 0,
+  "findings": 0,
+  "trust_score": 1.0,
+  "max_severity": "INFO"
+ },
+ "extraction": {
+  "extractor": "rules",
+  "degraded": false,
+  "detail": null
+ },
+ "fulfillments": [],
+ "coverage_gaps": [],
+ "seal": {
+  "algorithm": "sha256",
+  "content_hash": "901b2b3181306dd9b610e8ca37183457036ff673787f53c77611ee6b9484260d",
+  "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "chain_hash": "0bad5fb9cecf68e5494cc95a90761c44a599406daf5a3e8e26592a857850bbb2",
+  "signature": "ed641346afe433f0115f8c1f2e3e5081192c8d6eaf49f85f3c8b7e78ac9293be",
+  "key_id": "6508b98a7ace"
+ }
+}

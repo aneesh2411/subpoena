@@ -104,6 +104,13 @@ HANDLERS: dict[str, _Handler] = {
         sidefx.candidates_records,
         sidefx.judge_records,
     ),
+    "PrescriptionRefilled": _Handler(
+        (Entity.PRESCRIPTION, Entity.PATIENT),
+        Entity.PRESCRIPTION,
+        sidefx.match_prescription,
+        sidefx.candidates_prescription,
+        sidefx.judge_prescription,
+    ),
     "PaymentCollected": _Handler(
         (Entity.PAYMENT, Entity.PATIENT),
         Entity.PAYMENT,

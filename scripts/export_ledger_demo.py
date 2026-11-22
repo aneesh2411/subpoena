@@ -24,7 +24,14 @@ def replay() -> list[Change]:
     try:
         call = run_suspect(scenario, world).call
         reader = world.store.session("auditor", world.clock)
-        feeds = (reader.calendar, reader.crm, reader.messages, reader.tickets, reader.payments)
+        feeds = (
+            reader.calendar,
+            reader.crm,
+            reader.messages,
+            reader.tickets,
+            reader.payments,
+            reader.prescriptions,
+        )
         return sorted(
             (
                 change

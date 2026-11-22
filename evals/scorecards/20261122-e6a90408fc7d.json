@@ -1,0 +1,186 @@
+{
+  "schema": 1,
+  "certified_at": "2026-11-22T09:08:20.270370+00:00",
+  "expires_at": "2027-02-20T09:08:20.270370+00:00",
+  "fingerprint": "e6a90408fc7dee63992599478492edb9e299aab3b8ae477a464ccf42510bdc92",
+  "golden": {
+    "label": "Subpoena",
+    "calls": 67,
+    "claim_level": {
+      "tp": 38,
+      "fp": 0,
+      "fn": 2,
+      "tn": 65,
+      "precision": 1.0,
+      "recall": 0.95,
+      "f1": 0.9744
+    },
+    "claim_status_accuracy": 0.981,
+    "finding_level": {
+      "tp": 7,
+      "fp": 0,
+      "fn": 0,
+      "tn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "call_accuracy": 0.9701,
+    "call_strict_accuracy": 0.9701,
+    "failures": [
+      {
+        "scenario": "gap-vague-spoken-promise",
+        "problems": [
+          "AppointmentBooked[0]: expected NOT_FOUND, auditor saw no claim"
+        ]
+      },
+      {
+        "scenario": "gap-garbled-handoff",
+        "problems": [
+          "HandoffCreated[0]: expected MISMATCH, got VERIFIED"
+        ]
+      }
+    ]
+  },
+  "by_fault_mode": [
+    {
+      "fault": "phantom_booking",
+      "scenarios": 3,
+      "fully_correct": 3
+    },
+    {
+      "fault": "wrong_time",
+      "scenarios": 4,
+      "fully_correct": 4
+    },
+    {
+      "fault": "unclaimed_write",
+      "scenarios": 1,
+      "fully_correct": 1
+    },
+    {
+      "fault": "phantom_confirmation",
+      "scenarios": 2,
+      "fully_correct": 2
+    },
+    {
+      "fault": "phantom_handoff",
+      "scenarios": 2,
+      "fully_correct": 2
+    },
+    {
+      "fault": "double_book",
+      "scenarios": 2,
+      "fully_correct": 2
+    },
+    {
+      "fault": "wrong_patient",
+      "scenarios": 1,
+      "fully_correct": 1
+    },
+    {
+      "fault": "duplicate_write",
+      "scenarios": 1,
+      "fully_correct": 1
+    },
+    {
+      "fault": "rollback",
+      "scenarios": 1,
+      "fully_correct": 1
+    },
+    {
+      "fault": "off_hours_booking",
+      "scenarios": 1,
+      "fully_correct": 1
+    },
+    {
+      "fault": "silent_crm_edit",
+      "scenarios": 1,
+      "fully_correct": 1
+    },
+    {
+      "fault": "spoken_only",
+      "scenarios": 3,
+      "fully_correct": 2
+    },
+    {
+      "fault": "misspoken_time",
+      "scenarios": 1,
+      "fully_correct": 1
+    },
+    {
+      "fault": "misspoken_provider",
+      "scenarios": 1,
+      "fully_correct": 1
+    },
+    {
+      "fault": "wrong_recipient",
+      "scenarios": 1,
+      "fully_correct": 1
+    },
+    {
+      "fault": "stale_confirmation",
+      "scenarios": 1,
+      "fully_correct": 1
+    },
+    {
+      "fault": "stale_correction",
+      "scenarios": 1,
+      "fully_correct": 1
+    },
+    {
+      "fault": "phantom_reschedule",
+      "scenarios": 1,
+      "fully_correct": 1
+    },
+    {
+      "fault": "reschedule_rewrite",
+      "scenarios": 1,
+      "fully_correct": 1
+    },
+    {
+      "fault": "ghost_reschedule",
+      "scenarios": 1,
+      "fully_correct": 1
+    },
+    {
+      "fault": "zombie_reschedule",
+      "scenarios": 1,
+      "fully_correct": 1
+    },
+    {
+      "fault": "lost_reschedule",
+      "scenarios": 1,
+      "fully_correct": 1
+    },
+    {
+      "fault": "phantom_cancel",
+      "scenarios": 1,
+      "fully_correct": 1
+    },
+    {
+      "fault": "wrong_appointment_cancelled",
+      "scenarios": 1,
+      "fully_correct": 1
+    },
+    {
+      "fault": "downgraded_handoff",
+      "scenarios": 1,
+      "fully_correct": 1
+    },
+    {
+      "fault": "garbled_handoff",
+      "scenarios": 1,
+      "fully_correct": 0
+    }
+  ],
+  "diff": {
+    "previous": "2026-11-22T07:50:32.252538+00:00",
+    "strict_accuracy": {
+      "was": 0.9692,
+      "now": 0.9701
+    },
+    "newly_failing": [],
+    "newly_passing": []
+  }
+}

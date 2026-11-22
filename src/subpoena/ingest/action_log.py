@@ -21,6 +21,8 @@ The payload fields use the same types and limits as the corresponding Claim:
   ``billing``, ``refill``, or ``records``).
 * ``records_updated`` → RecordsUpdated. Required: ``patient``, ``field``
   (``name``, ``phone``, ``email``, ``address``, or ``insurance``). Optional: ``new_value``.
+* ``prescription_refilled`` → PrescriptionRefilled. Required: ``patient``.
+  Optional: ``medication``.
 * ``payment_collected`` → PaymentCollected. Required: ``patient``.
   Optional: ``amount_cents`` (positive integer), ``method`` (``card``, ``cash``, or ``check``).
 * ``cancellation`` → Cancelled. Required: ``patient``, ``start``.
@@ -64,6 +66,7 @@ from subpoena.models import (
     HandoffCreated,
     PatientRef,
     PaymentCollected,
+    PrescriptionRefilled,
     Provenance,
     RecordsUpdated,
 )
@@ -72,6 +75,7 @@ _CLAIM_BY_KIND = {
     "booking": AppointmentBooked,
     "confirmation_sent": ConfirmationSent,
     "handoff": HandoffCreated,
+    "prescription_refilled": PrescriptionRefilled,
     "payment_collected": PaymentCollected,
     "records_updated": RecordsUpdated,
     "cancellation": Cancelled,

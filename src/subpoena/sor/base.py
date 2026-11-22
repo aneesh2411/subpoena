@@ -23,11 +23,13 @@ from subpoena.models import (
     Change,
     Channel,
     HandoffTopic,
+    Medication,
     Message,
     Patient,
     Payment,
     PaymentAmount,
     PaymentMethod,
+    Prescription,
     Priority,
     Ticket,
 )
@@ -169,6 +171,14 @@ class PaymentAdapter(PaymentReader, Protocol):
 # -------------------------------- bundles ---------------------------------- #
 
 
+class PrescriptionReader(ChangeFeed, Protocol):
+    def list_prescriptions(self, *, patient_id: str | None = None) -> list[Prescription]: ...
+
+
+class PrescriptionAdapter(PrescriptionReader, Protocol):
+    def refill(self, *, patient_id: str, medication: Medication) -> Prescription: ...
+
+
 @dataclass(frozen=True)
 class SystemOfRecordReader:
     """Read-only handle: what the auditor gets."""
@@ -178,6 +188,7 @@ class SystemOfRecordReader:
     messages: MessageLogReader
     tickets: TicketQueueReader
     payments: PaymentReader | None = None
+    prescriptions: PrescriptionReader | None = None
 
 
 @dataclass(frozen=True)
@@ -189,6 +200,7 @@ class SystemOfRecord(SystemOfRecordReader):
     messages: MessageLogAdapter
     tickets: TicketQueueAdapter
     payments: PaymentAdapter | None = None
+    prescriptions: PrescriptionAdapter | None = None
 
 
 class _Down:
@@ -206,7 +218,7 @@ class _Down:
 
 def with_outage(sor: SystemOfRecordReader, *down: str) -> SystemOfRecordReader:
     """Return a reader where the named adapters (``calendar``, ``crm``, ...) fail."""
-    unknown = set(down) - {"calendar", "crm", "messages", "tickets", "payments"}
+    unknown = set(down) - {"calendar", "crm", "messages", "tickets", "payments", "prescriptions"}
     if unknown:
         raise ValueError(f"unknown adapter(s): {sorted(unknown)}")
     return SystemOfRecordReader(
@@ -215,6 +227,7 @@ def with_outage(sor: SystemOfRecordReader, *down: str) -> SystemOfRecordReader:
         messages=_Down("messages") if "messages" in down else sor.messages,
         tickets=_Down("tickets") if "tickets" in down else sor.tickets,
         payments=_Down("payments") if "payments" in down else sor.payments,
+        prescriptions=_Down("prescriptions") if "prescriptions" in down else sor.prescriptions,
     )
 
 
@@ -257,7 +270,7 @@ def with_coverage(
     """Return a reader whose named feed reports partial coverage. ``drop`` removes
     matching rows from the feed, simulating a mutation the feed never saw."""
     if (
-        name not in {"calendar", "crm", "messages", "tickets", "payments"}
+        name not in {"calendar", "crm", "messages", "tickets", "payments", "prescriptions"}
         or getattr(sor, name) is None
     ):
         raise ValueError(f"unknown adapter: {name!r}")

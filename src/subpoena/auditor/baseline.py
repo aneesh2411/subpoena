@@ -27,6 +27,7 @@ from subpoena.models import (
     Outcome,
     PatientRef,
     PaymentCollected,
+    PrescriptionRefilled,
     RecordsUpdated,
     Rescheduled,
     Severity,
@@ -34,7 +35,7 @@ from subpoena.models import (
     VerdictStatus,
 )
 from subpoena.sor.base import AdapterUnavailable, SystemOfRecordReader
-from subpoena.util import ClinicConfig, norm_phone, utcnow
+from subpoena.util import ClinicConfig, norm_phone, norm_text, utcnow
 
 
 class NaiveAuditor:
@@ -113,6 +114,19 @@ class NaiveAuditor:
         if isinstance(claim, HandoffCreated):
             ids = self._patient_ids(claim.patient)
             return any(t.patient_id in ids for t in self._sor.tickets.list_tickets())
+        if isinstance(claim, PrescriptionRefilled):
+            prescriptions = self._sor.prescriptions
+            if prescriptions is None:
+                raise AdapterUnavailable("prescriptions adapter is unavailable")
+            ids = self._patient_ids(claim.patient)
+            return any(
+                p.patient_id in ids
+                and (
+                    claim.medication is None
+                    or norm_text(claim.medication) == norm_text(p.medication)
+                )
+                for p in prescriptions.list_prescriptions()
+            )
         if isinstance(claim, PaymentCollected):
             payments = self._sor.payments
             if payments is None:

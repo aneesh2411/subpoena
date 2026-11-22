@@ -94,6 +94,8 @@ class AuditContext:
         }
         if sor.payments is not None:
             feeds[Entity.PAYMENT] = sor.payments
+        if sor.prescriptions is not None:
+            feeds[Entity.PRESCRIPTION] = sor.prescriptions
         own_stamp = f"{call.agent_id}:{call.call_id}"
         prefix = f"{call.agent_id}:"
         pulled: dict[Entity, list[Change]] = {}
@@ -158,8 +160,8 @@ class AuditContext:
                     ctx.attribution[nc.key] = Attribution.AMBIGUOUS
                 else:
                     ctx.attribution[nc.key] = Attribution.SOLE
-            if entity is Entity.PAYMENT and not changes:
-                continue  # Empty payment feeds add no receipts to the trail.
+            if entity in (Entity.PAYMENT, Entity.PRESCRIPTION) and not changes:
+                continue  # Empty optional feeds add no receipts to the trail.
             note = ""
             if foreign:
                 note += f"; {foreign} stamped to other call(s), excluded"

@@ -822,6 +822,240 @@
         "stage": "evidence"
       },
       {
+        "message": "crm: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window",
+        "seq": 2,
+        "stage": "evidence"
+      },
+      {
+        "message": "messages: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window",
+        "seq": 3,
+        "stage": "evidence"
+      },
+      {
+        "message": "tickets: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window",
+        "seq": 4,
+        "stage": "evidence"
+      },
+      {
+        "message": "prescriptions: 1 write(s) stamped to this call, 0 under the shared agent identity in the call window",
+        "seq": 5,
+        "stage": "evidence"
+      }
+    ],
+    "id": "clean-prescription-refill",
+    "outcome": "CLEAN",
+    "stats": {
+      "claims": 1,
+      "findings": 0,
+      "max_severity": "INFO",
+      "mismatch": 0,
+      "not_found": 0,
+      "trust_score": 1.0,
+      "unverifiable": 0,
+      "verified": 1
+    },
+    "title": "Prescription refilled as stated",
+    "verdicts": [
+      {
+        "checks": [
+          {
+            "detail": "A write by the agent during the call corresponds to this claim.",
+            "name": "existence",
+            "passed": true
+          },
+          {
+            "detail": "All fields match.",
+            "name": "exactness",
+            "passed": true
+          },
+          {
+            "detail": "Not applicable.",
+            "name": "side_effects",
+            "passed": null
+          },
+          {
+            "detail": "Every backing write carries this call's own stamp.",
+            "name": "attribution",
+            "passed": true
+          },
+          {
+            "detail": "The prescriptions change history for the call window was fully observed.",
+            "name": "coverage",
+            "passed": true
+          }
+        ],
+        "claim": {
+          "claim_id": "call-clean-prescription-refill-c1",
+          "corrects_prior": false,
+          "medication": "Lisinopril",
+          "patient": {
+            "name": "Maya Chen",
+            "phone": "+15550101001"
+          },
+          "source": "structured",
+          "turn_index": 2,
+          "type": "PrescriptionRefilled",
+          "utterance": "Lisinopril refilled."
+        },
+        "diffs": [
+          {
+            "actual": "Maya Chen (+15550101001)",
+            "claimed": "Maya Chen (+15550101001)",
+            "field": "patient",
+            "match": true
+          },
+          {
+            "actual": "Lisinopril",
+            "claimed": "Lisinopril",
+            "field": "medication",
+            "match": true
+          }
+        ],
+        "evidence": [
+          {
+            "note": "Prescription refill recorded during the call (journal #6; net: created)",
+            "record": {
+              "id": "rx_0001",
+              "medication": "Lisinopril",
+              "patient_id": "pat_0001",
+              "refilled_at": "2026-03-02T14:05:08+00:00"
+            },
+            "ref": "rx_0001",
+            "source": "prescriptions"
+          }
+        ],
+        "remediation": null,
+        "severity": "INFO",
+        "status": "VERIFIED",
+        "summary": "The prescription was refilled as claimed (rx_0001)."
+      }
+    ]
+  },
+  {
+    "evidence_trail": [
+      {
+        "message": "calendar: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window",
+        "seq": 1,
+        "stage": "evidence"
+      },
+      {
+        "message": "crm: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window",
+        "seq": 2,
+        "stage": "evidence"
+      },
+      {
+        "message": "messages: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window",
+        "seq": 3,
+        "stage": "evidence"
+      },
+      {
+        "message": "tickets: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window",
+        "seq": 4,
+        "stage": "evidence"
+      },
+      {
+        "message": "prescriptions: 1 write(s) stamped to this call, 0 under the shared agent identity in the call window",
+        "seq": 5,
+        "stage": "evidence"
+      }
+    ],
+    "id": "fault-wrong-refill-medication",
+    "outcome": "DISCREPANCIES",
+    "stats": {
+      "claims": 1,
+      "findings": 0,
+      "max_severity": "HIGH",
+      "mismatch": 1,
+      "not_found": 0,
+      "trust_score": 0.0,
+      "unverifiable": 0,
+      "verified": 0
+    },
+    "title": "Agent states the wrong refill medication",
+    "verdicts": [
+      {
+        "checks": [
+          {
+            "detail": "A write by the agent during the call corresponds to this claim.",
+            "name": "existence",
+            "passed": true
+          },
+          {
+            "detail": "Differs on: medication.",
+            "name": "exactness",
+            "passed": false
+          },
+          {
+            "detail": "Not applicable.",
+            "name": "side_effects",
+            "passed": null
+          },
+          {
+            "detail": "Every backing write carries this call's own stamp.",
+            "name": "attribution",
+            "passed": true
+          },
+          {
+            "detail": "The prescriptions change history for the call window was fully observed.",
+            "name": "coverage",
+            "passed": true
+          }
+        ],
+        "claim": {
+          "claim_id": "call-fault-wrong-refill-medication-c1",
+          "corrects_prior": false,
+          "medication": "Lisinopril",
+          "patient": {
+            "name": "Maya Chen",
+            "phone": "+15550101001"
+          },
+          "source": "structured",
+          "turn_index": 2,
+          "type": "PrescriptionRefilled",
+          "utterance": "Lisinopril refilled."
+        },
+        "diffs": [
+          {
+            "actual": "Maya Chen (+15550101001)",
+            "claimed": "Maya Chen (+15550101001)",
+            "field": "patient",
+            "match": true
+          },
+          {
+            "actual": "Amlodipine",
+            "claimed": "Lisinopril",
+            "field": "medication",
+            "match": false
+          }
+        ],
+        "evidence": [
+          {
+            "note": "Prescription refill recorded during the call (journal #6; net: created)",
+            "record": {
+              "id": "rx_0001",
+              "medication": "Amlodipine",
+              "patient_id": "pat_0001",
+              "refilled_at": "2026-03-02T14:05:08+00:00"
+            },
+            "ref": "rx_0001",
+            "source": "prescriptions"
+          }
+        ],
+        "remediation": "Check the refill record and confirm the medication and patient.",
+        "severity": "HIGH",
+        "status": "MISMATCH",
+        "summary": "A refill was recorded (rx_0001) with different details. medication: claimed Lisinopril, actual Amlodipine."
+      }
+    ]
+  },
+  {
+    "evidence_trail": [
+      {
+        "message": "calendar: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window",
+        "seq": 1,
+        "stage": "evidence"
+      },
+      {
         "message": "crm: 1 write(s) stamped to this call, 0 under the shared agent identity in the call window",
         "seq": 2,
         "stage": "evidence"

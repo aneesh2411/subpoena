@@ -68,7 +68,7 @@
   <h1>Eval results</h1>
   <p class="intro">Recorded results from <code>evals/results/latest.json</code>.</p>
   <p class="meta">Scorecard check-in date <strong>2026-11-22</strong><br>
-    SHA-256 fingerprint <code>a4b870667615d1cde07a603a9aa926777910510adabc8437d8c67969dc3ef6aa</code></p>
+    SHA-256 fingerprint <code>b22e6300b4b504da441b0f9e5dabab0b464e3dfaa9c61f4b5948eb28b6c23000</code></p>
   <p><a href="data-evals/scorecard.json">Download the scorecard JSON</a></p>
   <section class="panel">
     <h2>Golden results and naive baseline</h2>
@@ -76,9 +76,9 @@
       <table role="table">
         <thead role="rowgroup"><tr role="row"><th scope="col">Suite and system</th><th scope="col">Calls</th><th scope="col">Strict call accuracy</th><th scope="col">Claim-level precision</th><th scope="col">Claim-level recall</th></tr></thead>
         <tbody role="rowgroup">
-        <tr role="row"><th scope="row">Golden · Subpoena</th><td>65</td><td>96.92%</td><td>100.00%</td><td>94.87%</td></tr>
-        <tr role="row"><th scope="row">Golden · Naive existence check</th><td>65</td><td>50.77%</td><td>91.67%</td><td>56.41%</td></tr>
-        <tr role="row"><th scope="row">Golden v2-semantic · Subpoena</th><td>63</td><td>96.83%</td><td>100.00%</td><td>94.87%</td></tr>
+        <tr role="row"><th scope="row">Golden · Subpoena</th><td>67</td><td>97.01%</td><td>100.00%</td><td>95.00%</td></tr>
+        <tr role="row"><th scope="row">Golden · Naive existence check</th><td>67</td><td>50.75%</td><td>92.00%</td><td>57.50%</td></tr>
+        <tr role="row"><th scope="row">Golden v2-semantic · Subpoena</th><td>65</td><td>96.92%</td><td>100.00%</td><td>95.00%</td></tr>
         </tbody>
       </table>
     </div>
@@ -95,6 +95,7 @@
         <tr role="row"><th scope="row">ConfirmationSent</th><td>33</td><td>100.00%</td><td>100.00%</td><td>0</td></tr>
         <tr role="row"><th scope="row">HandoffCreated</th><td>9</td><td>88.89%</td><td>88.89%</td><td>1</td></tr>
         <tr role="row"><th scope="row">PaymentCollected</th><td>2</td><td>100.00%</td><td>100.00%</td><td>0</td></tr>
+        <tr role="row"><th scope="row">PrescriptionRefilled</th><td>2</td><td>100.00%</td><td>100.00%</td><td>0</td></tr>
         <tr role="row"><th scope="row">RecordsUpdated</th><td>2</td><td>100.00%</td><td>100.00%</td><td>0</td></tr>
         <tr role="row"><th scope="row">Rescheduled</th><td>9</td><td>100.00%</td><td>100.00%</td><td>0</td></tr>
         </tbody>
@@ -144,9 +145,9 @@
       <table role="table">
         <thead role="rowgroup"><tr role="row"><th scope="col">Configuration</th><th scope="col">Calls</th><th scope="col">Strict call accuracy</th><th scope="col">Claim-level precision</th><th scope="col">Claim-level recall</th><th scope="col">Finding-level recall</th></tr></thead>
         <tbody role="rowgroup">
-        <tr role="row"><th scope="row">Subpoena</th><td>65</td><td>96.92%</td><td>100.00%</td><td>94.87%</td><td>100.00%</td></tr>
-        <tr role="row"><th scope="row">Subpoena without the transcript reader</th><td>65</td><td>90.77%</td><td>100.00%</td><td>79.49%</td><td>100.00%</td></tr>
-        <tr role="row"><th scope="row">Subpoena without policy checks</th><td>65</td><td>90.77%</td><td>100.00%</td><td>94.87%</td><td>42.86%</td></tr>
+        <tr role="row"><th scope="row">Subpoena</th><td>67</td><td>97.01%</td><td>100.00%</td><td>95.00%</td><td>100.00%</td></tr>
+        <tr role="row"><th scope="row">Subpoena without the transcript reader</th><td>67</td><td>91.04%</td><td>100.00%</td><td>80.00%</td><td>100.00%</td></tr>
+        <tr role="row"><th scope="row">Subpoena without policy checks</th><td>67</td><td>91.04%</td><td>100.00%</td><td>95.00%</td><td>42.86%</td></tr>
         </tbody>
       </table>
     </div>

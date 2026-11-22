@@ -26,10 +26,12 @@ from subpoena.models import (
     HandoffCreated,
     Outcome,
     PaymentCollected,
+    PrescriptionRefilled,
     RecordsUpdated,
     Rescheduled,
     VerdictStatus,
 )
+from subpoena.util import norm_text
 
 Expected = tuple[str, VerdictStatus]
 # (claim type, expected status, identity label). The label names which
@@ -60,6 +62,10 @@ def claim_identity(claim: Claim) -> str:
         case RecordsUpdated():
             patient = claim.patient.phone or claim.patient.name
             return f"records|{patient}|{claim.field}|{claim.new_value or '-'}"
+        case PrescriptionRefilled():
+            patient = claim.patient.phone or claim.patient.name
+            medication = norm_text(claim.medication) if claim.medication is not None else "-"
+            return f"refill|{patient}|{medication}"
         case PaymentCollected():
             patient = claim.patient.phone or claim.patient.name
             return f"payment|{patient}|{claim.amount_cents or '-'}|{claim.method or '-'}"

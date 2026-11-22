@@ -13,6 +13,8 @@ from subpoena.models import (
     Message,
     Payment,
     PaymentCollected,
+    Prescription,
+    PrescriptionRefilled,
     RecordsUpdated,
     Severity,
     Ticket,
@@ -271,6 +273,79 @@ def judge_payment(claim: PaymentCollected, match: Match | None, ctx: AuditContex
         field_severity={"patient": Severity.HIGH, "amount_cents": Severity.HIGH},
         verified=f"The payment was collected as claimed ({payment.id}).",
         mismatch=f"A payment was recorded ({payment.id}) with different details.",
+        remediation=remediation,
+    )
+
+
+# ------------------------------- PrescriptionRefilled -------------------- #
+
+
+def _medication_matches(claim: PrescriptionRefilled, prescription: Prescription) -> bool:
+    return claim.medication is None or (
+        norm_text(claim.medication) == norm_text(prescription.medication)
+    )
+
+
+def candidates_prescription(
+    claim: PrescriptionRefilled, ctx: AuditContext, strict: bool
+) -> list[tuple[int, Match]]:
+    ids = ctx.patient_ids(claim.patient)
+    out: list[tuple[int, Match]] = []
+    for change in ctx.free(Entity.PRESCRIPTION):
+        if not _created(change):
+            continue
+        prescription = Prescription.model_validate(change.after)
+        patient_ok = prescription.patient_id in ids
+        medication_ok = _medication_matches(claim, prescription)
+        if not strict or (patient_ok and medication_ok):
+            out.append((2 * patient_ok + medication_ok, Match(primary=change)))
+    return out
+
+
+def match_prescription(
+    claim: PrescriptionRefilled, ctx: AuditContext, strict: bool
+) -> Match | None:
+    candidates = candidates_prescription(claim, ctx, strict)
+    return max(candidates, key=lambda candidate: candidate[0])[1] if candidates else None
+
+
+def judge_prescription(
+    claim: PrescriptionRefilled, match: Match | None, ctx: AuditContext
+) -> Verdict:
+    remediation = "Check the refill record and confirm the medication and patient."
+    if match is None or match.primary is None:
+        return not_found(
+            claim,
+            "The agent claimed it refilled a prescription, but no refill was recorded.",
+            [ctx.journal_evidence(Entity.PRESCRIPTION, "No corresponding prescription refill.")],
+            severity=Severity.HIGH,
+            remediation=remediation,
+        )
+    prescription = Prescription.model_validate(match.primary.after)
+    diffs = [
+        FieldDiff(
+            field="patient",
+            claimed=ref_label(claim.patient),
+            actual=ctx.patient_label(prescription.patient_id),
+            match=prescription.patient_id in ctx.patient_ids(claim.patient),
+        ),
+    ]
+    if claim.medication is not None:
+        diffs.append(
+            FieldDiff(
+                field="medication",
+                claimed=claim.medication,
+                actual=prescription.medication,
+                match=_medication_matches(claim, prescription),
+            )
+        )
+    return conclude(
+        claim,
+        diffs,
+        [match.primary.evidence("Prescription refill recorded during the call")],
+        field_severity={"patient": Severity.HIGH, "medication": Severity.HIGH},
+        verified=f"The prescription was refilled as claimed ({prescription.id}).",
+        mismatch=f"A refill was recorded ({prescription.id}) with different details.",
         remediation=remediation,
     )
 

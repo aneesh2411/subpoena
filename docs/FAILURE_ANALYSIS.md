@@ -13,18 +13,18 @@ python scripts/sync_docs.py
 ## 1. Results in one screen
 
 <!-- metrics:fa-results:start -->
-Golden set: 65 hand-labelled calls, 103 claims, 7 findings beyond claims.
+Golden set: 67 hand-labelled calls, 105 claims, 7 findings beyond claims.
 
 | Metric | Subpoena | Naive lookup |
 |---|---|---|
-| Claim precision | 100% | 91.7% |
-| Claim recall | 94.9% | 56.4% |
-| Exact verdict | 98.1% | 72.8% |
+| Claim precision | 100% | 92.0% |
+| Claim recall | 95.0% | 57.5% |
+| Exact verdict | 98.1% | 72.4% |
 | Finding recall | 100% | 0% |
-| Call accuracy | 96.9% | 67.7% |
-| Calls fully correct | 96.9% | 50.8% |
+| Call accuracy | 97.0% | 68.7% |
+| Calls fully correct | 97.0% | 50.7% |
 
-Claim-level confusion for Subpoena: 37 true positives, 0 false positives, 2 false negatives, 64 true negatives.
+Claim-level confusion for Subpoena: 38 true positives, 0 false positives, 2 false negatives, 65 true negatives.
 
 Fuzzed set: 500 generated calls, 970 claims, 79 findings. No disagreements with ground truth.
 <!-- metrics:fa-results:end -->
@@ -185,7 +185,7 @@ a harder target.
 ## 5. What the baseline and ablations show
 
 The naive baseline looks up current state and asks whether something matching the claim
-exists. It fails 27 of 57 calls under strict scoring (19 on the headline "does this call need attention" decision). The pattern:
+exists.
 
 - **It reports the wrong verdict for partial failures.** Wrong time, wrong patient and wrong
   recipient all come back `NOT_FOUND`: it can see that the claimed record is absent, not
@@ -202,9 +202,9 @@ Ablations switch off one capability of the real auditor:
 <!-- metrics:fa-ablations:start -->
 | Variant | Claim recall | Finding recall | Calls fully correct |
 |---|---|---|---|
-| Full | 94.9% | 100% | 96.9% |
-| No transcript reader | 79.5% | 100% | 90.8% |
-| No policy checks | 94.9% | 42.9% | 90.8% |
+| Full | 95.0% | 100% | 97.0% |
+| No transcript reader | 80.0% | 100% | 91.0% |
+| No policy checks | 95.0% | 42.9% | 91.0% |
 <!-- metrics:fa-ablations:end -->
 
 Each ablation costs what it should and nothing else. That is evidence the dataset exercises
