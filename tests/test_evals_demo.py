@@ -58,12 +58,10 @@ def test_page_renders_recorded_comparisons_and_failures():
 
     assert "<h2>Auditor accuracy by claim type</h2>" in page
     assert (
-        '<th scope="row">AppointmentBooked</th><td>44</td>'
-        '<td>97.73%</td><td>100.00%</td><td>1</td>'
+        '<th scope="row">AppointmentBooked</th><td>44</td><td>97.73%</td><td>100.00%</td><td>1</td>'
     ) in page
     assert (
-        '<th scope="row">HandoffCreated</th><td>9</td>'
-        '<td>88.89%</td><td>88.89%</td><td>1</td>'
+        '<th scope="row">HandoffCreated</th><td>9</td><td>88.89%</td><td>88.89%</td><td>1</td>'
     ) in page
     assert "<strong>gap-vague-spoken-promise</strong> (known gap)" in page
     assert "<strong>gap-garbled-handoff</strong> (known gap)" in page
@@ -95,12 +93,10 @@ def test_changed_snapshot_uses_its_own_values_and_escapes_failure_text(tmp_path)
     page = (demo / "evals.html").read_text(encoding="utf-8")
     assert "<td>12.34%</td>" in page
     assert (
-        '<th scope="row">AppointmentBooked</th><td>44</td>'
-        '<td>97.73%</td><td>97.73%</td><td>1</td>'
+        '<th scope="row">AppointmentBooked</th><td>44</td><td>97.73%</td><td>97.73%</td><td>1</td>'
     ) in page
     assert (
-        '<th scope="row">HandoffCreated</th><td>9</td>'
-        '<td>100.00%</td><td>100.00%</td><td>0</td>'
+        '<th scope="row">HandoffCreated</th><td>9</td><td>100.00%</td><td>100.00%</td><td>0</td>'
     ) in page
     assert "<strong>&lt;example&gt;</strong>" in page
     assert "<code>expected &lt;missing&gt;, got &lt;verified&gt;</code>" in page
