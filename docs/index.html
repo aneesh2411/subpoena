@@ -21,6 +21,14 @@
 html { scroll-behavior: smooth; }
 body { margin:0; background:var(--desk); color:var(--ink); font:16px/1.6 var(--sans); }
 a { color:var(--accent); text-decoration:none; }
+.visually-hidden, .skip-link:not(:focus) {
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip-path:inset(50%); white-space:nowrap;
+}
+.skip-link:focus {
+  position:fixed; top:12px; left:12px; z-index:11; padding:8px 12px;
+  background:var(--panel); color:var(--ink); outline:2px solid var(--accent);
+}
 
 .hero { position:relative; min-height:100vh; display:flex; align-items:center; justify-content:center; overflow:hidden; }
 #scene { position:absolute; inset:0; width:100%; height:100%; display:block; visibility:hidden; }
@@ -137,6 +145,7 @@ footer a { margin:0 10px; }
 </style>
 </head>
 <body>
+<a class="skip-link" href="#main-content">Skip to content</a>
 
 <nav>
   <a class="home" href="./">SUBPOENA</a>
@@ -145,8 +154,9 @@ footer a { margin:0 10px; }
   <a href="https://github.com/aneesh2411/subpoena">GitHub</a>
 </nav>
 
+<main id="main-content" tabindex="-1">
 <header class="hero">
-  <canvas id="scene"></canvas>
+  <canvas id="scene" role="img" aria-label="Floating receipts stamped with audit verdicts: receipt found, receipt does not match, no receipt, could not check"></canvas>
   <div class="hero-inner">
     <h1 class="brand">SUBPOENA</h1>
     <p class="tag">Every claim needs a receipt.</p>
@@ -158,6 +168,11 @@ footer a { margin:0 10px; }
       <a class="btn" href="https://github.com/aneesh2411/subpoena">GitHub</a>
     </div>
   </div>
+  <p class="visually-hidden">
+    Ticket: no receipt. Cancelled: receipt found. Start: receipt does not match.
+    Appointment: receipt found. SMS: could not check. Message: receipt found.
+    Callback: receipt found. Handoff topic: receipt does not match.
+  </p>
   <div id="hero-receipts" class="hero-receipts" aria-hidden="true">
     <div class="hero-receipt">
       <small>SYSTEM OF RECORD</small>
@@ -236,6 +251,8 @@ footer a { margin:0 10px; }
       <a href="demo/revisions.html">See it in the demo</a> or <a href="https://github.com/aneesh2411/subpoena/blob/main/src/subpoena/api/revisions.py">read the source</a>.</p></div>
   </div>
 </section>
+
+</main>
 
 <footer>
   <a href="demo/">Live demo</a> ·
