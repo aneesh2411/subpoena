@@ -41,7 +41,11 @@ def test_scorecard_export_is_reproducible(tmp_path: Path) -> None:
     statuses = {"VERIFIED", "MISMATCH", "NOT_FOUND", "UNVERIFIABLE"}
     claim_types = {claim_type for claim_type, _ in observed}
     expected_types = {
-        "AppointmentBooked", "Cancelled", "ConfirmationSent", "HandoffCreated", "Rescheduled"
+        "AppointmentBooked",
+        "Cancelled",
+        "ConfirmationSent",
+        "HandoffCreated",
+        "Rescheduled",
     }
     assert expected_types <= claim_types
     assert {status for _, status in observed} == statuses
