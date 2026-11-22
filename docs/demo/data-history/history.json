@@ -2165,13 +2165,160 @@
       ],
       "strict_accuracy": 0.9701,
       "scenarios": 67
+    },
+    {
+      "commit": "e21bfd03d9d39510b01667ef12e92b2d3f099ae9",
+      "commit_time": 1795384686,
+      "series": "results",
+      "paths": [
+        "evals/results/fuzz-seed-3.json"
+      ],
+      "strict_accuracy": 0.9722,
+      "scenarios": 72
+    },
+    {
+      "commit": "e21bfd03d9d39510b01667ef12e92b2d3f099ae9",
+      "commit_time": 1795384686,
+      "series": "results",
+      "paths": [
+        "evals/results/latest.json"
+      ],
+      "strict_accuracy": 0.9722,
+      "scenarios": 72
+    },
+    {
+      "commit": "e21bfd03d9d39510b01667ef12e92b2d3f099ae9",
+      "commit_time": 1795384686,
+      "series": "scorecards",
+      "paths": [
+        "evals/scorecards/20261122-86a150cc23f9.json",
+        "evals/scorecards/latest.json"
+      ],
+      "strict_accuracy": 0.9722,
+      "scenarios": 72,
+      "claim_level": {
+        "tp": 40,
+        "fp": 0,
+        "fn": 2,
+        "tn": 66
+      },
+      "variant_claim_levels": {
+        "receptionist-v2-chatty": {
+          "tp": 36,
+          "fp": 0,
+          "fn": 4,
+          "tn": 68
+        }
+      },
+      "claim_levels_by_type": {
+        "AppointmentBooked": {
+          "tp": 18,
+          "fp": 0,
+          "fn": 1,
+          "tn": 28
+        },
+        "Cancelled": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0,
+          "tn": 2
+        },
+        "ConfirmationSent": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 0,
+          "tn": 26
+        },
+        "HandoffCreated": {
+          "tp": 4,
+          "fp": 0,
+          "fn": 1,
+          "tn": 4
+        },
+        "PaymentCollected": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "tn": 1
+        },
+        "PrescriptionRefilled": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "tn": 1
+        },
+        "RecordsUpdated": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0,
+          "tn": 1
+        },
+        "Rescheduled": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0,
+          "tn": 3
+        }
+      },
+      "variant_claim_levels_by_type": {
+        "receptionist-v2-chatty": {
+          "AppointmentBooked": {
+            "tp": 15,
+            "fp": 0,
+            "fn": 3,
+            "tn": 29
+          },
+          "Cancelled": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 0,
+            "tn": 2
+          },
+          "ConfirmationSent": {
+            "tp": 7,
+            "fp": 0,
+            "fn": 0,
+            "tn": 26
+          },
+          "HandoffCreated": {
+            "tp": 4,
+            "fp": 0,
+            "fn": 1,
+            "tn": 4
+          },
+          "PaymentCollected": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 0,
+            "tn": 1
+          },
+          "PrescriptionRefilled": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 0,
+            "tn": 1
+          },
+          "RecordsUpdated": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 0,
+            "tn": 1
+          },
+          "Rescheduled": {
+            "tp": 5,
+            "fp": 0,
+            "fn": 0,
+            "tn": 4
+          }
+        }
+      }
     }
   ],
   "latest_scorecard_diff": {
-    "previous": "2026-11-22T09:08:20.270370+00:00",
+    "previous": "2026-11-22T09:23:03.423651+00:00",
     "strict_accuracy": {
       "was": 0.9701,
-      "now": 0.9701
+      "now": 0.9722
     },
     "newly_failing": [],
     "newly_passing": []
