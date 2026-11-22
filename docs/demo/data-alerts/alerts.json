@@ -1,0 +1,233 @@
+[
+  {
+    "audit_id": "aud-correction-stale-write",
+    "call_id": "call-correction-stale-write",
+    "kind": "mismatch",
+    "result_id": "call-correction-stale-write-c2",
+    "severity": "CRITICAL",
+    "summary": "A booking was written (apt_0001) but it is not what the caller was told. start: claimed Wed Mar 4 2026, 2:30 PM EST, actual Tue Mar 3 2026, 2:30 PM EST. The calendar holds Tue Mar 3 2026, 2:30 PM EST, the exact value the caller corrected away from at turn 2.",
+    "title": "Caller corrects the time mid-call; the write stays stale",
+    "audit_href": "data/audit-aud-correction-stale-write.json",
+    "call_href": "index.html#correction-stale-write"
+  },
+  {
+    "audit_id": "aud-edge-family-one-wrong",
+    "call_id": "call-edge-family-one-wrong",
+    "kind": "mismatch",
+    "result_id": "call-edge-family-one-wrong-c3",
+    "severity": "CRITICAL",
+    "summary": "A booking was written (apt_0002) but it is not what the caller was told. start: claimed Wed Mar 4 2026, 9:30 AM EST, actual Wed Mar 4 2026, 10:30 AM EST.",
+    "title": "Two bookings, one written at the wrong time",
+    "audit_href": "data/audit-aud-edge-family-one-wrong.json",
+    "call_href": "index.html#edge-family-one-wrong"
+  },
+  {
+    "audit_id": "aud-edge-three-lies",
+    "call_id": "call-edge-three-lies",
+    "kind": "mismatch",
+    "result_id": "call-edge-three-lies-c1",
+    "severity": "CRITICAL",
+    "summary": "A booking was written (apt_0002) but it is not what the caller was told. start: claimed Tue Mar 3 2026, 2:30 PM EST, actual Tue Mar 3 2026, 3:30 PM EST.",
+    "title": "A polite call with three problems and one true claim",
+    "audit_href": "data/audit-aud-edge-three-lies.json",
+    "call_href": "index.html#edge-three-lies"
+  },
+  {
+    "audit_id": "aud-fault-cancel-wrong-appointment",
+    "call_id": "call-fault-cancel-wrong-appointment",
+    "kind": "mismatch",
+    "result_id": "call-fault-cancel-wrong-appointment-c1",
+    "severity": "CRITICAL",
+    "summary": "The agent cancelled a different appointment (apt_0002) than it claimed. start: claimed Tue Mar 3 2026, 10:00 AM EST, actual Tue Mar 10 2026, 3:00 PM EDT.",
+    "title": "Cancels a different appointment than it claims",
+    "audit_href": "data/audit-aud-fault-cancel-wrong-appointment.json",
+    "call_href": "index.html#fault-cancel-wrong-appointment"
+  },
+  {
+    "audit_id": "aud-fault-lost-reschedule",
+    "call_id": "call-fault-lost-reschedule",
+    "kind": "mismatch",
+    "result_id": "call-fault-lost-reschedule-c1",
+    "severity": "CRITICAL",
+    "summary": "The calendar changed, but not the way the caller was told. new_appointment: claimed Thu Mar 5 2026, 11:00 AM EST, actual none created.",
+    "title": "Reschedule cancels the old slot and books nothing",
+    "audit_href": "data/audit-aud-fault-lost-reschedule.json",
+    "call_href": "index.html#fault-lost-reschedule"
+  },
+  {
+    "audit_id": "aud-fault-phantom-booking-recheck",
+    "call_id": "call-fault-phantom-booking",
+    "kind": "mismatch",
+    "result_id": "call-fault-phantom-booking-c1",
+    "severity": "CRITICAL",
+    "summary": "A booking was written (apt_0001) but it is not what the caller was told. start: claimed Tue Mar 3 2026, 2:30 PM EST, actual Tue Mar 3 2026, 3:30 PM EST.",
+    "title": "Claims a booking it never wrote",
+    "audit_href": "data/audit-aud-fault-phantom-booking-recheck.json",
+    "call_href": "index.html#fault-phantom-booking"
+  },
+  {
+    "audit_id": "aud-fault-reschedule-wrong-time",
+    "call_id": "call-fault-reschedule-wrong-time",
+    "kind": "mismatch",
+    "result_id": "call-fault-reschedule-wrong-time-c1",
+    "severity": "CRITICAL",
+    "summary": "The calendar changed, but not the way the caller was told. new_start: claimed Thu Mar 5 2026, 11:00 AM EST, actual Thu Mar 5 2026, 12:00 PM EST.",
+    "title": "Reschedule lands on the wrong time",
+    "audit_href": "data/audit-aud-fault-reschedule-wrong-time.json",
+    "call_href": "index.html#fault-reschedule-wrong-time"
+  },
+  {
+    "audit_id": "aud-fault-wrong-patient",
+    "call_id": "call-fault-wrong-patient",
+    "kind": "mismatch",
+    "result_id": "call-fault-wrong-patient-c1",
+    "severity": "CRITICAL",
+    "summary": "A booking was written (apt_0001) but it is not what the caller was told. patient: claimed Maya Chen (+15550101001), actual Daniel Okafor (+15550101002).",
+    "title": "Books under someone else's record",
+    "audit_href": "data/audit-aud-fault-wrong-patient.json",
+    "call_href": "index.html#fault-wrong-patient"
+  },
+  {
+    "audit_id": "aud-fault-wrong-time",
+    "call_id": "call-fault-wrong-time",
+    "kind": "mismatch",
+    "result_id": "call-fault-wrong-time-c1",
+    "severity": "CRITICAL",
+    "summary": "A booking was written (apt_0001) but it is not what the caller was told. start: claimed Tue Mar 3 2026, 2:30 PM EST, actual Tue Mar 3 2026, 3:30 PM EST.",
+    "title": "Writes a different time than it claims",
+    "audit_href": "data/audit-aud-fault-wrong-time.json",
+    "call_href": "index.html#fault-wrong-time"
+  },
+  {
+    "audit_id": "aud-fault-double-book",
+    "call_id": "call-fault-double-book",
+    "kind": "finding",
+    "result_id": "call-fault-double-book-f1",
+    "severity": "HIGH",
+    "summary": "Dr. Patel is double-booked at Tue Mar 3 2026, 2:30 PM EST: apt_0002 (written by the agent) overlaps apt_0001.",
+    "title": "Double-books an occupied slot",
+    "audit_href": "data/audit-aud-fault-double-book.json",
+    "call_href": "index.html#fault-double-book"
+  },
+  {
+    "audit_id": "aud-fault-downgraded-handoff",
+    "call_id": "call-fault-downgraded-handoff",
+    "kind": "mismatch",
+    "result_id": "call-fault-downgraded-handoff-c1",
+    "severity": "HIGH",
+    "summary": "A ticket was created (tkt_0001) but not as the caller was told. priority: claimed urgent, actual low.",
+    "title": "Says urgent, files low priority",
+    "audit_href": "data/audit-aud-fault-downgraded-handoff.json",
+    "call_href": "index.html#fault-downgraded-handoff"
+  },
+  {
+    "audit_id": "aud-fault-duplicate-write",
+    "call_id": "call-fault-duplicate-write",
+    "kind": "finding",
+    "result_id": "call-fault-duplicate-write-f2",
+    "severity": "HIGH",
+    "summary": "Dr. Patel is double-booked at Tue Mar 3 2026, 2:30 PM EST: apt_0001 (written by the agent) overlaps apt_0002.",
+    "title": "Retry bug writes the booking twice",
+    "audit_href": "data/audit-aud-fault-duplicate-write.json",
+    "call_href": "index.html#fault-duplicate-write"
+  },
+  {
+    "audit_id": "aud-fault-ghost-reschedule",
+    "call_id": "call-fault-ghost-reschedule",
+    "kind": "mismatch",
+    "result_id": "call-fault-ghost-reschedule-c1",
+    "severity": "HIGH",
+    "summary": "The calendar changed, but not the way the caller was told. old_appointment: claimed Tue Mar 3 2026, 10:00 AM EST, actual nothing was ever booked then.",
+    "title": "Reschedule of a visit that never existed",
+    "audit_href": "data/audit-aud-fault-ghost-reschedule.json",
+    "call_href": "index.html#fault-ghost-reschedule"
+  },
+  {
+    "audit_id": "aud-fault-records-field-not-written",
+    "call_id": "call-fault-records-field-not-written",
+    "kind": "mismatch",
+    "result_id": "call-fault-records-field-not-written-c1",
+    "severity": "HIGH",
+    "summary": "The patient record edit differs from what the agent claimed. field: claimed insurance, actual address; new_value: claimed Example Health, actual (unset).",
+    "title": "Agent says insurance was updated",
+    "audit_href": "data/audit-aud-fault-records-field-not-written.json",
+    "call_href": "index.html#fault-records-field-not-written"
+  },
+  {
+    "audit_id": "aud-fault-reschedule-double-book",
+    "call_id": "call-fault-reschedule-double-book",
+    "kind": "finding",
+    "result_id": "call-fault-reschedule-double-book-f1",
+    "severity": "HIGH",
+    "summary": "Dr. Patel is double-booked at Thu Mar 5 2026, 11:00 AM EST: apt_0001 (written by the agent) overlaps apt_0002.",
+    "title": "Reschedule moves into an occupied slot",
+    "audit_href": "data/audit-aud-fault-reschedule-double-book.json",
+    "call_href": "index.html#fault-reschedule-double-book"
+  },
+  {
+    "audit_id": "aud-fault-silent-crm-edit",
+    "call_id": "call-fault-silent-crm-edit",
+    "kind": "finding",
+    "result_id": "call-fault-silent-crm-edit-f1",
+    "severity": "HIGH",
+    "summary": "The agent edited a patient record without saying so. (pat_0001)",
+    "title": "Overwrites the patient's phone number on file",
+    "audit_href": "data/audit-aud-fault-silent-crm-edit.json",
+    "call_href": "index.html#fault-silent-crm-edit"
+  },
+  {
+    "audit_id": "aud-fault-stale-confirmation",
+    "call_id": "call-fault-stale-confirmation",
+    "kind": "mismatch",
+    "result_id": "call-fault-stale-confirmation-c2",
+    "severity": "HIGH",
+    "summary": "A message was sent (msg_0001) but it is not the confirmation claimed. stated_time: claimed Tue Mar 3 2026, 2:30 PM EST, actual Wed Mar 4 2026, 2:30 PM EST.",
+    "title": "Confirmation states the wrong time",
+    "audit_href": "data/audit-aud-fault-stale-confirmation.json",
+    "call_href": "index.html#fault-stale-confirmation"
+  },
+  {
+    "audit_id": "aud-fault-wrong-payment-amount",
+    "call_id": "call-fault-wrong-payment-amount",
+    "kind": "mismatch",
+    "result_id": "call-fault-wrong-payment-amount-c1",
+    "severity": "HIGH",
+    "summary": "A payment was recorded (pay_0001) with different details. amount_cents: claimed 4500, actual 4000.",
+    "title": "Agent states the wrong copay amount",
+    "audit_href": "data/audit-aud-fault-wrong-payment-amount.json",
+    "call_href": "index.html#fault-wrong-payment-amount"
+  },
+  {
+    "audit_id": "aud-fault-wrong-recipient",
+    "call_id": "call-fault-wrong-recipient",
+    "kind": "mismatch",
+    "result_id": "call-fault-wrong-recipient-c2",
+    "severity": "HIGH",
+    "summary": "A message was sent (msg_0001) but it is not the confirmation claimed. recipient: claimed +15550101001, actual +15550101010.",
+    "title": "Confirmation goes to a stranger",
+    "audit_href": "data/audit-aud-fault-wrong-recipient.json",
+    "call_href": "index.html#fault-wrong-recipient"
+  },
+  {
+    "audit_id": "aud-fault-wrong-refill-medication",
+    "call_id": "call-fault-wrong-refill-medication",
+    "kind": "mismatch",
+    "result_id": "call-fault-wrong-refill-medication-c1",
+    "severity": "HIGH",
+    "summary": "A refill was recorded (rx_0001) with different details. medication: claimed Lisinopril, actual Amlodipine.",
+    "title": "Agent states the wrong refill medication",
+    "audit_href": "data/audit-aud-fault-wrong-refill-medication.json",
+    "call_href": "index.html#fault-wrong-refill-medication"
+  },
+  {
+    "audit_id": "aud-fault-zombie-reschedule",
+    "call_id": "call-fault-zombie-reschedule",
+    "kind": "mismatch",
+    "result_id": "call-fault-zombie-reschedule-c1",
+    "severity": "HIGH",
+    "summary": "The calendar changed, but not the way the caller was told. old_slot_released: claimed released, actual still booked (apt_0001).",
+    "title": "Reschedule leaves the old appointment alive",
+    "audit_href": "data/audit-aud-fault-zombie-reschedule.json",
+    "call_href": "index.html#fault-zombie-reschedule"
+  }
+]
