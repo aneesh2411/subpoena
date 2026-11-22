@@ -34,7 +34,7 @@ from subpoena.models import (
     RecordField,
     Ticket,
 )
-from subpoena.sor.base import RecordNotFound, SystemOfRecord
+from subpoena.sor.base import AdapterUnavailable, RecordNotFound, SystemOfRecord
 from subpoena.util import norm_phone, norm_text, to_utc_iso
 
 Clock = Callable[[], datetime]
@@ -87,7 +87,16 @@ CREATE TABLE IF NOT EXISTS prescriptions(
     refilled_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS applied_fixes(
     audit_id TEXT NOT NULL, claim_id TEXT NOT NULL, approval_id INTEGER NOT NULL,
-    record_id TEXT NOT NULL, PRIMARY KEY(audit_id, claim_id));
+    record_id TEXT NOT NULL, change_seq INTEGER REFERENCES change_log(seq),
+    PRIMARY KEY(audit_id, claim_id));
+CREATE TABLE IF NOT EXISTS reverted_fixes(
+    audit_id TEXT NOT NULL, claim_id TEXT NOT NULL,
+    PRIMARY KEY(audit_id, claim_id),
+    FOREIGN KEY(audit_id, claim_id) REFERENCES applied_fixes(audit_id, claim_id));
+CREATE TRIGGER IF NOT EXISTS reverted_fixes_no_update BEFORE UPDATE ON reverted_fixes
+    BEGIN SELECT RAISE(ABORT, 'reverted_fixes is append-only'); END;
+CREATE TRIGGER IF NOT EXISTS reverted_fixes_no_delete BEFORE DELETE ON reverted_fixes
+    BEGIN SELECT RAISE(ABORT, 'reverted_fixes is append-only'); END;
 CREATE TABLE IF NOT EXISTS id_seq(entity TEXT PRIMARY KEY, n INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS session_ctx(
     id INTEGER PRIMARY KEY CHECK (id = 1), actor TEXT NOT NULL, now TEXT NOT NULL);
@@ -136,6 +145,10 @@ def _journal_triggers() -> list[str]:
     return sql
 
 
+class FixReceiptConflict(ValueError):
+    """The requested operation conflicts with the fix receipt history."""
+
+
 class SqliteStore:
     """SQLite storage for the audited systems of record."""
 
@@ -160,6 +173,14 @@ class SqliteStore:
                 if missing:
                     for op in ("insert", "update", "delete"):
                         self._conn.execute(f"DROP TRIGGER IF EXISTS journal_patients_{op}")
+                columns = {
+                    c["name"] for c in self._conn.execute("PRAGMA table_info(applied_fixes)")
+                }
+                if "change_seq" not in columns:
+                    self._conn.execute(
+                        "ALTER TABLE applied_fixes ADD COLUMN change_seq "
+                        "INTEGER REFERENCES change_log(seq)"
+                    )
                 for trigger in _journal_triggers():
                     self._conn.execute(trigger)
             except sqlite3.Error:
@@ -190,28 +211,87 @@ class SqliteStore:
         write: Callable[[SystemOfRecord], str],
     ) -> tuple[int, str, bool]:
         """Commit the adapter write and its retry receipt in one transaction."""
+        with self._fix_transaction() as conn:
+            existing = self._fix_receipt(audit_id, claim_id)
+            if existing is not None:
+                return existing["approval_id"], existing["record_id"], False
+            previous_seq = conn.execute("SELECT COALESCE(MAX(seq), 0) FROM change_log").fetchone()[
+                0
+            ]
+            record_id = write(self.session(actor, clock))
+            changes = conn.execute(
+                "SELECT seq FROM change_log WHERE seq > ? AND entity_id = ? AND actor = ?",
+                (previous_seq, record_id, actor),
+            ).fetchall()
+            if len(changes) != 1:
+                raise AdapterUnavailable("the fix did not produce a single journal receipt")
+            conn.execute(
+                "INSERT INTO applied_fixes (audit_id, claim_id, approval_id, record_id, change_seq)"
+                " VALUES (?, ?, ?, ?, ?)",
+                (audit_id, claim_id, approval_id, record_id, changes[0]["seq"]),
+            )
+            return approval_id, record_id, True
+
+    def revert_fix(
+        self,
+        audit_id: str,
+        claim_id: str,
+        actor: str,
+        clock: Clock,
+        inverse: Callable[[SystemOfRecord, str, Change | None], None],
+    ) -> tuple[int, str]:
+        """Commit the inverse adapter write and a new receipt together."""
+        with self._fix_transaction() as conn:
+            receipt = self._fix_receipt(audit_id, claim_id)
+            if receipt is None:
+                raise FixReceiptConflict(f"no applied fix for claim {claim_id}")
+            record_id = receipt["record_id"]
+            if receipt["change_seq"] is None:
+                # Old receipts lack a journal pointer. Use a before-image only
+                # when exactly one update can belong to this call and record.
+                rows = conn.execute(
+                    "SELECT * FROM change_log WHERE actor = ? AND entity_id = ? AND op = 'update' "
+                    "AND NOT EXISTS (SELECT 1 FROM applied_fixes "
+                    "WHERE change_seq = change_log.seq) "
+                    "LIMIT 2",
+                    (actor, record_id),
+                ).fetchall()
+                row = rows[0] if len(rows) == 1 else None
+            else:
+                row = conn.execute(
+                    "SELECT * FROM change_log WHERE seq = ?", (receipt["change_seq"],)
+                ).fetchone()
+            try:
+                inverse(self.session(actor, clock), record_id, _change(row) if row else None)
+            except RecordNotFound as exc:
+                raise AdapterUnavailable(str(exc)) from exc
+            conn.execute(
+                "INSERT INTO reverted_fixes (audit_id, claim_id) VALUES (?, ?)",
+                (audit_id, claim_id),
+            )
+            return receipt["approval_id"], record_id
+
+    def _fix_receipt(self, audit_id: str, claim_id: str) -> sqlite3.Row | None:
+        receipt = self._conn.execute(
+            "SELECT applied_fixes.*, reverted_fixes.claim_id IS NOT NULL AS reverted "
+            "FROM applied_fixes LEFT JOIN reverted_fixes USING (audit_id, claim_id) "
+            "WHERE audit_id = ? AND claim_id = ?",
+            (audit_id, claim_id),
+        ).fetchone()
+        if receipt is not None and receipt["reverted"]:
+            raise FixReceiptConflict(f"fix for claim {claim_id} has already been reverted")
+        return receipt
+
+    @contextmanager
+    def _fix_transaction(self) -> Iterator[sqlite3.Connection]:
         with self._lock:
             self._conn.execute("BEGIN IMMEDIATE")
             try:
-                existing = self._conn.execute(
-                    "SELECT approval_id, record_id FROM applied_fixes "
-                    "WHERE audit_id = ? AND claim_id = ?",
-                    (audit_id, claim_id),
-                ).fetchone()
-                if existing is not None:
-                    result = (existing["approval_id"], existing["record_id"], False)
-                else:
-                    record_id = write(self.session(actor, clock))
-                    self._conn.execute(
-                        "INSERT INTO applied_fixes VALUES (?, ?, ?, ?)",
-                        (audit_id, claim_id, approval_id, record_id),
-                    )
-                    result = (approval_id, record_id, True)
+                yield self._conn
                 self._conn.commit()
             except BaseException:
                 self._conn.rollback()
                 raise
-            return result
 
     def close(self) -> None:
         with self._lock:
@@ -258,19 +338,20 @@ class SqliteStore:
             "SELECT * FROM change_log WHERE entity = ? AND at >= ? AND at <= ? ORDER BY seq",
             (entity.value, to_utc_iso(since), to_utc_iso(until)),
         )
-        return [
-            Change(
-                seq=r["seq"],
-                entity=entity,
-                entity_id=r["entity_id"],
-                op=r["op"],
-                before=json.loads(r["before"]) if r["before"] else None,
-                after=json.loads(r["after"]) if r["after"] else None,
-                actor=r["actor"],
-                at=r["at"],
-            )
-            for r in rows
-        ]
+        return [_change(row) for row in rows]
+
+
+def _change(row: sqlite3.Row | dict[str, Any]) -> Change:
+    return Change(
+        seq=row["seq"],
+        entity=row["entity"],
+        entity_id=row["entity_id"],
+        op=row["op"],
+        before=json.loads(row["before"]) if row["before"] else None,
+        after=json.loads(row["after"]) if row["after"] else None,
+        actor=row["actor"],
+        at=row["at"],
+    )
 
 
 class _Adapter:
@@ -283,6 +364,12 @@ class _Adapter:
 
     def _tx(self) -> Any:
         return self._store._write(self._actor, self._clock())
+
+    def _delete(self, record_id: str) -> None:
+        table, _ = _TABLES[self.entity]
+        with self._tx() as conn:
+            if not conn.execute(f"DELETE FROM {table} WHERE id = ?", (record_id,)).rowcount:
+                raise RecordNotFound(f"{self.entity.value} {record_id} does not exist")
 
     def changes(self, since: datetime, until: datetime) -> list[Change]:
         return self._store._changes(self.entity, since, until)
@@ -512,6 +599,9 @@ class _Tickets(_Adapter):
         assert ticket is not None
         return ticket
 
+    def cancel_ticket(self, record_id: str) -> None:
+        self._delete(record_id)
+
     def list_tickets(self, *, patient_id: str | None = None) -> list[Ticket]:
         tickets = [
             Ticket.model_validate(r)
@@ -544,6 +634,9 @@ class _Payments(_Adapter):
             )
         return payment
 
+    def cancel_payment(self, record_id: str) -> None:
+        self._delete(record_id)
+
     def list_payments(self, *, patient_id: str | None = None) -> list[Payment]:
         if patient_id is None:
             rows = self._store._rows("SELECT * FROM payments ORDER BY collected_at, id")
@@ -573,6 +666,9 @@ class _Prescriptions(_Adapter):
                 (prescription.id, patient_id, prescription.medication, to_utc_iso(now)),
             )
         return prescription
+
+    def cancel_refill(self, record_id: str) -> None:
+        self._delete(record_id)
 
     def list_prescriptions(self, *, patient_id: str | None = None) -> list[Prescription]:
         if patient_id is None:

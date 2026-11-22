@@ -277,7 +277,8 @@ def test_api_key_is_enforced_when_configured():
     for method, path in (("get", "/audits"), ("post", "/calls"), ("get", "/demo/scenarios"),
                          ("get", "/scorecard"), ("get", "/audit/x/report"),
                          ("post", "/audit/x/claims/y/recheck"),
-                         ("post", "/audit/x/claims/y/fix")):  # fmt: skip
+                         ("post", "/audit/x/claims/y/fix"),
+                         ("post", "/audit/x/claims/y/fix/revert")):  # fmt: skip
         assert "X-API-Key" in _error(getattr(client, method)(path), 401)
     assert "X-API-Key" in _error(client.get("/audits", headers={"X-API-Key": "wrong"}), 401)
     assert _data(client.get("/audits", headers={"X-API-Key": "s3cret"})) == []
@@ -419,3 +420,131 @@ def test_approved_fix_is_written_and_rechecked(client, monkeypatch, fault, expec
     assert _data(client.get(f"{audit_path}/approvals")) == [approval]
     assert store.audit_rows() == before
     assert _data(client.get("/ledger/verify", params={"strict": True}))["ok"]
+
+
+def _stage_revert_claim(client, monkeypatch, claim_type, fields):
+    call = _data(client.post("/demo/scenarios/fault-phantom-booking-bare/stage"), 201)
+    claim = call["claims"][0]
+    if claim_type != "AppointmentBooked":
+        claim = {
+            **{key: claim[key] for key in ("claim_id", "turn_index", "patient")},
+            "type": claim_type,
+            **fields,
+        }
+    if claim_type == "ConfirmationSent":
+        claim.pop("patient")
+    call = {**call, "claims": [claim], "transcript": []}
+    applied_at = datetime.fromisoformat(call["ended_at"]) + timedelta(minutes=2)
+    monkeypatch.setattr("subpoena.api.app.utcnow", lambda: applied_at)
+    original = _data(client.post("/audit", json={"call": call}), 201)
+    audit_path = f"/audit/{original['audit_id']}"
+    path = f"{audit_path}/claims/{claim['claim_id']}/fix"
+    approval = _approve_fix(client, audit_path, claim["claim_id"])
+    return original, claim, path, approval, applied_at
+
+
+@pytest.mark.parametrize(
+    ("claim_type", "fields", "entity", "op"),
+    [
+        ("AppointmentBooked", {}, "appointment", "update"),
+        ("HandoffCreated", {"summary": "Call the patient back"}, "ticket", "delete"),
+        ("PaymentCollected", {"amount_cents": 1000, "method": "card"}, "payment", "delete"),
+        ("PrescriptionRefilled", {"medication": "metformin"}, "prescription", "delete"),
+        ("RecordsUpdated", {"field": "address", "new_value": "123 Main"}, "patient", "update"),
+        ("RecordsUpdated", {"field": "email", "new_value": "new@example.com"}, "patient", "update"),
+    ],
+)
+def test_revert_applied_fix(client, monkeypatch, claim_type, fields, entity, op):
+    original, claim, path, approval, applied_at = _stage_revert_claim(
+        client, monkeypatch, claim_type, fields
+    )
+    audit_path = f"/audit/{original['audit_id']}"
+    assert _data(client.post(path))["verdict"]["status"] == "VERIFIED"
+    sor = client.app.state.sor
+    (receipt,) = sor._rows("SELECT * FROM applied_fixes")
+    (applied,) = sor._rows("SELECT * FROM change_log WHERE seq = ?", (receipt["change_seq"],))
+    assert applied["entity"] == entity
+
+    monkeypatch.setattr("subpoena.api.app.utcnow", lambda: applied_at + timedelta(minutes=1))
+    checked = _data(client.post(path + "/revert"))
+    assert checked["verdict"]["status"] == "NOT_FOUND"
+    assert checked["seal"]["prev_hash"] == original["seal"]["chain_hash"]
+    saved = _data(client.get(f"/audit/{checked['audit_id']}/report"))
+    assert saved["verdicts"] == [checked["verdict"]]
+    assert any(
+        f"Reverted {receipt['record_id']} from resolve approval {approval['approval_id']}"
+        in event["message"]
+        for event in saved["trail"]
+    )
+
+    (reversal,) = sor._rows("SELECT * FROM change_log WHERE seq > ?", (applied["seq"],))
+    assert reversal["entity_id"] == receipt["record_id"]
+    assert reversal["op"] == op
+    if claim_type == "RecordsUpdated":
+        assert reversal["after"] == applied["before"]
+    assert sor._rows("SELECT * FROM applied_fixes") == [receipt]
+    assert sor._rows("SELECT * FROM reverted_fixes") == [
+        {"audit_id": original["audit_id"], "claim_id": claim["claim_id"]}
+    ]
+    writes = sor._conn.total_changes
+    assert "already been reverted" in _error(client.post(path + "/revert"), 409)
+    assert "already been reverted" in _error(client.post(path), 409)
+    assert sor._conn.total_changes == writes
+    assert _data(client.get(audit_path + "/report")) == original
+
+
+def test_revert_without_applied_fix(client, monkeypatch):
+    original, claim = _fix_target(client, monkeypatch)
+    audit_path = f"/audit/{original['audit_id']}"
+    _approve_fix(client, audit_path, claim.claim_id)
+    path = f"{audit_path}/claims/{claim.claim_id}/fix/revert"
+    assert "no applied fix" in _error(client.post(path), 409)
+
+
+def test_revert_with_unavailable_adapter_can_retry(client, monkeypatch):
+    original, claim = _fix_target(client, monkeypatch)
+    audit_path = f"/audit/{original['audit_id']}"
+    _approve_fix(client, audit_path, claim.claim_id)
+    path = f"{audit_path}/claims/{claim.claim_id}/fix"
+    assert _data(client.post(path))["verdict"]["status"] == "VERIFIED"
+    sor = client.app.state.sor
+    session = sor.session
+    with monkeypatch.context() as patch:
+        patch.setattr(
+            sor, "session", lambda actor, clock: with_outage(session(actor, clock), "calendar")
+        )
+        checked = _data(client.post(path + "/revert"))
+    assert checked["verdict"]["status"] == "UNVERIFIABLE"
+    assert sor._rows("SELECT * FROM reverted_fixes") == []
+    assert _data(client.post(path + "/revert"))["verdict"]["status"] == "NOT_FOUND"
+
+
+def test_revert_does_not_overwrite_a_later_crm_update(client, monkeypatch):
+    _, _, path, _, applied_at = _stage_revert_claim(
+        client, monkeypatch, "RecordsUpdated", {"field": "email", "new_value": "fix@example.com"}
+    )
+    assert _data(client.post(path))["verdict"]["status"] == "VERIFIED"
+    sor = client.app.state.sor
+    (receipt,) = sor._rows("SELECT * FROM applied_fixes")
+    crm = sor.session("staff", lambda: applied_at + timedelta(seconds=1)).crm
+    crm.update_patient(receipt["record_id"], email="staff@example.com")
+    monkeypatch.setattr("subpoena.api.app.utcnow", lambda: applied_at + timedelta(minutes=1))
+
+    checked = _data(client.post(path + "/revert"))
+    assert checked["verdict"]["status"] == "UNVERIFIABLE"
+    assert crm.get_patient(receipt["record_id"]).email == "staff@example.com"
+    assert sor._rows("SELECT * FROM reverted_fixes") == []
+
+
+def test_revert_unsupported_claim_type(client, monkeypatch):
+    _, _, path, _, _ = _stage_revert_claim(
+        client, monkeypatch, "ConfirmationSent", {"to": "+13125550123", "channel": "sms"}
+    )
+    _data(client.post(path))
+    sor = client.app.state.sor
+    before = sor._conn.total_changes
+    checked = _data(client.post(path + "/revert"))
+    assert checked["verdict"]["status"] == "UNVERIFIABLE"
+    assert "does not support reverting ConfirmationSent" in checked["verdict"]["summary"]
+    assert sor._rows("SELECT * FROM reverted_fixes") == []
+    assert sor._conn.total_changes == before

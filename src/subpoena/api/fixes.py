@@ -5,8 +5,10 @@ from datetime import timedelta
 from subpoena.models import (
     AppointmentBooked,
     Cancelled,
+    Change,
     Claim,
     ConfirmationSent,
+    Entity,
     HandoffCreated,
     PatientRef,
     PaymentCollected,
@@ -105,3 +107,36 @@ def apply_claim(sor: SystemOfRecord, claim: Claim) -> str:
         raise AdapterUnavailable("prescriptions adapter is unavailable")
     assert isinstance(claim, PrescriptionRefilled)
     return sor.prescriptions.refill(patient_id=patient_id, medication=claim.medication).id
+
+
+def revert_claim(sor: SystemOfRecord, claim: Claim, record_id: str, change: Change | None) -> None:
+    """Undo the write identified by the receipt, using the adapter's inverse."""
+    if isinstance(claim, RecordsUpdated):
+        if (
+            change is None
+            or change.entity != Entity.PATIENT
+            or change.before is None
+            or change.after is None
+        ):
+            raise AdapterUnavailable("the CRM fix has no identifiable journal before-image")
+        patient = sor.crm.get_patient(record_id)
+        if patient is None or getattr(patient, claim.field) != change.after.get(claim.field):
+            raise AdapterUnavailable("the CRM field no longer matches the applied fix")
+        sor.crm.update_patient(record_id, **{claim.field: change.before.get(claim.field)})
+        return
+
+    if isinstance(claim, AppointmentBooked):
+        adapter, method = sor.calendar, "cancel_appointment"
+    elif isinstance(claim, HandoffCreated):
+        adapter, method = sor.tickets, "cancel_ticket"
+    elif isinstance(claim, PaymentCollected):
+        adapter, method = sor.payments, "cancel_payment"
+    elif isinstance(claim, PrescriptionRefilled):
+        adapter, method = sor.prescriptions, "cancel_refill"
+    else:
+        raise AdapterUnavailable(f"the adapter does not support reverting {claim.type}")
+
+    cancel = getattr(adapter, method, None)
+    if not callable(cancel):
+        raise AdapterUnavailable(f"the adapter does not support reverting {claim.type}")
+    cancel(record_id)

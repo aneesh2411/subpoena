@@ -6,6 +6,7 @@ Core:
     POST /audit                  audit a stored or inline call against the system of record
     POST /audit/{id}/claims/{claim_id}/recheck   re-check a sealed claim
     POST /audit/{id}/claims/{claim_id}/fix   apply an approved fix and re-check
+    POST /audit/{id}/claims/{claim_id}/fix/revert   undo a fix and re-check
     POST /audit/{id}/approvals   append a human remediation decision
     GET  /audit/{id}/approvals   read a single audit’s approval history
     GET  /audit/{id}/report      the sealed report (JSON, or Markdown with ?format=md)
@@ -46,7 +47,7 @@ from starlette.concurrency import run_in_threadpool
 from subpoena import __version__
 from subpoena.api.alerts import build_alert_feed
 from subpoena.api.approvals import ApprovalRequest
-from subpoena.api.fixes import FixConflict, apply_claim
+from subpoena.api.fixes import FixConflict, apply_claim, revert_claim
 from subpoena.api.ingest import parse_delivery
 from subpoena.api.repair_queue import build_repair_queue
 from subpoena.api.review import Hash, ReviewError, TransitionRequest
@@ -66,6 +67,7 @@ from subpoena.models import AuditReport, CallRecord, Claim
 from subpoena.scenarios import BY_ID, audit_call, build_world, run_suspect
 from subpoena.sor import SqliteStore
 from subpoena.sor.base import AdapterUnavailable
+from subpoena.sor.sqlite import FixReceiptConflict
 from subpoena.util import utcnow
 
 log = logging.getLogger("subpoena.api")
@@ -387,7 +389,33 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             except AdapterUnavailable as exc:
                 unavailable = str(exc)
                 note = f"Write using resolve approval {approval.approval_id} failed: {exc}."
-            except FixConflict as exc:
+            except (FixConflict, FixReceiptConflict) as exc:
+                raise HTTPException(409, str(exc)) from exc
+            checked = check_claim(original, claim, fix_note=note, fix_unavailable=unavailable)
+            store().save_fix_recheck(audit_id, checked)
+        return checked_response(checked)
+
+    @app.post("/audit/{audit_id}/claims/{claim_id}/fix/revert", dependencies=guarded)
+    def revert_applied_fix(audit_id: str, claim_id: str) -> JSONResponse:
+        original, claim = sealed_claim(audit_id, claim_id)
+        actor = f"{original.call.agent_id}:{original.call.call_id}"
+        unavailable = None
+        with app.state.stage_lock:
+            try:
+                approval_id, record_id = app.state.sor.revert_fix(
+                    audit_id,
+                    claim_id,
+                    actor,
+                    utcnow,
+                    lambda session, record_id, change: revert_claim(
+                        session, claim, record_id, change
+                    ),
+                )
+                note = f"Reverted {record_id} from resolve approval {approval_id}."
+            except AdapterUnavailable as exc:
+                unavailable = str(exc)
+                note = f"Revert failed: {exc}."
+            except FixReceiptConflict as exc:
                 raise HTTPException(409, str(exc)) from exc
             checked = check_claim(original, claim, fix_note=note, fix_unavailable=unavailable)
             store().save_fix_recheck(audit_id, checked)
