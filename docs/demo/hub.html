@@ -7,12 +7,12 @@
 <style>
   :root {
     color-scheme: dark;
-    --bg: #11181c; --card: #1a252b; --line: #384b53; --text: #eff3ee;
-    --muted: #b1c1c5; --accent: #9cd8f1;
+    --desk: #14161a; --panel: #1c1f26; --line: #2c313c; --ink: #e8e6df; --dim: #8b919e;
+    --accent: #4f8cff;
     --mono: ui-monospace, Consolas, monospace;
   }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--text); font: 1rem/1.55 system-ui; }
+  body { margin: 0; background: var(--desk); color: var(--ink); font: 1rem/1.55 system-ui; }
   header { border-bottom: 1px solid var(--line); }
   .bar, main { max-width: 76rem; margin: auto; padding-inline: clamp(1rem, 4vw, 3rem); }
   .bar {
@@ -27,11 +27,11 @@
   a { color: var(--accent); text-underline-offset: .18em; }
   a:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   .groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: 2rem; }
-  section { padding: 1.25rem; background: var(--card); border: 1px solid var(--line); border-radius: .65rem; }
+  section { padding: 1.25rem; background: var(--panel); border: 1px solid var(--line); border-radius: .65rem; }
   ul { list-style: none; padding: 0; margin: 1rem 0 0; }
   li + li { margin-top: .8rem; padding-top: .8rem; border-top: 1px solid var(--line); }
   li a { font-weight: 650; }
-  li p { color: var(--muted); }
+  li p { color: var(--dim); }
   @media (max-width: 44rem) {
     .groups { grid-template-columns: minmax(0, 1fr); }
   }
