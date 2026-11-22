@@ -2125,6 +2125,16 @@
       ],
       "strict_accuracy": 0.9701,
       "scenarios": 67
+    },
+    {
+      "commit": "09e1e11453fd5e8557bc35b36f4186e191b12359",
+      "commit_time": 1795363533,
+      "series": "results",
+      "paths": [
+        "evals/results/latest.json"
+      ],
+      "strict_accuracy": 0.9701,
+      "scenarios": 67
     }
   ],
   "latest_scorecard_diff": {
