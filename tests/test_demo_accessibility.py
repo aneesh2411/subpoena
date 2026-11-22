@@ -226,3 +226,37 @@ def test_demo_accessibility_checklist_detects_missing_names_and_structure():
   <svg role="img"><title>Search results trend</title></svg>
 </section></main>"""
     assert checklist(valid) == []
+
+
+def test_landing_architecture_accessibility():
+    markup = (DEMO.parent / "index.html").read_text(encoding="utf-8")
+    problems = checklist(markup)
+    assert not problems, "\n".join(problems)
+
+    document = DemoHTML()
+    document.feed(markup)
+    document.close()
+    ids = {node.attrs["id"]: node for node in document.elements if "id" in node.attrs}
+    region = ids["architecture"]
+    assert region.tag == "section"
+    assert aria_name(region, ids) == "Architecture"
+    assert any(
+        node.tag == "a"
+        and node.attrs.get("href") == "#architecture"
+        and any(ancestor.tag == "nav" for ancestor in node.ancestors())
+        for node in document.elements
+    )
+    stages = [node for node in document.elements if node.tag == "li" and region in node.ancestors()]
+    assert [
+        content_name(child, ids)
+        for stage in stages
+        for child in stage.children
+        if isinstance(child, Element) and child.tag == "h3"
+    ] == ["Ingest", "Extract claims", "Reconcile writes", "Judge", "Seal", "Escalate"]
+    assert all(
+        any(
+            isinstance(child, Element) and child.tag == "p" and content_name(child, ids)
+            for child in stage.children
+        )
+        for stage in stages
+    )
