@@ -1,0 +1,252 @@
+[
+  {
+    "id": "clean-book",
+    "title": "Fully readable",
+    "audited_at": "2026-03-02T09:06:16-05:00",
+    "adapters": [
+      {
+        "source": "calendar",
+        "name": "Calendar",
+        "status": "readable",
+        "last_successful_read": "2026-03-02T09:06:16-05:00",
+        "outage": null,
+        "verdicts": []
+      },
+      {
+        "source": "crm",
+        "name": "CRM",
+        "status": "readable",
+        "last_successful_read": "2026-03-02T09:06:16-05:00",
+        "outage": null,
+        "verdicts": []
+      },
+      {
+        "source": "messages",
+        "name": "Message log",
+        "status": "readable",
+        "last_successful_read": "2026-03-02T09:06:16-05:00",
+        "outage": null,
+        "verdicts": []
+      },
+      {
+        "source": "tickets",
+        "name": "Tickets",
+        "status": "readable",
+        "last_successful_read": "2026-03-02T09:06:16-05:00",
+        "outage": null,
+        "verdicts": []
+      },
+      {
+        "source": "payments",
+        "name": "Payments",
+        "status": "readable",
+        "last_successful_read": "2026-03-02T09:06:16-05:00",
+        "outage": null,
+        "verdicts": []
+      },
+      {
+        "source": "prescriptions",
+        "name": "Prescriptions",
+        "status": "readable",
+        "last_successful_read": "2026-03-02T09:06:16-05:00",
+        "outage": null,
+        "verdicts": []
+      }
+    ]
+  },
+  {
+    "id": "edge-calendar-outage",
+    "title": "Calendar outage",
+    "audited_at": "2026-03-02T09:06:16-05:00",
+    "adapters": [
+      {
+        "source": "calendar",
+        "name": "Calendar",
+        "status": "unreadable",
+        "last_successful_read": null,
+        "outage": {
+          "name": "Calendar outage",
+          "detail": "calendar adapter is unavailable"
+        },
+        "verdicts": [
+          {
+            "claim_id": "call-edge-calendar-outage-c1",
+            "claim": "AppointmentBooked",
+            "status": "UNVERIFIABLE",
+            "summary": "Could not be checked: calendar could not be read. No verdict is better than a guessed one."
+          }
+        ]
+      },
+      {
+        "source": "crm",
+        "name": "CRM",
+        "status": "readable",
+        "last_successful_read": "2026-03-02T09:06:16-05:00",
+        "outage": null,
+        "verdicts": []
+      },
+      {
+        "source": "messages",
+        "name": "Message log",
+        "status": "readable",
+        "last_successful_read": "2026-03-02T09:06:16-05:00",
+        "outage": null,
+        "verdicts": []
+      },
+      {
+        "source": "tickets",
+        "name": "Tickets",
+        "status": "readable",
+        "last_successful_read": "2026-03-02T09:06:16-05:00",
+        "outage": null,
+        "verdicts": []
+      },
+      {
+        "source": "payments",
+        "name": "Payments",
+        "status": "readable",
+        "last_successful_read": "2026-03-02T09:06:16-05:00",
+        "outage": null,
+        "verdicts": []
+      },
+      {
+        "source": "prescriptions",
+        "name": "Prescriptions",
+        "status": "readable",
+        "last_successful_read": "2026-03-02T09:06:16-05:00",
+        "outage": null,
+        "verdicts": []
+      }
+    ]
+  },
+  {
+    "id": "edge-crm-outage",
+    "title": "CRM outage",
+    "audited_at": "2026-03-02T09:06:16-05:00",
+    "adapters": [
+      {
+        "source": "calendar",
+        "name": "Calendar",
+        "status": "readable",
+        "last_successful_read": "2026-03-02T09:06:16-05:00",
+        "outage": null,
+        "verdicts": []
+      },
+      {
+        "source": "crm",
+        "name": "CRM",
+        "status": "unreadable",
+        "last_successful_read": null,
+        "outage": {
+          "name": "CRM outage",
+          "detail": "crm adapter is unavailable"
+        },
+        "verdicts": [
+          {
+            "claim_id": "call-edge-crm-outage-c1",
+            "claim": "AppointmentBooked",
+            "status": "UNVERIFIABLE",
+            "summary": "Could not be checked: crm could not be read. No verdict is better than a guessed one."
+          }
+        ]
+      },
+      {
+        "source": "messages",
+        "name": "Message log",
+        "status": "readable",
+        "last_successful_read": "2026-03-02T09:06:16-05:00",
+        "outage": null,
+        "verdicts": []
+      },
+      {
+        "source": "tickets",
+        "name": "Tickets",
+        "status": "readable",
+        "last_successful_read": "2026-03-02T09:06:16-05:00",
+        "outage": null,
+        "verdicts": []
+      },
+      {
+        "source": "payments",
+        "name": "Payments",
+        "status": "readable",
+        "last_successful_read": "2026-03-02T09:06:16-05:00",
+        "outage": null,
+        "verdicts": []
+      },
+      {
+        "source": "prescriptions",
+        "name": "Prescriptions",
+        "status": "readable",
+        "last_successful_read": "2026-03-02T09:06:16-05:00",
+        "outage": null,
+        "verdicts": []
+      }
+    ]
+  },
+  {
+    "id": "edge-message-log-outage",
+    "title": "Message log outage",
+    "audited_at": "2026-03-02T09:06:16-05:00",
+    "adapters": [
+      {
+        "source": "calendar",
+        "name": "Calendar",
+        "status": "readable",
+        "last_successful_read": "2026-03-02T09:06:16-05:00",
+        "outage": null,
+        "verdicts": []
+      },
+      {
+        "source": "crm",
+        "name": "CRM",
+        "status": "readable",
+        "last_successful_read": "2026-03-02T09:06:16-05:00",
+        "outage": null,
+        "verdicts": []
+      },
+      {
+        "source": "messages",
+        "name": "Message log",
+        "status": "unreadable",
+        "last_successful_read": null,
+        "outage": {
+          "name": "Message log outage",
+          "detail": "messages adapter is unavailable"
+        },
+        "verdicts": [
+          {
+            "claim_id": "call-edge-message-log-outage-c2",
+            "claim": "ConfirmationSent",
+            "status": "UNVERIFIABLE",
+            "summary": "Could not be checked: messages could not be read. No verdict is better than a guessed one."
+          }
+        ]
+      },
+      {
+        "source": "tickets",
+        "name": "Tickets",
+        "status": "readable",
+        "last_successful_read": "2026-03-02T09:06:16-05:00",
+        "outage": null,
+        "verdicts": []
+      },
+      {
+        "source": "payments",
+        "name": "Payments",
+        "status": "readable",
+        "last_successful_read": "2026-03-02T09:06:16-05:00",
+        "outage": null,
+        "verdicts": []
+      },
+      {
+        "source": "prescriptions",
+        "name": "Prescriptions",
+        "status": "readable",
+        "last_successful_read": "2026-03-02T09:06:16-05:00",
+        "outage": null,
+        "verdicts": []
+      }
+    ]
+  }
+]
