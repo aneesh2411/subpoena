@@ -76,7 +76,7 @@ fail to reproduce, and the eval still passes.
    trends are open ([#218](https://github.com/aneesh2411/subpoena/issues/218)).
 3. **Alerting.** Critical findings to the on-call human within a minute.
 4. **Multi-tenant auth, roles, retention policy** for transcripts and patient data.
-5. **More claim types.** Payments taken: **Done** ([#205](https://github.com/aneesh2411/subpoena/issues/205)). Open: records updated ([#215](https://github.com/aneesh2411/subpoena/issues/215)), prescriptions refilled ([#216](https://github.com/aneesh2411/subpoena/issues/216)).
+5. **More claim types.** Payments taken **Done** ([#205](https://github.com/aneesh2411/subpoena/issues/205)), records updated **Done** ([#215](https://github.com/aneesh2411/subpoena/issues/215)). Open: prescriptions refilled ([#216](https://github.com/aneesh2411/subpoena/issues/216)).
 6. **Structured topics for handoffs.** **Done** ([#181](https://github.com/aneesh2411/subpoena/issues/181)):
    compare ticket content without a model on the verdict path.
 
