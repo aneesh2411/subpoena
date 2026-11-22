@@ -6,7 +6,7 @@ import sqlite3
 import threading
 from collections.abc import Callable, Iterator
 
-from subpoena.api import review_store, revisions
+from subpoena.api import approvals, review_store, revisions
 from subpoena.api.review import Receipt, TransitionRequest
 from subpoena.api.webhook import SCHEMA as WEBHOOK_SCHEMA
 from subpoena.api.webhook import write_transaction
@@ -35,7 +35,11 @@ class AuditStore:
         self._lock = threading.RLock()
         with self._lock:
             self._conn.executescript(
-                _SCHEMA + review_store.REVIEW_SCHEMA + revisions.REVISION_SCHEMA + WEBHOOK_SCHEMA
+                _SCHEMA
+                + review_store.REVIEW_SCHEMA
+                + revisions.REVISION_SCHEMA
+                + WEBHOOK_SCHEMA
+                + approvals.APPROVAL_SCHEMA
             )
 
     def close(self) -> None:
@@ -153,6 +157,16 @@ class AuditStore:
             sql, params = sql + " LIMIT ?", (limit,)
         with self._lock:
             return self._conn.execute(sql, params).fetchall()
+
+    def append_approval(
+        self, audit_id: str, request: approvals.ApprovalRequest
+    ) -> approvals.Approval:
+        with self._lock:
+            return approvals.append_approval(self._conn, audit_id, request)
+
+    def list_approvals(self, audit_id: str) -> list[approvals.Approval]:
+        with self._lock:
+            return approvals.list_approvals(self._conn, audit_id)
 
     def list_revisions(self, key: bytes | None) -> dict:
         with self._lock:

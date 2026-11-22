@@ -5,6 +5,8 @@ Core:
     POST /calls                  ingest a call (transcript + claims)
     POST /audit                  audit a stored or inline call against the system of record
     POST /audit/{id}/claims/{claim_id}/recheck   re-check a sealed claim
+    POST /audit/{id}/approvals   append a human remediation decision
+    GET  /audit/{id}/approvals   read a single audit’s approval history
     GET  /audit/{id}/report      the sealed report (JSON, or Markdown with ?format=md)
 
 Supporting:
@@ -41,6 +43,7 @@ from starlette.concurrency import run_in_threadpool
 
 from subpoena import __version__
 from subpoena.api.alerts import build_alert_feed
+from subpoena.api.approvals import ApprovalRequest
 from subpoena.api.ingest import parse_delivery
 from subpoena.api.repair_queue import build_repair_queue
 from subpoena.api.review import Hash, ReviewError, TransitionRequest
@@ -324,6 +327,33 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 "verdict": checked.verdicts[0].model_dump(mode="json"),
                 "seal": checked.seal.model_dump(mode="json"),
             }
+        )
+
+    @app.post("/audit/{audit_id}/approvals", status_code=201, dependencies=guarded)
+    def approve_remediation(audit_id: str, req: ApprovalRequest) -> JSONResponse:
+        audit = store().get_audit(audit_id)
+        if audit is None:
+            raise HTTPException(404, f"audit {audit_id} not found")
+        kind, target_id = req.target
+        target_ids = (
+            (v.claim.claim_id for v in audit.verdicts)
+            if kind == "claim"
+            else (f.finding_id for f in audit.findings)
+        )
+        if target_id not in target_ids:
+            raise HTTPException(404, f"{kind} {target_id} not found in audit {audit_id}")
+        approval = store().append_approval(audit_id, req)
+        return _ok(approval.model_dump(mode="json", exclude_none=True), 201)
+
+    @app.get("/audit/{audit_id}/approvals", dependencies=guarded)
+    def approval_history(audit_id: str) -> JSONResponse:
+        if store().get_audit(audit_id) is None:
+            raise HTTPException(404, f"audit {audit_id} not found")
+        return _ok(
+            [
+                approval.model_dump(mode="json", exclude_none=True)
+                for approval in store().list_approvals(audit_id)
+            ]
         )
 
     @app.get("/audit/{audit_id}/report", dependencies=guarded, response_model=None)
