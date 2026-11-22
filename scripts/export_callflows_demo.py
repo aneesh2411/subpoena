@@ -19,6 +19,8 @@ SCENARIO_IDS = (
     "fault-spoken-only",
     "clean-handoff-topic",
     "fault-wrong-handoff-topic",
+    "clean-payment",
+    "fault-wrong-payment-amount",
 )
 
 PAGE = """<!doctype html>
@@ -125,6 +127,7 @@ PAGE = """<!doctype html>
     ConfirmationSent: "Confirmation",
     Rescheduled: "Reschedule",
     HandoffCreated: "Handoff",
+    PaymentCollected: "Payment",
   };
 
   function add(parent, tag, text, className) {

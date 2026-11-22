@@ -1,21 +1,21 @@
 {
   "schema": 1,
-  "certified_at": "2026-11-22T03:23:27.471165+00:00",
-  "expires_at": "2027-02-20T03:23:27.471165+00:00",
-  "fingerprint": "844c8251cc3850c8cbac2729ce4ce48491efcf0047ceabea402c436ce198b2fc",
+  "certified_at": "2026-11-22T06:57:18.660517+00:00",
+  "expires_at": "2027-02-20T06:57:18.660517+00:00",
+  "fingerprint": "d7b2c9e937da7012aea827185e0b3fd5681f2feef429fb1e48c2dcd58564863c",
   "golden": {
     "label": "Subpoena",
-    "calls": 61,
+    "calls": 63,
     "claim_level": {
-      "tp": 35,
+      "tp": 36,
       "fp": 0,
       "fn": 2,
-      "tn": 62,
+      "tn": 63,
       "precision": 1.0,
-      "recall": 0.9459,
-      "f1": 0.9722
+      "recall": 0.9474,
+      "f1": 0.973
     },
-    "claim_status_accuracy": 0.9798,
+    "claim_status_accuracy": 0.9802,
     "finding_level": {
       "tp": 7,
       "fp": 0,
@@ -25,8 +25,8 @@
       "recall": 1.0,
       "f1": 1.0
     },
-    "call_accuracy": 0.9672,
-    "call_strict_accuracy": 0.9672,
+    "call_accuracy": 0.9683,
+    "call_strict_accuracy": 0.9683,
     "failures": [
       {
         "scenario": "gap-vague-spoken-promise",
@@ -175,10 +175,10 @@
     }
   ],
   "diff": {
-    "previous": "2026-11-21T16:09:58.103002+00:00",
+    "previous": "2026-11-22T03:23:27.471165+00:00",
     "strict_accuracy": {
-      "was": 0.9661,
-      "now": 0.9672
+      "was": 0.9672,
+      "now": 0.9683
     },
     "newly_failing": [],
     "newly_passing": []

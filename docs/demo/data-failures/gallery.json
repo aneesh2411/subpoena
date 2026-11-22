@@ -1,6 +1,6 @@
 {
-  "call_strict_accuracy": 0.9672,
-  "calls": 61,
+  "call_strict_accuracy": 0.9683,
+  "calls": 63,
   "failures": [
     {
       "expected_verdicts": [
@@ -88,5 +88,5 @@
       "why_hard": "The ticket has the right patient and priority, but its summary is about parking validation instead of billing. The auditor deliberately skips comparing the free-text summaries because deciding whether they mean the same thing requires semantic judgment."
     }
   ],
-  "strict_passes": 59
+  "strict_passes": 61
 }

@@ -39,8 +39,9 @@ def test_callflows_export_matches_golden_runs(tmp_path: Path) -> None:
 
     ids = {case["id"] for case in cases}
     handoff_ids = {"clean-handoff-topic", "fault-wrong-handoff-topic"}
-    assert len(cases) == len(ids) == 5
-    assert handoff_ids <= ids
+    payment_ids = {"clean-payment", "fault-wrong-payment-amount"}
+    assert len(cases) == len(ids) == 7
+    assert handoff_ids | payment_ids <= ids
     for artifact in (relative_data, "walkthrough-callflows.html"):
         assert (tmp_path / artifact).read_bytes() == (ROOT / "docs/demo" / artifact).read_bytes()
     golden = {scenario.id: scenario for scenario in GOLDEN}
@@ -54,6 +55,12 @@ def test_callflows_export_matches_golden_runs(tmp_path: Path) -> None:
             topic = next(diff for diff in verdict["diffs"] if diff["field"] == "topic")
             assert topic["actual"] == "billing"
             assert topic["match"] is (scenario.id == "clean-handoff-topic")
+        elif scenario.id in payment_ids:
+            (verdict,) = case["verdicts"]
+            assert verdict["claim"]["type"] == "PaymentCollected"
+            amount = next(diff for diff in verdict["diffs"] if diff["field"] == "amount_cents")
+            assert amount["actual"] == "4000"
+            assert amount["match"] is (scenario.id == "clean-payment")
         else:
             status_profiles.add(tuple(sorted(statuses)))
         assert case["title"] == scenario.title
@@ -68,5 +75,5 @@ def test_callflows_export_matches_golden_runs(tmp_path: Path) -> None:
         assert case["evidence_trail"] == [
             event.model_dump(mode="json") for event in report.trail if event.stage == "evidence"
         ]
-    assert len(status_profiles) == len(cases) - len(handoff_ids)
+    assert len(status_profiles) == len(cases) - len(handoff_ids | payment_ids)
     assert any({"MISMATCH", "NOT_FOUND"}.intersection(profile) for profile in status_profiles)

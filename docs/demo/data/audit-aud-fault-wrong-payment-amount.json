@@ -1,0 +1,225 @@
+{
+ "audit_id": "aud-fault-wrong-payment-amount",
+ "auditor": "subpoena/0.1.0",
+ "created_at": "2026-03-02T09:06:16-05:00",
+ "call": {
+  "call_id": "call-fault-wrong-payment-amount",
+  "agent_id": "agent:receptionist",
+  "caller": {
+   "name": "Maya Chen",
+   "phone": "+15550101001"
+  },
+  "started_at": "2026-03-02T09:05:00-05:00",
+  "ended_at": "2026-03-02T09:05:16-05:00",
+  "transcript": [
+   {
+    "index": 0,
+    "speaker": "agent",
+    "text": "Thank you for calling Brightside Dental. How can I help?",
+    "at": "2026-03-02T09:05:04-05:00"
+   },
+   {
+    "index": 1,
+    "speaker": "caller",
+    "text": "I'd like to pay the copay by card.",
+    "at": "2026-03-02T09:05:08-05:00"
+   },
+   {
+    "index": 2,
+    "speaker": "agent",
+    "text": "I took the $45.00 copay by card.",
+    "at": "2026-03-02T09:05:12-05:00"
+   },
+   {
+    "index": 3,
+    "speaker": "agent",
+    "text": "Is there anything else? Have a great day.",
+    "at": "2026-03-02T09:05:16-05:00"
+   }
+  ],
+  "raw_transcript": null,
+  "claims": [
+   {
+    "claim_id": "call-fault-wrong-payment-amount-c1",
+    "turn_index": 2,
+    "source": "structured",
+    "utterance": "I took the $45.00 copay by card.",
+    "corrects_prior": false,
+    "type": "PaymentCollected",
+    "patient": {
+     "name": "Maya Chen",
+     "phone": "+15550101001"
+    },
+    "amount_cents": 4500,
+    "method": "card"
+   }
+  ],
+  "provenance": {
+   "agent_version": "receptionist-sim/0.1.0",
+   "model": null,
+   "prompt_version": "narrator:standard",
+   "human_handoffs": [],
+   "platform": null,
+   "from_address": null,
+   "to_address": null,
+   "completion_callback_at": null
+  }
+ },
+ "outcome": "DISCREPANCIES",
+ "verdicts": [
+  {
+   "claim": {
+    "claim_id": "call-fault-wrong-payment-amount-c1",
+    "turn_index": 2,
+    "source": "structured",
+    "utterance": "I took the $45.00 copay by card.",
+    "corrects_prior": false,
+    "type": "PaymentCollected",
+    "patient": {
+     "name": "Maya Chen",
+     "phone": "+15550101001"
+    },
+    "amount_cents": 4500,
+    "method": "card"
+   },
+   "status": "MISMATCH",
+   "severity": "HIGH",
+   "summary": "A payment was recorded (pay_0001) with different details. amount_cents: claimed 4500, actual 4000.",
+   "checks": [
+    {
+     "name": "existence",
+     "passed": true,
+     "detail": "A write by the agent during the call corresponds to this claim."
+    },
+    {
+     "name": "exactness",
+     "passed": false,
+     "detail": "Differs on: amount_cents."
+    },
+    {
+     "name": "side_effects",
+     "passed": null,
+     "detail": "Not applicable."
+    },
+    {
+     "name": "attribution",
+     "passed": true,
+     "detail": "Every backing write carries this call's own stamp."
+    },
+    {
+     "name": "coverage",
+     "passed": true,
+     "detail": "The payments change history for the call window was fully observed."
+    }
+   ],
+   "diffs": [
+    {
+     "field": "patient",
+     "claimed": "Maya Chen (+15550101001)",
+     "actual": "Maya Chen (+15550101001)",
+     "match": true
+    },
+    {
+     "field": "amount_cents",
+     "claimed": "4500",
+     "actual": "4000",
+     "match": false
+    },
+    {
+     "field": "method",
+     "claimed": "card",
+     "actual": "card",
+     "match": true
+    }
+   ],
+   "evidence": [
+    {
+     "source": "payments",
+     "ref": "pay_0001",
+     "note": "Payment receipt recorded during the call (journal #6; net: created)",
+     "record": {
+      "id": "pay_0001",
+      "patient_id": "pat_0001",
+      "amount_cents": 4000,
+      "method": "card",
+      "collected_at": "2026-03-02T14:05:08+00:00"
+     }
+    }
+   ],
+   "remediation": "Check the payment ledger and resolve the discrepancy with the patient."
+  }
+ ],
+ "findings": [],
+ "trail": [
+  {
+   "seq": 1,
+   "stage": "evidence",
+   "message": "calendar: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 2,
+   "stage": "evidence",
+   "message": "crm: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 3,
+   "stage": "evidence",
+   "message": "messages: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 4,
+   "stage": "evidence",
+   "message": "tickets: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 5,
+   "stage": "evidence",
+   "message": "payments: 1 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 6,
+   "stage": "claims",
+   "message": "1 structured claim(s); 1 recovered from the transcript, 0 of them never logged by the agent"
+  },
+  {
+   "seq": 7,
+   "stage": "reconcile",
+   "message": "call-fault-wrong-payment-amount-c1 (PaymentCollected): partial match -> pay_0001"
+  },
+  {
+   "seq": 8,
+   "stage": "verdict",
+   "message": "call-fault-wrong-payment-amount-c1 (PaymentCollected): MISMATCH"
+  },
+  {
+   "seq": 9,
+   "stage": "verdict",
+   "message": "Outcome: DISCREPANCIES"
+  }
+ ],
+ "stats": {
+  "claims": 1,
+  "verified": 0,
+  "mismatch": 1,
+  "not_found": 0,
+  "unverifiable": 0,
+  "findings": 0,
+  "trust_score": 0.0,
+  "max_severity": "HIGH"
+ },
+ "extraction": {
+  "extractor": "rules",
+  "degraded": false,
+  "detail": null
+ },
+ "fulfillments": [],
+ "coverage_gaps": [],
+ "seal": {
+  "algorithm": "sha256",
+  "content_hash": "2be78720f0f10a4aa1f441f4237823390f2043cd782327b667d1ef4a5270269a",
+  "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "chain_hash": "4cf9f1b145baa85be704952c465f23e78bd359a18bc69d63d4ede006c61b483d",
+  "signature": "ee52518fba324bc0160809d20fc04bffe2905b6757a230d9fd418bfdb9467de3",
+  "key_id": "6508b98a7ace"
+ }
+}

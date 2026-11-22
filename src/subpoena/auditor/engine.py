@@ -96,6 +96,13 @@ HANDLERS: dict[str, _Handler] = {
         sidefx.candidates_confirmation,
         sidefx.judge_confirmation,
     ),
+    "PaymentCollected": _Handler(
+        (Entity.PAYMENT, Entity.PATIENT),
+        Entity.PAYMENT,
+        sidefx.match_payment,
+        sidefx.candidates_payment,
+        sidefx.judge_payment,
+    ),
     "HandoffCreated": _Handler(
         (Entity.TICKET, Entity.PATIENT),
         Entity.TICKET,

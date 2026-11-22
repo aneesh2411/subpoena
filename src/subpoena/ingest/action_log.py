@@ -19,6 +19,8 @@ The payload fields use the same types and limits as the corresponding Claim:
 * ``handoff`` → HandoffCreated. Optional: ``patient``, ``summary``,
   ``priority`` (``low``, ``normal``, or ``urgent``), and ``topic`` (
   ``billing``, ``refill``, or ``records``).
+* ``payment_collected`` → PaymentCollected. Required: ``patient``.
+  Optional: ``amount_cents`` (positive integer), ``method`` (``card``, ``cash``, or ``check``).
 * ``cancellation`` → Cancelled. Required: ``patient``, ``start``.
 
 A patient object requires a string ``name`` and can include a string ``phone``.
@@ -59,6 +61,7 @@ from subpoena.models import (
     Frozen,
     HandoffCreated,
     PatientRef,
+    PaymentCollected,
     Provenance,
 )
 
@@ -66,6 +69,7 @@ _CLAIM_BY_KIND = {
     "booking": AppointmentBooked,
     "confirmation_sent": ConfirmationSent,
     "handoff": HandoffCreated,
+    "payment_collected": PaymentCollected,
     "cancellation": Cancelled,
 }
 _CLAIM_METADATA = ClaimBase.model_fields.keys() | {"type"}

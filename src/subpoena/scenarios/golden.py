@@ -29,6 +29,7 @@ from subpoena.scenarios.world import SeedAppointment as Seed
 from subpoena.suspect import (
     Book,
     Cancel,
+    CollectPayment,
     Correct,
     FaultMode,
     Handoff,
@@ -38,12 +39,13 @@ from subpoena.suspect import (
 )
 
 F = FaultMode
-B, R, X, C, H = (
+B, R, X, C, H, P = (
     "AppointmentBooked",
     "Rescheduled",
     "Cancelled",
     "ConfirmationSent",
     "HandoffCreated",
+    "PaymentCollected",
 )
 V, MM, NF, UV = (
     VerdictStatus.VERIFIED,
@@ -128,6 +130,13 @@ CLEAN: tuple[Scenario, ...] = (
         "A billing question becomes a ticket.",
         (Handoff(BILLING),),
         ((H, V),),
+    ),
+    Scenario(
+        "clean-payment",
+        "Copay collected as stated",
+        "The agent reports the $40 copay it recorded for the caller.",
+        (CollectPayment(4000),),
+        ((P, V),),
     ),
     Scenario(
         "clean-handoff-topic",
@@ -248,6 +257,13 @@ REQUIRED: tuple[Scenario, ...] = (
 )
 
 EXTENDED: tuple[Scenario, ...] = (
+    Scenario(
+        "fault-wrong-payment-amount",
+        "Agent states the wrong copay amount",
+        "The agent records a $40 copay but tells the caller it collected $45.",
+        (CollectPayment(4000, spoken_amount_cents=4500),),
+        ((P, MM),),
+    ),
     Scenario(
         "fault-wrong-handoff-topic",
         "Agent states the wrong handoff topic",
@@ -690,6 +706,8 @@ _V2: dict[str, tuple[ExpectedV2, ...]] = {
             "handoff|+15550101001|normal",
         ),
     ),
+    "clean-payment": ((P, V, "payment|+15550101001|4000|card"),),
+    "fault-wrong-payment-amount": ((P, MM, "payment|+15550101001|4500|card"),),
     "clean-handoff-topic": ((H, V, "handoff|+15550101001|normal"),),
     "fault-wrong-handoff-topic": ((H, MM, "handoff|+15550101001|normal"),),
     "clean-urgent-handoff": (

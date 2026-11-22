@@ -20,6 +20,7 @@ SOURCE: dict[Entity, str] = {
     Entity.PATIENT: "crm",
     Entity.MESSAGE: "messages",
     Entity.TICKET: "tickets",
+    Entity.PAYMENT: "payments",
 }
 
 

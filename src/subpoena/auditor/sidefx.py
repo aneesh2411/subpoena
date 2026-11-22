@@ -11,6 +11,8 @@ from subpoena.models import (
     FieldDiff,
     HandoffCreated,
     Message,
+    Payment,
+    PaymentCollected,
     Severity,
     Ticket,
     Verdict,
@@ -203,5 +205,70 @@ def judge_handoff(claim: HandoffCreated, match: Match | None, ctx: AuditContext)
         field_severity={"patient": Severity.HIGH, "priority": Severity.HIGH},
         verified=f"Handoff ticket exists as claimed ({ticket.id}, priority {ticket.priority}).",
         mismatch=f"A ticket was created ({ticket.id}) but not as the caller was told.",
+        remediation=remediation,
+    )
+
+
+# ------------------------------- PaymentCollected ------------------------- #
+
+
+def candidates_payment(
+    claim: PaymentCollected, ctx: AuditContext, strict: bool
+) -> list[tuple[int, Match]]:
+    ids = ctx.patient_ids(claim.patient)
+    out: list[tuple[int, Match]] = []
+    for nc in ctx.free(Entity.PAYMENT):
+        if not _created(nc):
+            continue
+        payment = Payment.model_validate(nc.after)
+        patient_ok = payment.patient_id in ids
+        amount_ok = claim.amount_cents is None or claim.amount_cents == payment.amount_cents
+        method_ok = claim.method is None or claim.method == payment.method
+        if strict and not (patient_ok and amount_ok and method_ok):
+            continue
+        out.append((4 * patient_ok + 2 * amount_ok + method_ok, Match(primary=nc)))
+    return out
+
+
+def match_payment(claim: PaymentCollected, ctx: AuditContext, strict: bool) -> Match | None:
+    candidates = candidates_payment(claim, ctx, strict)
+    return max(candidates, key=lambda c: c[0])[1] if candidates else None
+
+
+def judge_payment(claim: PaymentCollected, match: Match | None, ctx: AuditContext) -> Verdict:
+    remediation = "Check the payment ledger and resolve the discrepancy with the patient."
+    if match is None or match.primary is None:
+        return not_found(
+            claim,
+            "The agent claimed it collected a payment, but no corresponding receipt was recorded.",
+            [ctx.journal_evidence(Entity.PAYMENT, "No corresponding receipt.")],
+            severity=Severity.HIGH,
+            remediation=remediation,
+        )
+    payment = Payment.model_validate(match.primary.after)
+    diffs = [
+        FieldDiff(
+            field="patient",
+            claimed=ref_label(claim.patient),
+            actual=ctx.patient_label(payment.patient_id),
+            match=payment.patient_id in ctx.patient_ids(claim.patient),
+        )
+    ]
+    for field in ("amount_cents", "method"):
+        claimed = getattr(claim, field)
+        if claimed is not None:
+            actual = getattr(payment, field)
+            diffs.append(
+                FieldDiff(
+                    field=field, claimed=str(claimed), actual=str(actual), match=claimed == actual
+                )
+            )
+    return conclude(
+        claim,
+        diffs,
+        [match.primary.evidence("Payment receipt recorded during the call")],
+        field_severity={"patient": Severity.HIGH, "amount_cents": Severity.HIGH},
+        verified=f"The payment was collected as claimed ({payment.id}).",
+        mismatch=f"A payment was recorded ({payment.id}) with different details.",
         remediation=remediation,
     )

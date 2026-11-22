@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import timedelta
 
 import pytest
@@ -151,7 +152,7 @@ GCAL_CALENDARS = {PATEL: "cal-patel", KIM: "cal-kim", OSEI: "cal-osei"}
 
 
 class _HybridStore:
-    """SqliteStore for CRM/messages/tickets; Google Calendar for the calendar.
+    """Swap the SQLite calendar for Google Calendar in each session.
 
     The fake service stamps created/updated from whichever session clock is
     installed; sessions run sequentially, so installing the clock at session
@@ -166,16 +167,12 @@ class _HybridStore:
         self._cache = SnapshotCache()
 
     def session(self, actor: str, clock):
-        from subpoena.sor.base import SystemOfRecord
-
         self._service._clock = clock
         base = self._sqlite.session(actor, clock)
         calendar = GoogleCalendarAdapter(
             self._service, GCAL_CALENDARS, actor=actor, clock=clock, cache=self._cache
         )
-        return SystemOfRecord(
-            calendar=calendar, crm=base.crm, messages=base.messages, tickets=base.tickets
-        )
+        return replace(base, calendar=calendar)
 
     def sync(self) -> None:
         GoogleCalendarReader(self._service, GCAL_CALENDARS, cache=self._cache).sync()

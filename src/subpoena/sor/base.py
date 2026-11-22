@@ -25,6 +25,9 @@ from subpoena.models import (
     HandoffTopic,
     Message,
     Patient,
+    Payment,
+    PaymentAmount,
+    PaymentMethod,
     Priority,
     Ticket,
 )
@@ -153,6 +156,16 @@ class TicketQueueAdapter(TicketQueueReader, Protocol):
     ) -> Ticket: ...
 
 
+class PaymentReader(ChangeFeed, Protocol):
+    def list_payments(self, *, patient_id: str | None = None) -> list[Payment]: ...
+
+
+class PaymentAdapter(PaymentReader, Protocol):
+    def collect(
+        self, *, patient_id: str, amount_cents: PaymentAmount, method: PaymentMethod
+    ) -> Payment: ...
+
+
 # -------------------------------- bundles ---------------------------------- #
 
 
@@ -164,6 +177,7 @@ class SystemOfRecordReader:
     crm: CrmReader
     messages: MessageLogReader
     tickets: TicketQueueReader
+    payments: PaymentReader | None = None
 
 
 @dataclass(frozen=True)
@@ -174,6 +188,7 @@ class SystemOfRecord(SystemOfRecordReader):
     crm: CrmAdapter
     messages: MessageLogAdapter
     tickets: TicketQueueAdapter
+    payments: PaymentAdapter | None = None
 
 
 class _Down:
@@ -191,7 +206,7 @@ class _Down:
 
 def with_outage(sor: SystemOfRecordReader, *down: str) -> SystemOfRecordReader:
     """Return a reader where the named adapters (``calendar``, ``crm``, ...) fail."""
-    unknown = set(down) - {"calendar", "crm", "messages", "tickets"}
+    unknown = set(down) - {"calendar", "crm", "messages", "tickets", "payments"}
     if unknown:
         raise ValueError(f"unknown adapter(s): {sorted(unknown)}")
     return SystemOfRecordReader(
@@ -199,6 +214,7 @@ def with_outage(sor: SystemOfRecordReader, *down: str) -> SystemOfRecordReader:
         crm=_Down("crm") if "crm" in down else sor.crm,
         messages=_Down("messages") if "messages" in down else sor.messages,
         tickets=_Down("tickets") if "tickets" in down else sor.tickets,
+        payments=_Down("payments") if "payments" in down else sor.payments,
     )
 
 
@@ -240,6 +256,9 @@ def with_coverage(
 ) -> SystemOfRecordReader:
     """Return a reader whose named feed reports partial coverage. ``drop`` removes
     matching rows from the feed, simulating a mutation the feed never saw."""
-    if name not in {"calendar", "crm", "messages", "tickets"}:
+    if (
+        name not in {"calendar", "crm", "messages", "tickets", "payments"}
+        or getattr(sor, name) is None
+    ):
         raise ValueError(f"unknown adapter: {name!r}")
     return replace(sor, **{name: _Partial(name, getattr(sor, name), cov, drop)})

@@ -26,6 +26,7 @@ from subpoena.models import (
     HandoffCreated,
     Outcome,
     PatientRef,
+    PaymentCollected,
     Rescheduled,
     Severity,
     Verdict,
@@ -111,4 +112,15 @@ class NaiveAuditor:
         if isinstance(claim, HandoffCreated):
             ids = self._patient_ids(claim.patient)
             return any(t.patient_id in ids for t in self._sor.tickets.list_tickets())
+        if isinstance(claim, PaymentCollected):
+            payments = self._sor.payments
+            if payments is None:
+                raise AdapterUnavailable("payments adapter is unavailable")
+            ids = self._patient_ids(claim.patient)
+            return any(
+                p.patient_id in ids
+                and (claim.amount_cents is None or p.amount_cents == claim.amount_cents)
+                and (claim.method is None or p.method == claim.method)
+                for p in payments.list_payments()
+            )
         raise TypeError(f"unknown claim type: {type(claim).__name__}")

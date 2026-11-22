@@ -688,5 +688,255 @@
         "summary": "A ticket was created (tkt_0001) but not as the caller was told. topic: claimed records, actual billing."
       }
     ]
+  },
+  {
+    "evidence_trail": [
+      {
+        "message": "calendar: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window",
+        "seq": 1,
+        "stage": "evidence"
+      },
+      {
+        "message": "crm: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window",
+        "seq": 2,
+        "stage": "evidence"
+      },
+      {
+        "message": "messages: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window",
+        "seq": 3,
+        "stage": "evidence"
+      },
+      {
+        "message": "tickets: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window",
+        "seq": 4,
+        "stage": "evidence"
+      },
+      {
+        "message": "payments: 1 write(s) stamped to this call, 0 under the shared agent identity in the call window",
+        "seq": 5,
+        "stage": "evidence"
+      }
+    ],
+    "id": "clean-payment",
+    "outcome": "CLEAN",
+    "stats": {
+      "claims": 1,
+      "findings": 0,
+      "max_severity": "INFO",
+      "mismatch": 0,
+      "not_found": 0,
+      "trust_score": 1.0,
+      "unverifiable": 0,
+      "verified": 1
+    },
+    "title": "Copay collected as stated",
+    "verdicts": [
+      {
+        "checks": [
+          {
+            "detail": "A write by the agent during the call corresponds to this claim.",
+            "name": "existence",
+            "passed": true
+          },
+          {
+            "detail": "All fields match.",
+            "name": "exactness",
+            "passed": true
+          },
+          {
+            "detail": "Not applicable.",
+            "name": "side_effects",
+            "passed": null
+          },
+          {
+            "detail": "Every backing write carries this call's own stamp.",
+            "name": "attribution",
+            "passed": true
+          },
+          {
+            "detail": "The payments change history for the call window was fully observed.",
+            "name": "coverage",
+            "passed": true
+          }
+        ],
+        "claim": {
+          "amount_cents": 4000,
+          "claim_id": "call-clean-payment-c1",
+          "corrects_prior": false,
+          "method": "card",
+          "patient": {
+            "name": "Maya Chen",
+            "phone": "+15550101001"
+          },
+          "source": "structured",
+          "turn_index": 2,
+          "type": "PaymentCollected",
+          "utterance": "I took the $40.00 copay by card."
+        },
+        "diffs": [
+          {
+            "actual": "Maya Chen (+15550101001)",
+            "claimed": "Maya Chen (+15550101001)",
+            "field": "patient",
+            "match": true
+          },
+          {
+            "actual": "4000",
+            "claimed": "4000",
+            "field": "amount_cents",
+            "match": true
+          },
+          {
+            "actual": "card",
+            "claimed": "card",
+            "field": "method",
+            "match": true
+          }
+        ],
+        "evidence": [
+          {
+            "note": "Payment receipt recorded during the call (journal #6; net: created)",
+            "record": {
+              "amount_cents": 4000,
+              "collected_at": "2026-03-02T14:05:08+00:00",
+              "id": "pay_0001",
+              "method": "card",
+              "patient_id": "pat_0001"
+            },
+            "ref": "pay_0001",
+            "source": "payments"
+          }
+        ],
+        "remediation": null,
+        "severity": "INFO",
+        "status": "VERIFIED",
+        "summary": "The payment was collected as claimed (pay_0001)."
+      }
+    ]
+  },
+  {
+    "evidence_trail": [
+      {
+        "message": "calendar: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window",
+        "seq": 1,
+        "stage": "evidence"
+      },
+      {
+        "message": "crm: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window",
+        "seq": 2,
+        "stage": "evidence"
+      },
+      {
+        "message": "messages: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window",
+        "seq": 3,
+        "stage": "evidence"
+      },
+      {
+        "message": "tickets: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window",
+        "seq": 4,
+        "stage": "evidence"
+      },
+      {
+        "message": "payments: 1 write(s) stamped to this call, 0 under the shared agent identity in the call window",
+        "seq": 5,
+        "stage": "evidence"
+      }
+    ],
+    "id": "fault-wrong-payment-amount",
+    "outcome": "DISCREPANCIES",
+    "stats": {
+      "claims": 1,
+      "findings": 0,
+      "max_severity": "HIGH",
+      "mismatch": 1,
+      "not_found": 0,
+      "trust_score": 0.0,
+      "unverifiable": 0,
+      "verified": 0
+    },
+    "title": "Agent states the wrong copay amount",
+    "verdicts": [
+      {
+        "checks": [
+          {
+            "detail": "A write by the agent during the call corresponds to this claim.",
+            "name": "existence",
+            "passed": true
+          },
+          {
+            "detail": "Differs on: amount_cents.",
+            "name": "exactness",
+            "passed": false
+          },
+          {
+            "detail": "Not applicable.",
+            "name": "side_effects",
+            "passed": null
+          },
+          {
+            "detail": "Every backing write carries this call's own stamp.",
+            "name": "attribution",
+            "passed": true
+          },
+          {
+            "detail": "The payments change history for the call window was fully observed.",
+            "name": "coverage",
+            "passed": true
+          }
+        ],
+        "claim": {
+          "amount_cents": 4500,
+          "claim_id": "call-fault-wrong-payment-amount-c1",
+          "corrects_prior": false,
+          "method": "card",
+          "patient": {
+            "name": "Maya Chen",
+            "phone": "+15550101001"
+          },
+          "source": "structured",
+          "turn_index": 2,
+          "type": "PaymentCollected",
+          "utterance": "I took the $45.00 copay by card."
+        },
+        "diffs": [
+          {
+            "actual": "Maya Chen (+15550101001)",
+            "claimed": "Maya Chen (+15550101001)",
+            "field": "patient",
+            "match": true
+          },
+          {
+            "actual": "4000",
+            "claimed": "4500",
+            "field": "amount_cents",
+            "match": false
+          },
+          {
+            "actual": "card",
+            "claimed": "card",
+            "field": "method",
+            "match": true
+          }
+        ],
+        "evidence": [
+          {
+            "note": "Payment receipt recorded during the call (journal #6; net: created)",
+            "record": {
+              "amount_cents": 4000,
+              "collected_at": "2026-03-02T14:05:08+00:00",
+              "id": "pay_0001",
+              "method": "card",
+              "patient_id": "pat_0001"
+            },
+            "ref": "pay_0001",
+            "source": "payments"
+          }
+        ],
+        "remediation": "Check the payment ledger and resolve the discrepancy with the patient.",
+        "severity": "HIGH",
+        "status": "MISMATCH",
+        "summary": "A payment was recorded (pay_0001) with different details. amount_cents: claimed 4500, actual 4000."
+      }
+    ]
   }
 ]

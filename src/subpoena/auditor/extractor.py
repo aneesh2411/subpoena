@@ -30,6 +30,8 @@ from subpoena.models import (
     ExtractionHealth,
     HandoffCreated,
     HandoffTopic,
+    PaymentCollected,
+    PaymentMethod,
     Rescheduled,
 )
 from subpoena.util import ClinicConfig, find_times, norm_text
@@ -63,6 +65,16 @@ _TOPIC = re.compile(
     rf"|\b(?P<label>{_TOPIC_WORDS})\s+ticket\b",
     re.IGNORECASE,
 )
+_PAYMENT = re.compile(
+    r"^\s*(?:(?:i|we)(?:['’]ve| have)? (?:took|taken|collected|processed|charged|received)\b"
+    r"|(?:the |your )?card on file (?:was )?charged\b)",
+    re.IGNORECASE,
+)
+_PAYMENT_SUBJECT = re.compile(r"\b(?:co-?pay(?:ment)?|payment|card)\b", re.IGNORECASE)
+_PAYMENT_AMOUNT = re.compile(
+    r"\$([0-9]{1,3}(?:,[0-9]{3})+|[0-9]+)(?:\.([0-9]{1,2}))?(?![0-9,]|\.[0-9])"
+)
+_PAYMENT_METHOD = re.compile(r"\b(?:card|(?:in|by|with) (cash|check))\b", re.IGNORECASE)
 _URGENT = re.compile(r"\b(?:urgent|right away|emergency)\b", re.IGNORECASE)
 _PROVIDER = re.compile(r"\bDr\.\s+[A-Z][A-Za-z'-]+")
 _CORRECTION = re.compile(
@@ -75,6 +87,25 @@ def _spoken_handoff_topic(sentence: str) -> HandoffTopic | None:
     if match is None:
         return None
     return cast(HandoffTopic, (match["subject"] or match["label"]).lower())
+
+
+def _spoken_payment(sentence: str) -> tuple[int | None, PaymentMethod | None] | None:
+    if not _PAYMENT.search(sentence) or sentence.rstrip().endswith("?"):
+        return None
+    amount = _PAYMENT_AMOUNT.search(sentence)
+    if not amount and ("$" in sentence or not _PAYMENT_SUBJECT.search(sentence)):
+        return None
+    cents = None
+    if amount:
+        dollars = amount[1].replace(",", "")
+        if len(dollars) > 17:
+            return None
+        cents = 100 * int(dollars) + int((amount[2] or "").ljust(2, "0"))
+        if not 0 < cents <= 2**63 - 1:
+            return None
+    match = _PAYMENT_METHOD.search(sentence)
+    method = cast(PaymentMethod, (match[1] or "card").lower()) if match else None
+    return cents, method
 
 
 class RuleBasedExtractor:
@@ -146,6 +177,13 @@ class RuleBasedExtractor:
                                 about_start=last_time,
                             )
                         )
+                elif (payment := _spoken_payment(sentence)) is not None:
+                    amount, method = payment
+                    claims.append(
+                        PaymentCollected(
+                            **meta, patient=call.caller, amount_cents=amount, method=method
+                        )
+                    )
                 elif _HANDOFF.search(sentence):
                     claims.append(
                         HandoffCreated(
@@ -164,7 +202,12 @@ class _Extracted(BaseModel):
 
     turn_index: int
     type: Literal[
-        "AppointmentBooked", "Rescheduled", "Cancelled", "ConfirmationSent", "HandoffCreated"
+        "AppointmentBooked",
+        "Rescheduled",
+        "Cancelled",
+        "ConfirmationSent",
+        "HandoffCreated",
+        "PaymentCollected",
     ]
     start: AwareDatetime | None = None
     old_start: AwareDatetime | None = None
@@ -185,9 +228,10 @@ class LLMClaimExtractor:
     _SYSTEM = (
         "You read phone-call transcripts from an AI receptionist. List every action the AGENT "
         "tells the caller it has COMPLETED (booked, rescheduled, cancelled, sent a confirmation, "
-        "created a handoff ticket). Ignore offers, questions and things it says it could not do. "
+        "created a handoff ticket, collected a payment). Ignore offers, questions, and failures. "
         'Reply with a JSON array only. Each item: {"turn_index": int, "type": '
-        '"AppointmentBooked|Rescheduled|Cancelled|ConfirmationSent|HandoffCreated", '
+        '"AppointmentBooked|Rescheduled|Cancelled|ConfirmationSent|HandoffCreated|'
+        'PaymentCollected", '
         '"start"|"old_start"|"new_start": ISO-8601 with UTC offset or null, '
         '"provider": string or null, "channel": "sms|email", '
         '"priority": "low|normal|urgent"}.'
@@ -261,6 +305,13 @@ class LLMClaimExtractor:
             return ConfirmationSent(
                 **meta, channel=item.channel, to=call.caller.phone, about_start=item.start
             )
+        if item.type == "PaymentCollected":
+            for sentence in _SENTENCE.split(meta["utterance"]):
+                if not _NEGATED.search(sentence) and (payment := _spoken_payment(sentence)):
+                    amount, method = payment
+                    return PaymentCollected(
+                        **meta, patient=call.caller, amount_cents=amount, method=method
+                    )
         if item.type == "HandoffCreated":
             return HandoffCreated(
                 **meta,
@@ -321,6 +372,12 @@ def _same_promise(spoken: Claim, logged: Claim) -> bool:
             and norm_text(spoken.to) == norm_text(logged.to)
             and (spoken.about_start is None or spoken.about_start == logged.about_start)
         )
+    if isinstance(spoken, PaymentCollected) and isinstance(logged, PaymentCollected):
+        return (
+            spoken.patient == logged.patient
+            and (spoken.amount_cents is None or spoken.amount_cents == logged.amount_cents)
+            and (spoken.method is None or spoken.method == logged.method)
+        )
     if isinstance(spoken, HandoffCreated) and isinstance(logged, HandoffCreated):
         summary = _handoff_summary(spoken)
         same_content = (
@@ -360,7 +417,7 @@ def _spoken_key(claim: Claim) -> tuple | None:
         return ("Cancelled", claim.start)
     if isinstance(claim, ConfirmationSent):
         return ("ConfirmationSent", claim.channel, norm_text(claim.to), claim.about_start)
-    return None  # handoffs are free-text; never deduped
+    return None  # A later handoff or payment may be a separate action.
 
 
 def merge_claims(structured: Sequence[Claim], spoken: Sequence[Claim]) -> tuple[Claim, ...]:

@@ -25,6 +25,9 @@ from subpoena.models import (
     HandoffTopic,
     Message,
     Patient,
+    Payment,
+    PaymentAmount,
+    PaymentMethod,
     Priority,
     Ticket,
 )
@@ -44,12 +47,14 @@ _TABLES: dict[Entity, tuple[str, tuple[str, ...]]] = {
         "tickets",
         ("id", "patient_id", "summary", "priority", "status", "assignee", "created_at"),
     ),
+    Entity.PAYMENT: ("payments", ("id", "patient_id", "amount_cents", "method", "collected_at")),
 }
 _ID_PREFIX = {
     Entity.PATIENT: "pat",
     Entity.APPOINTMENT: "apt",
     Entity.MESSAGE: "msg",
     Entity.TICKET: "tkt",
+    Entity.PAYMENT: "pay",
 }
 
 _SCHEMA = """
@@ -66,6 +71,10 @@ CREATE TABLE IF NOT EXISTS tickets(
     id TEXT PRIMARY KEY, patient_id TEXT, summary TEXT NOT NULL,
     priority TEXT NOT NULL DEFAULT 'normal', status TEXT NOT NULL DEFAULT 'open',
     assignee TEXT, created_at TEXT NOT NULL, topic TEXT);
+CREATE TABLE IF NOT EXISTS payments(
+    id TEXT PRIMARY KEY, patient_id TEXT NOT NULL REFERENCES patients(id),
+    amount_cents INTEGER NOT NULL CHECK (typeof(amount_cents) = 'integer' AND amount_cents > 0),
+    method TEXT NOT NULL CHECK (method IN ('card', 'cash', 'check')), collected_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS id_seq(entity TEXT PRIMARY KEY, n INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS session_ctx(
     id INTEGER PRIMARY KEY CHECK (id = 1), actor TEXT NOT NULL, now TEXT NOT NULL);
@@ -109,7 +118,7 @@ def _journal_triggers() -> list[str]:
 
 
 class SqliteStore:
-    """One SQLite database holding the calendar, CRM, message log and ticket queue."""
+    """SQLite storage for appointments, patients, messages, tickets and payments."""
 
     def __init__(self, path: str = ":memory:") -> None:
         self._conn = sqlite3.connect(path, check_same_thread=False, isolation_level=None)
@@ -141,6 +150,7 @@ class SqliteStore:
             crm=_Crm(self, actor, clock),
             messages=_Messages(self, actor, clock),
             tickets=_Tickets(self, actor, clock),
+            payments=_Payments(self, actor, clock),
         )
 
     def close(self) -> None:
@@ -445,3 +455,36 @@ class _Tickets(_Adapter):
         if patient_id is None:
             return tickets
         return [t for t in tickets if t.patient_id == patient_id]
+
+
+class _Payments(_Adapter):
+    entity = Entity.PAYMENT
+
+    def collect(
+        self, *, patient_id: str, amount_cents: PaymentAmount, method: PaymentMethod
+    ) -> Payment:
+        now = self._clock()
+        with self._store._write(self._actor, now) as conn:
+            payment = Payment(
+                id=self._store._next_id(conn, self.entity),
+                patient_id=patient_id,
+                amount_cents=amount_cents,
+                method=method,
+                collected_at=now,
+            )
+            conn.execute(
+                "INSERT INTO payments(id, patient_id, amount_cents, method, collected_at)"
+                " VALUES (?, ?, ?, ?, ?)",
+                (payment.id, patient_id, amount_cents, method, to_utc_iso(payment.collected_at)),
+            )
+        return payment
+
+    def list_payments(self, *, patient_id: str | None = None) -> list[Payment]:
+        if patient_id is None:
+            rows = self._store._rows("SELECT * FROM payments ORDER BY collected_at, id")
+        else:
+            rows = self._store._rows(
+                "SELECT * FROM payments WHERE patient_id = ? ORDER BY collected_at, id",
+                (patient_id,),
+            )
+        return [Payment.model_validate(row) for row in rows]

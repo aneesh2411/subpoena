@@ -26,6 +26,9 @@ from subpoena.models import (
     HandoffTopic,
     Patient,
     PatientRef,
+    PaymentAmount,
+    PaymentCollected,
+    PaymentMethod,
     Priority,
     Provenance,
     Rescheduled,
@@ -113,6 +116,13 @@ class Handoff:
 
 
 @dataclass(frozen=True)
+class CollectPayment:
+    amount_cents: PaymentAmount
+    method: PaymentMethod = "card"
+    spoken_amount_cents: PaymentAmount | None = None
+
+
+@dataclass(frozen=True)
 class Recap:
     """The agent restates an earlier booking in a later turn."""
 
@@ -126,7 +136,7 @@ class Inquiry:
     answer: str
 
 
-Step = Book | Reschedule | Cancel | Handoff | Recap | Inquiry | Correct
+Step = Book | Reschedule | Cancel | Handoff | Recap | Inquiry | Correct | CollectPayment
 
 
 @dataclass(frozen=True)
@@ -194,6 +204,7 @@ class _Call:
             Reschedule: (self._reschedule, RESCHEDULE_FAULTS),
             Cancel: (self._cancel, CANCEL_FAULTS),
             Handoff: (self._handoff, HANDOFF_FAULTS),
+            CollectPayment: (self._collect_payment, frozenset()),
             Recap: (self._recap, frozenset()),
             Inquiry: (self._inquiry, frozenset()),
         }
@@ -505,6 +516,25 @@ class _Call:
                 summary=f"Caller needs help with {step.reason}",
                 priority=step.priority,
                 topic=step.spoken_topic,
+            )
+        )
+        self._say("agent", line)
+
+    def _collect_payment(self, step: CollectPayment, _modes: frozenset[FaultMode]) -> None:
+        ref = self.caller
+        self._say("caller", f"I'd like to pay the copay by {step.method}.")
+        patient = self._patient(ref, create=False)
+        payments = self.a.sor.payments
+        if patient is None or payments is None:
+            self._say("agent", "I couldn't collect the copay.")
+            return
+        payments.collect(patient_id=patient.id, amount_cents=step.amount_cents, method=step.method)
+        amount = step.amount_cents if step.spoken_amount_cents is None else step.spoken_amount_cents
+        dollars, cents = divmod(amount, 100)
+        line = f"I took the ${dollars}.{cents:02d} copay by {step.method}."
+        self.claims.append(
+            PaymentCollected(
+                **self._claim_meta(line), patient=ref, amount_cents=amount, method=step.method
             )
         )
         self._say("agent", line)

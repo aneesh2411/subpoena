@@ -31,6 +31,8 @@ class Frozen(BaseModel):
 
 Channel = Literal["sms", "email"]
 Priority = Literal["low", "normal", "urgent"]
+PaymentMethod = Literal["card", "cash", "check"]
+PaymentAmount = Annotated[int, Field(strict=True, gt=0, le=2**63 - 1)]
 HandoffTopic = Literal["billing", "refill", "records"]
 
 
@@ -39,6 +41,7 @@ class Entity(StrEnum):
     APPOINTMENT = "appointment"
     MESSAGE = "message"
     TICKET = "ticket"
+    PAYMENT = "payment"
 
 
 class AppointmentStatus(StrEnum):
@@ -85,6 +88,14 @@ class Ticket(Frozen):
     assignee: str | None = None
     created_at: AwareDatetime
     topic: HandoffTopic | None = None
+
+
+class Payment(Frozen):
+    id: str
+    patient_id: str
+    amount_cents: PaymentAmount
+    method: PaymentMethod
+    collected_at: AwareDatetime
 
 
 class Change(Frozen):
@@ -171,8 +182,20 @@ class HandoffCreated(ClaimBase):
         return data
 
 
+class PaymentCollected(ClaimBase):
+    type: Literal["PaymentCollected"] = "PaymentCollected"
+    patient: PatientRef
+    amount_cents: PaymentAmount | None = None
+    method: PaymentMethod | None = None
+
+
 Claim = Annotated[
-    AppointmentBooked | Rescheduled | Cancelled | ConfirmationSent | HandoffCreated,
+    AppointmentBooked
+    | Rescheduled
+    | Cancelled
+    | ConfirmationSent
+    | HandoffCreated
+    | PaymentCollected,
     Field(discriminator="type"),
 ]
 
@@ -182,6 +205,7 @@ CLAIM_TYPES: tuple[str, ...] = (
     "Cancelled",
     "ConfirmationSent",
     "HandoffCreated",
+    "PaymentCollected",
 )
 
 

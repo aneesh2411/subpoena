@@ -1,0 +1,225 @@
+{
+ "audit_id": "aud-clean-payment",
+ "auditor": "subpoena/0.1.0",
+ "created_at": "2026-03-02T09:06:16-05:00",
+ "call": {
+  "call_id": "call-clean-payment",
+  "agent_id": "agent:receptionist",
+  "caller": {
+   "name": "Maya Chen",
+   "phone": "+15550101001"
+  },
+  "started_at": "2026-03-02T09:05:00-05:00",
+  "ended_at": "2026-03-02T09:05:16-05:00",
+  "transcript": [
+   {
+    "index": 0,
+    "speaker": "agent",
+    "text": "Thank you for calling Brightside Dental. How can I help?",
+    "at": "2026-03-02T09:05:04-05:00"
+   },
+   {
+    "index": 1,
+    "speaker": "caller",
+    "text": "I'd like to pay the copay by card.",
+    "at": "2026-03-02T09:05:08-05:00"
+   },
+   {
+    "index": 2,
+    "speaker": "agent",
+    "text": "I took the $40.00 copay by card.",
+    "at": "2026-03-02T09:05:12-05:00"
+   },
+   {
+    "index": 3,
+    "speaker": "agent",
+    "text": "Is there anything else? Have a great day.",
+    "at": "2026-03-02T09:05:16-05:00"
+   }
+  ],
+  "raw_transcript": null,
+  "claims": [
+   {
+    "claim_id": "call-clean-payment-c1",
+    "turn_index": 2,
+    "source": "structured",
+    "utterance": "I took the $40.00 copay by card.",
+    "corrects_prior": false,
+    "type": "PaymentCollected",
+    "patient": {
+     "name": "Maya Chen",
+     "phone": "+15550101001"
+    },
+    "amount_cents": 4000,
+    "method": "card"
+   }
+  ],
+  "provenance": {
+   "agent_version": "receptionist-sim/0.1.0",
+   "model": null,
+   "prompt_version": "narrator:standard",
+   "human_handoffs": [],
+   "platform": null,
+   "from_address": null,
+   "to_address": null,
+   "completion_callback_at": null
+  }
+ },
+ "outcome": "CLEAN",
+ "verdicts": [
+  {
+   "claim": {
+    "claim_id": "call-clean-payment-c1",
+    "turn_index": 2,
+    "source": "structured",
+    "utterance": "I took the $40.00 copay by card.",
+    "corrects_prior": false,
+    "type": "PaymentCollected",
+    "patient": {
+     "name": "Maya Chen",
+     "phone": "+15550101001"
+    },
+    "amount_cents": 4000,
+    "method": "card"
+   },
+   "status": "VERIFIED",
+   "severity": "INFO",
+   "summary": "The payment was collected as claimed (pay_0001).",
+   "checks": [
+    {
+     "name": "existence",
+     "passed": true,
+     "detail": "A write by the agent during the call corresponds to this claim."
+    },
+    {
+     "name": "exactness",
+     "passed": true,
+     "detail": "All fields match."
+    },
+    {
+     "name": "side_effects",
+     "passed": null,
+     "detail": "Not applicable."
+    },
+    {
+     "name": "attribution",
+     "passed": true,
+     "detail": "Every backing write carries this call's own stamp."
+    },
+    {
+     "name": "coverage",
+     "passed": true,
+     "detail": "The payments change history for the call window was fully observed."
+    }
+   ],
+   "diffs": [
+    {
+     "field": "patient",
+     "claimed": "Maya Chen (+15550101001)",
+     "actual": "Maya Chen (+15550101001)",
+     "match": true
+    },
+    {
+     "field": "amount_cents",
+     "claimed": "4000",
+     "actual": "4000",
+     "match": true
+    },
+    {
+     "field": "method",
+     "claimed": "card",
+     "actual": "card",
+     "match": true
+    }
+   ],
+   "evidence": [
+    {
+     "source": "payments",
+     "ref": "pay_0001",
+     "note": "Payment receipt recorded during the call (journal #6; net: created)",
+     "record": {
+      "id": "pay_0001",
+      "patient_id": "pat_0001",
+      "amount_cents": 4000,
+      "method": "card",
+      "collected_at": "2026-03-02T14:05:08+00:00"
+     }
+    }
+   ],
+   "remediation": null
+  }
+ ],
+ "findings": [],
+ "trail": [
+  {
+   "seq": 1,
+   "stage": "evidence",
+   "message": "calendar: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 2,
+   "stage": "evidence",
+   "message": "crm: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 3,
+   "stage": "evidence",
+   "message": "messages: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 4,
+   "stage": "evidence",
+   "message": "tickets: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 5,
+   "stage": "evidence",
+   "message": "payments: 1 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 6,
+   "stage": "claims",
+   "message": "1 structured claim(s); 1 recovered from the transcript, 0 of them never logged by the agent"
+  },
+  {
+   "seq": 7,
+   "stage": "reconcile",
+   "message": "call-clean-payment-c1 (PaymentCollected): exact match -> pay_0001"
+  },
+  {
+   "seq": 8,
+   "stage": "verdict",
+   "message": "call-clean-payment-c1 (PaymentCollected): VERIFIED"
+  },
+  {
+   "seq": 9,
+   "stage": "verdict",
+   "message": "Outcome: CLEAN"
+  }
+ ],
+ "stats": {
+  "claims": 1,
+  "verified": 1,
+  "mismatch": 0,
+  "not_found": 0,
+  "unverifiable": 0,
+  "findings": 0,
+  "trust_score": 1.0,
+  "max_severity": "INFO"
+ },
+ "extraction": {
+  "extractor": "rules",
+  "degraded": false,
+  "detail": null
+ },
+ "fulfillments": [],
+ "coverage_gaps": [],
+ "seal": {
+  "algorithm": "sha256",
+  "content_hash": "4e82354e83b8e5dc932148a580038205dd35ace0d5483ec0ad3d61ac6f90ab73",
+  "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "chain_hash": "9e5a295cab49eff488672dfbe1497bb10bb85e7e0548e935c320fc8c2ef2180d",
+  "signature": "f6cf2da45c23edcf3ad17e387bfb1e49f3cf8786cb0ed6b4cd9ba321476f8352",
+  "key_id": "6508b98a7ace"
+ }
+}

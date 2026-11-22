@@ -56,6 +56,14 @@
   "known_gap": null
  },
  {
+  "id": "clean-payment",
+  "title": "Copay collected as stated",
+  "story": "The agent reports the $40 copay it recorded for the caller.",
+  "group": "clean",
+  "faults": [],
+  "known_gap": null
+ },
+ {
   "id": "clean-handoff-topic",
   "title": "Handoff topic matches the ticket",
   "story": "The agent says billing and the ticket records billing.",
@@ -179,6 +187,14 @@
   "faults": [
    "double_book"
   ],
+  "known_gap": null
+ },
+ {
+  "id": "fault-wrong-payment-amount",
+  "title": "Agent states the wrong copay amount",
+  "story": "The agent records a $40 copay but tells the caller it collected $45.",
+  "group": "fault",
+  "faults": [],
   "known_gap": null
  },
  {
