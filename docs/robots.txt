@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://aneesh2411.github.io/subpoena/sitemap.xml
