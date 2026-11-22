@@ -1,0 +1,353 @@
+{
+ "audit_id": "aud-fault-wrong-time-apply-fix-before",
+ "auditor": "subpoena/0.1.0",
+ "created_at": "2026-03-02T09:06:16-05:00",
+ "call": {
+  "call_id": "call-fault-wrong-time",
+  "agent_id": "agent:receptionist",
+  "caller": {
+   "name": "Maya Chen",
+   "phone": "+15550101001"
+  },
+  "started_at": "2026-03-02T09:05:00-05:00",
+  "ended_at": "2026-03-02T09:05:16-05:00",
+  "transcript": [
+   {
+    "index": 0,
+    "speaker": "agent",
+    "text": "Thank you for calling Brightside Dental. How can I help?",
+    "at": "2026-03-02T09:05:04-05:00"
+   },
+   {
+    "index": 1,
+    "speaker": "caller",
+    "text": "Hi, I'd like to book a cleaning with Dr. Patel on Tuesday, March 3 at 2:30 PM.",
+    "at": "2026-03-02T09:05:08-05:00"
+   },
+   {
+    "index": 2,
+    "speaker": "agent",
+    "text": "Okay, I've got you down with Dr. Patel on Tuesday, March 3 at 2:30 PM. I just texted you a confirmation.",
+    "at": "2026-03-02T09:05:12-05:00"
+   },
+   {
+    "index": 3,
+    "speaker": "agent",
+    "text": "Is there anything else? Have a great day.",
+    "at": "2026-03-02T09:05:16-05:00"
+   }
+  ],
+  "raw_transcript": null,
+  "claims": [
+   {
+    "claim_id": "call-fault-wrong-time-c1",
+    "turn_index": 2,
+    "source": "structured",
+    "utterance": "Okay, I've got you down with Dr. Patel on Tuesday, March 3 at 2:30 PM. I just texted you a confirmation.",
+    "corrects_prior": false,
+    "type": "AppointmentBooked",
+    "patient": {
+     "name": "Maya Chen",
+     "phone": "+15550101001"
+    },
+    "start": "2026-03-03T14:30:00-05:00",
+    "provider": "Dr. Patel",
+    "duration_min": 30,
+    "reason": "cleaning"
+   },
+   {
+    "claim_id": "call-fault-wrong-time-c2",
+    "turn_index": 2,
+    "source": "structured",
+    "utterance": "Okay, I've got you down with Dr. Patel on Tuesday, March 3 at 2:30 PM. I just texted you a confirmation.",
+    "corrects_prior": false,
+    "type": "ConfirmationSent",
+    "channel": "sms",
+    "to": "+15550101001",
+    "about_start": "2026-03-03T14:30:00-05:00"
+   }
+  ],
+  "provenance": {
+   "agent_version": "receptionist-sim/0.1.0",
+   "model": null,
+   "prompt_version": "narrator:standard",
+   "human_handoffs": [],
+   "platform": null,
+   "from_address": null,
+   "to_address": null,
+   "completion_callback_at": null
+  }
+ },
+ "outcome": "DISCREPANCIES",
+ "verdicts": [
+  {
+   "claim": {
+    "claim_id": "call-fault-wrong-time-c1",
+    "turn_index": 2,
+    "source": "structured",
+    "utterance": "Okay, I've got you down with Dr. Patel on Tuesday, March 3 at 2:30 PM. I just texted you a confirmation.",
+    "corrects_prior": false,
+    "type": "AppointmentBooked",
+    "patient": {
+     "name": "Maya Chen",
+     "phone": "+15550101001"
+    },
+    "start": "2026-03-03T14:30:00-05:00",
+    "provider": "Dr. Patel",
+    "duration_min": 30,
+    "reason": "cleaning"
+   },
+   "status": "MISMATCH",
+   "severity": "CRITICAL",
+   "summary": "A booking was written (apt_0001) but it is not what the caller was told. start: claimed Tue Mar 3 2026, 2:30 PM EST, actual Tue Mar 3 2026, 3:30 PM EST.",
+   "checks": [
+    {
+     "name": "existence",
+     "passed": true,
+     "detail": "A write by the agent during the call corresponds to this claim."
+    },
+    {
+     "name": "exactness",
+     "passed": false,
+     "detail": "Differs on: start."
+    },
+    {
+     "name": "side_effects",
+     "passed": null,
+     "detail": "Not applicable."
+    },
+    {
+     "name": "attribution",
+     "passed": true,
+     "detail": "Every backing write carries this call's own stamp."
+    },
+    {
+     "name": "coverage",
+     "passed": true,
+     "detail": "The calendar change history for the call window was fully observed."
+    }
+   ],
+   "diffs": [
+    {
+     "field": "patient",
+     "claimed": "Maya Chen (+15550101001)",
+     "actual": "Maya Chen (+15550101001)",
+     "match": true
+    },
+    {
+     "field": "start",
+     "claimed": "Tue Mar 3 2026, 2:30 PM EST",
+     "actual": "Tue Mar 3 2026, 3:30 PM EST",
+     "match": false
+    },
+    {
+     "field": "provider",
+     "claimed": "Dr. Patel",
+     "actual": "Dr. Patel",
+     "match": true
+    },
+    {
+     "field": "duration",
+     "claimed": "30 min",
+     "actual": "30 min",
+     "match": true
+    },
+    {
+     "field": "reason",
+     "claimed": "cleaning",
+     "actual": "cleaning",
+     "match": true
+    }
+   ],
+   "evidence": [
+    {
+     "source": "calendar",
+     "ref": "apt_0001",
+     "note": "Appointment written by the agent during the call (journal #6; net: created)",
+     "record": {
+      "id": "apt_0001",
+      "patient_id": "pat_0001",
+      "provider": "Dr. Patel",
+      "start": "2026-03-03T20:30:00+00:00",
+      "duration_min": 30,
+      "reason": "cleaning",
+      "status": "booked"
+     }
+    }
+   ],
+   "remediation": "Correct the appointment to match what the caller was told, or call them back with the real details."
+  },
+  {
+   "claim": {
+    "claim_id": "call-fault-wrong-time-c2",
+    "turn_index": 2,
+    "source": "structured",
+    "utterance": "Okay, I've got you down with Dr. Patel on Tuesday, March 3 at 2:30 PM. I just texted you a confirmation.",
+    "corrects_prior": false,
+    "type": "ConfirmationSent",
+    "channel": "sms",
+    "to": "+15550101001",
+    "about_start": "2026-03-03T14:30:00-05:00"
+   },
+   "status": "VERIFIED",
+   "severity": "INFO",
+   "summary": "Confirmation was sent to +15550101001 as claimed (msg_0001).",
+   "checks": [
+    {
+     "name": "existence",
+     "passed": true,
+     "detail": "A write by the agent during the call corresponds to this claim."
+    },
+    {
+     "name": "exactness",
+     "passed": true,
+     "detail": "All fields match."
+    },
+    {
+     "name": "side_effects",
+     "passed": null,
+     "detail": "Not applicable."
+    },
+    {
+     "name": "attribution",
+     "passed": true,
+     "detail": "Every backing write carries this call's own stamp."
+    },
+    {
+     "name": "coverage",
+     "passed": true,
+     "detail": "The messages change history for the call window was fully observed."
+    }
+   ],
+   "diffs": [
+    {
+     "field": "recipient",
+     "claimed": "+15550101001",
+     "actual": "+15550101001",
+     "match": true
+    },
+    {
+     "field": "channel",
+     "claimed": "sms",
+     "actual": "sms",
+     "match": true
+    },
+    {
+     "field": "delivery",
+     "claimed": "sent",
+     "actual": "sent",
+     "match": true
+    },
+    {
+     "field": "stated_time",
+     "claimed": "Tue Mar 3 2026, 2:30 PM EST",
+     "actual": "Tue Mar 3 2026, 2:30 PM EST",
+     "match": true
+    }
+   ],
+   "evidence": [
+    {
+     "source": "messages",
+     "ref": "msg_0001",
+     "note": "Message logged during the call (journal #7; net: created)",
+     "record": {
+      "id": "msg_0001",
+      "recipient": "+15550101001",
+      "channel": "sms",
+      "body": "Brightside Dental: your appointment with Dr. Patel is confirmed for Tuesday, March 3 at 2:30 PM.",
+      "status": "sent",
+      "sent_at": "2026-03-02T14:05:08+00:00"
+     }
+    }
+   ],
+   "remediation": null
+  }
+ ],
+ "findings": [],
+ "trail": [
+  {
+   "seq": 1,
+   "stage": "evidence",
+   "message": "calendar: 1 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 2,
+   "stage": "evidence",
+   "message": "crm: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 3,
+   "stage": "evidence",
+   "message": "messages: 1 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 4,
+   "stage": "evidence",
+   "message": "tickets: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 5,
+   "stage": "claims",
+   "message": "2 structured claim(s); 2 recovered from the transcript, 0 of them never logged by the agent"
+  },
+  {
+   "seq": 6,
+   "stage": "reconcile",
+   "message": "call-fault-wrong-time-c1 (AppointmentBooked): partial match -> apt_0001"
+  },
+  {
+   "seq": 7,
+   "stage": "reconcile",
+   "message": "call-fault-wrong-time-c2 (ConfirmationSent): exact match -> msg_0001"
+  },
+  {
+   "seq": 8,
+   "stage": "verdict",
+   "message": "call-fault-wrong-time-c1 (AppointmentBooked): MISMATCH"
+  },
+  {
+   "seq": 9,
+   "stage": "verdict",
+   "message": "call-fault-wrong-time-c2 (ConfirmationSent): VERIFIED"
+  },
+  {
+   "seq": 10,
+   "stage": "verdict",
+   "message": "Outcome: DISCREPANCIES"
+  }
+ ],
+ "stats": {
+  "claims": 2,
+  "verified": 1,
+  "mismatch": 1,
+  "not_found": 0,
+  "unverifiable": 0,
+  "findings": 0,
+  "trust_score": 0.5,
+  "max_severity": "CRITICAL"
+ },
+ "extraction": {
+  "extractor": "rules",
+  "degraded": false,
+  "detail": null
+ },
+ "fulfillments": [],
+ "coverage_gaps": [],
+ "seal": {
+  "algorithm": "sha256",
+  "content_hash": "b272118fc33f6395d8815a6b39d0eb5675d2dff135d3490b304eb468719c8fec",
+  "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "chain_hash": "2fa12f265403bbe49726d29776bf2dc0993ef3158ac7b02a16f55e549efe054b",
+  "signature": "439131b9cf40980ffbc5aeff9afb61a31df96df5e6a16bed475eba2371e4f183",
+  "key_id": "6508b98a7ace"
+ },
+ "escalation_log": [
+  {
+   "claim_id": "call-fault-wrong-time-c1",
+   "block_reason": "A booking was written (apt_0001) but it is not what the caller was told. start: claimed Tue Mar 3 2026, 2:30 PM EST, actual Tue Mar 3 2026, 3:30 PM EST.",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "MISMATCH"
+  }
+ ]
+}

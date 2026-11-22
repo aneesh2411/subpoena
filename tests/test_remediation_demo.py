@@ -10,10 +10,13 @@ from urllib.parse import quote
 from xml.etree import ElementTree
 
 from scripts.export_demo import SEALING_KEY
-from subpoena.auditor import Sealer
+from subpoena.api.approvals import Approval
+from subpoena.auditor import GENESIS, Sealer
 from subpoena.models import AuditReport
 
 ROOT = Path(__file__).resolve().parents[1]
+BEFORE_FIX = "aud-fault-wrong-time-apply-fix-before"
+AFTER_FIX = "aud_d7e6234582f5"
 
 
 def test_remediation_export_is_reproducible(tmp_path: Path) -> None:
@@ -24,7 +27,9 @@ def test_remediation_export_is_reproducible(tmp_path: Path) -> None:
         "fault-phantom-booking": ("Still open", "MISMATCH"),
     }
     data = demo / "data"
-    expected_files = {"remediation.html"}
+    expected_files = {"remediation.html", f"data/approval-{BEFORE_FIX}.json"}
+    for audit_id in (BEFORE_FIX, AFTER_FIX):
+        expected_files.update((f"data/audit-{audit_id}.json", f"data/report-{audit_id}.md"))
     for scenario_id in rechecks:
         audit_id = f"aud-{scenario_id}-recheck"
         expected_files.update((f"data/audit-{audit_id}.json", f"data/report-{audit_id}.md"))
@@ -159,3 +164,47 @@ def test_remediation_export_is_reproducible(tmp_path: Path) -> None:
                 f" · {entry['created_at']}"
                 for entry in history
             ]
+
+
+def test_simulated_apply_fix_exports_verified_receipt() -> None:
+    demo = ROOT / "docs/demo"
+    markup = (demo / "remediation.html").read_text()
+    section = markup.split('aria-labelledby="apply-fix-title">', 1)[1].split("</section>", 1)[0]
+    card = ElementTree.fromstring(f"<section>{section}</section>").find("article")
+    assert card is not None
+    paths = [link.attrib["href"] for link in card.findall("a")]
+    assert paths == [
+        f"data/audit-{BEFORE_FIX}.json",
+        f"data/approval-{BEFORE_FIX}.json",
+        f"data/audit-{AFTER_FIX}.json",
+    ]
+    original = AuditReport.model_validate_json((demo / paths[0]).read_bytes())
+    approval = Approval.model_validate_json((demo / paths[1]).read_bytes())
+    checked = AuditReport.model_validate_json((demo / paths[2]).read_bytes())
+    sealer = Sealer(SEALING_KEY)
+    assert sealer.verify(original, GENESIS, strict=True).ok
+    assert original.seal is not None
+    assert sealer.verify(checked, original.seal.chain_hash, strict=True).ok
+    assert checked.call == original.call
+    assert original.created_at < approval.created_at < checked.created_at
+    assert approval.audit_id == original.audit_id
+    assert approval.action == "resolve"
+
+    (after,) = checked.verdicts
+    (before,) = (v for v in original.verdicts if v.claim.claim_id == approval.claim_id)
+    assert after.claim == before.claim
+    assert [before.status, after.status] == ["MISMATCH", "VERIFIED"]
+    assert [node.text for node in card.findall(".//strong")] == [before.status, after.status]
+    (evidence,) = after.evidence
+    assert evidence.source == "calendar"
+    assert evidence not in before.evidence
+
+    events = {event.stage: event.message for event in checked.trail}
+    receipt = events["fix"]
+    assert receipt.startswith(f"Wrote {evidence.ref} ")
+    assert f"resolve approval {approval.approval_id}" in receipt
+    assert after.claim.claim_id in events["recheck"]
+    text = "".join(card.itertext())
+    assert "Simulated resolve approval" in text
+    assert approval.note in text
+    assert receipt in text

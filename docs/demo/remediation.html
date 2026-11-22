@@ -86,6 +86,20 @@
       <a href="index.html#fault-phantom-booking">Original call</a>
     </article>
   </section>
+  <section class="rechecks" aria-labelledby="apply-fix-title">
+    <h2 id="apply-fix-title">Apply a fix (simulated)</h2>
+    <article>
+      <h3>Writes a different time than it claims</h3>
+      <p>Before fix · <strong class="open">MISMATCH</strong></p>
+      <p>Simulated resolve approval · Jordan Lee, front desk · Approved booking the time promised to the caller.</p>
+      <p>Fix receipt · Wrote apt_0002 as agent:receptionist:call-fault-wrong-time using resolve approval 1.</p>
+      <p>After re-check · <strong class="closed">VERIFIED</strong></p>
+      <p>Booking for Maya Chen on Tue Mar 3 2026, 2:30 PM EST exists exactly as claimed (apt_0002).</p>
+      <a href="data/audit-aud-fault-wrong-time-apply-fix-before.json">Sealed report before fix</a>
+      <a href="data/approval-aud-fault-wrong-time-apply-fix-before.json">Simulated approval record</a>
+      <a href="data/audit-aud_d7e6234582f5.json">Sealed fix and re-check report</a>
+    </article>
+  </section>
   <h2 id="queue-items">Remediation tasks</h2>
   <p>Approvals show simulated human decisions in this replay.</p>
   <table role="table" aria-labelledby="queue-items">

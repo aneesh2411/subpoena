@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Export the remediation queue and sealed re-checks for two replayed calls."""
+"""Export the remediation queue, sealed re-checks, and simulated apply-fix replay.
+
+Install the dev extra to run the replay through FastAPI's test client.
+"""
 
 from __future__ import annotations
 
@@ -12,11 +15,16 @@ from dataclasses import dataclass
 from datetime import timedelta
 from html import escape
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
 from urllib.parse import quote
+from uuid import NAMESPACE_URL, uuid5
 
 from export_demo import SEALING_KEY
+from fastapi.testclient import TestClient
 from pydantic import TypeAdapter
 
+from subpoena.api.app import Settings, create_app
 from subpoena.api.approvals import Approval, list_approvals
 from subpoena.api.review import audit_items
 from subpoena.auditor import Auditor, RuleBasedExtractor, Sealer
@@ -34,6 +42,7 @@ APPROVAL_LABELS = {
     "resolve": "Resolved",
     "dismiss": "Dismissed",
 }
+APPLY_FIX_SCENARIO = "fault-wrong-time"
 RECHECKS = {
     "fault-phantom-booking-bare": timedelta(),
     "fault-phantom-booking": timedelta(hours=1),
@@ -105,6 +114,10 @@ PAGE = """<!doctype html>
   <section class="rechecks" aria-labelledby="rechecks-title">
     <h2 id="rechecks-title">Re-checked tasks</h2>
 @RECHECKS@
+  </section>
+  <section class="rechecks" aria-labelledby="apply-fix-title">
+    <h2 id="apply-fix-title">Apply a fix (simulated)</h2>
+@APPLY_FIX@
   </section>
   <h2 id="queue-items">Other open tasks</h2>
   <table role="table" aria-labelledby="queue-items">
@@ -303,6 +316,80 @@ def recheck_html(scenario_id: str, original: AuditReport, report: AuditReport) -
     </article>"""
 
 
+def replay_apply_fix() -> tuple[AuditReport, Approval, AuditReport]:
+    scenario = BY_ID[APPLY_FIX_SCENARIO]
+    original = AuditReport.model_validate_json(
+        (DATA / f"audit-aud-{scenario.id}.json").read_bytes()
+    )
+    (before,) = (v for v in original.verdicts if isinstance(v.claim, AppointmentBooked))
+    assert before.status is VerdictStatus.MISMATCH
+    world = build_world(scenario)
+    with closing(world.store):
+        assert run_suspect(scenario, world).call == original.call
+        app = create_app(Settings(signing_key=SEALING_KEY))
+        app.state.sor.close()
+        app.state.sor = world.store
+        with closing(app.state.store), TestClient(app) as client:
+            # Seed a standalone ledger with the original report under a replay-specific ID.
+            original = app.state.store.append(
+                original.model_copy(update={"audit_id": f"{original.audit_id}-apply-fix-before"}),
+                app.state.sealer,
+            )
+            path = f"/audit/{original.audit_id}"
+            approved_at = original.created_at + timedelta(seconds=1)
+            with patch("subpoena.api.approvals.utcnow", return_value=approved_at):
+                response = client.post(
+                    f"{path}/approvals",
+                    json={
+                        "claim_id": before.claim.claim_id,
+                        "action": "resolve",
+                        "actor": "Jordan Lee, front desk",
+                        "note": "Approved booking the time promised to the caller.",
+                    },
+                )
+            approval = Approval.model_validate(response.raise_for_status().json()["data"])
+
+            # Freeze the endpoint's clock and generated report ID for the static export.
+            fixed_at = approved_at + timedelta(seconds=1)
+            replay_id = uuid5(NAMESPACE_URL, original.audit_id)
+            with (
+                patch("subpoena.api.app.utcnow", return_value=fixed_at),
+                patch("subpoena.auditor.engine.uuid", SimpleNamespace(uuid4=lambda: replay_id)),
+            ):
+                response = client.post(f"{path}/claims/{before.claim.claim_id}/fix")
+            checked_id = response.raise_for_status().json()["data"]["audit_id"]
+            response = client.get(f"/audit/{checked_id}/report")
+            checked = AuditReport.model_validate(response.raise_for_status().json()["data"])
+    return original, approval, checked
+
+
+def apply_fix_html(original: AuditReport, approval: Approval, checked: AuditReport) -> str:
+    (after,) = checked.verdicts
+    assert after.status is VerdictStatus.VERIFIED
+    before = next(v for v in original.verdicts if v.claim.claim_id == after.claim.claim_id)
+    (receipt,) = (event.message for event in checked.trail if event.stage == "fix")
+    return f"""    <article>
+      <h3>{escape(BY_ID[APPLY_FIX_SCENARIO].title)}</h3>
+      <p>Before fix · <strong class="open">{escape(before.status)}</strong></p>
+      <p>Simulated resolve approval · {escape(approval.actor)} · {escape(approval.note)}</p>
+      <p>Fix receipt · {escape(receipt)}</p>
+      <p>After re-check · <strong class="closed">{escape(after.status)}</strong></p>
+      <p>{escape(after.summary)}</p>
+      <a href="data/audit-{original.audit_id}.json">Sealed report before fix</a>
+      <a href="data/approval-{original.audit_id}.json">Simulated approval record</a>
+      <a href="data/audit-{checked.audit_id}.json">Sealed fix and re-check report</a>
+    </article>"""
+
+
+def write_report(data: Path, report: AuditReport) -> None:
+    (data / f"audit-{report.audit_id}.json").write_text(
+        json.dumps(report.model_dump(mode="json"), indent=1), encoding="utf-8", newline="\n"
+    )
+    (data / f"report-{report.audit_id}.md").write_text(
+        render_markdown(report), encoding="utf-8", newline="\n"
+    )
+
+
 def export(
     out: Path = DEFAULT_OUT,
     *,
@@ -320,13 +407,15 @@ def export(
     examples = []
     for scenario_id, offset in RECHECKS.items():
         original, report = replay_recheck(scenario_id, offset)
-        (output_data / f"audit-{report.audit_id}.json").write_text(
-            json.dumps(report.model_dump(mode="json"), indent=1), encoding="utf-8", newline="\n"
-        )
-        (output_data / f"report-{report.audit_id}.md").write_text(
-            render_markdown(report), encoding="utf-8", newline="\n"
-        )
+        write_report(output_data, report)
         examples.append(recheck_html(scenario_id, original, report))
+
+    original, approval, checked = replay_apply_fix()
+    write_report(output_data, original)
+    write_report(output_data, checked)
+    (output_data / f"approval-{original.audit_id}.json").write_text(
+        approval.model_dump_json(indent=1, exclude_none=True), encoding="utf-8", newline="\n"
+    )
 
     source = (
         closing(sqlite3.connect(f"{approvals_db.resolve().as_uri()}?mode=ro", uri=True))
@@ -356,7 +445,9 @@ def export(
         )
     rows = "\n".join(row.html() for row in remediations)
     (out / "remediation.html").write_text(
-        page.replace("@RECHECKS@", "\n".join(examples)).replace("@ROWS@", rows),
+        page.replace("@RECHECKS@", "\n".join(examples))
+        .replace("@APPLY_FIX@", apply_fix_html(original, approval, checked))
+        .replace("@ROWS@", rows),
         encoding="utf-8",
         newline="\n",
     )
