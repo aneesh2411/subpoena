@@ -1,0 +1,55 @@
+[
+  {
+    "actor": "agent:receptionist:call-fault-rollback",
+    "after": {
+      "duration_min": 30,
+      "id": "apt_0001",
+      "patient_id": "pat_0001",
+      "provider": "Dr. Patel",
+      "reason": "cleaning",
+      "start": "2026-03-03T19:30:00+00:00",
+      "status": "booked"
+    },
+    "at": "2026-03-02T14:05:08Z",
+    "before": null,
+    "entity": "appointment",
+    "entity_id": "apt_0001",
+    "op": "insert",
+    "seq": 6
+  },
+  {
+    "actor": "agent:receptionist:call-fault-rollback",
+    "after": null,
+    "at": "2026-03-02T14:05:08Z",
+    "before": {
+      "duration_min": 30,
+      "id": "apt_0001",
+      "patient_id": "pat_0001",
+      "provider": "Dr. Patel",
+      "reason": "cleaning",
+      "start": "2026-03-03T19:30:00+00:00",
+      "status": "booked"
+    },
+    "entity": "appointment",
+    "entity_id": "apt_0001",
+    "op": "delete",
+    "seq": 7
+  },
+  {
+    "actor": "agent:receptionist:call-fault-rollback",
+    "after": {
+      "body": "Brightside Dental: your appointment with Dr. Patel is confirmed for Tuesday, March 3 at 2:30 PM.",
+      "channel": "sms",
+      "id": "msg_0001",
+      "recipient": "+15550101001",
+      "sent_at": "2026-03-02T14:05:08+00:00",
+      "status": "sent"
+    },
+    "at": "2026-03-02T14:05:08Z",
+    "before": null,
+    "entity": "message",
+    "entity_id": "msg_0001",
+    "op": "insert",
+    "seq": 8
+  }
+]
