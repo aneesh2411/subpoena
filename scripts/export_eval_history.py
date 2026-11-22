@@ -1,4 +1,4 @@
-"""Export golden-set strict accuracy from locally committed eval artifacts."""
+"""Export golden-set trends from locally committed eval artifacts."""
 
 import argparse
 import json
@@ -9,6 +9,18 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "docs/demo/data-history/history.json"
+CLAIM_COUNTS = ("tp", "fp", "fn", "tn")
+
+
+def dated_scorecard(paths: list[str]) -> str | None:
+    return next(
+        (
+            path
+            for path in paths
+            if path.startswith("evals/scorecards/") and Path(path).name != "latest.json"
+        ),
+        None,
+    )
 
 
 def git(*args: str) -> str:
@@ -50,7 +62,7 @@ def snapshots() -> Iterator[dict]:
                 seen[key]["paths"].append(path)
                 continue
             golden = json.loads(content)["golden"]
-            seen[key] = {
+            point = {
                 "commit": commit,
                 "commit_time": timestamp,
                 "series": series,
@@ -58,6 +70,11 @@ def snapshots() -> Iterator[dict]:
                 "strict_accuracy": golden["call_strict_accuracy"],
                 "scenarios": golden["calls"],
             }
+            if dated_scorecard([path]):
+                claims = golden.get("claim_level") or {}
+                if all(isinstance(claims.get(count), int) for count in CLAIM_COUNTS):
+                    point["claim_level"] = {count: claims[count] for count in CLAIM_COUNTS}
+            seen[key] = point
         yield from seen.values()
 
 
@@ -65,7 +82,13 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=OUTPUT)
     args = parser.parse_args()
-    data = {"snapshots": list(snapshots())}
+    points = list(snapshots())
+    data = {"snapshots": points}
+    for point in reversed(points):
+        if path := dated_scorecard(point["paths"]):
+            scorecard = json.loads(git("show", f"{point['commit']}:{path}"))
+            data["latest_scorecard_diff"] = scorecard.get("diff")
+            break
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 

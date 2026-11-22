@@ -29,7 +29,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9649,
-      "scenarios": 57
+      "scenarios": 57,
+      "claim_level": {
+        "tp": 32,
+        "fp": 0,
+        "fn": 2,
+        "tn": 60
+      }
     },
     {
       "commit": "a92540f82acc04697e523cc23a7fc88692e087c3",
@@ -50,7 +56,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9649,
-      "scenarios": 57
+      "scenarios": 57,
+      "claim_level": {
+        "tp": 32,
+        "fp": 0,
+        "fn": 2,
+        "tn": 60
+      }
     },
     {
       "commit": "060072c0ccbcced1106b538b100c8f22860b8f09",
@@ -61,7 +73,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9649,
-      "scenarios": 57
+      "scenarios": 57,
+      "claim_level": {
+        "tp": 32,
+        "fp": 0,
+        "fn": 2,
+        "tn": 60
+      }
     },
     {
       "commit": "b00ee6c235bdca922f6d19c28b0046add721a706",
@@ -72,7 +90,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9649,
-      "scenarios": 57
+      "scenarios": 57,
+      "claim_level": {
+        "tp": 32,
+        "fp": 0,
+        "fn": 2,
+        "tn": 60
+      }
     },
     {
       "commit": "f88cd3f60f0a815476022209beabb1d2babefb11",
@@ -93,7 +117,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9649,
-      "scenarios": 57
+      "scenarios": 57,
+      "claim_level": {
+        "tp": 32,
+        "fp": 0,
+        "fn": 2,
+        "tn": 60
+      }
     },
     {
       "commit": "09bb021b81d35b3f1718c1ef0663cdf0319b4970",
@@ -104,7 +134,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9649,
-      "scenarios": 57
+      "scenarios": 57,
+      "claim_level": {
+        "tp": 32,
+        "fp": 0,
+        "fn": 2,
+        "tn": 60
+      }
     },
     {
       "commit": "2d2b02513025099b2627794f933f60b85ea596aa",
@@ -115,7 +151,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9649,
-      "scenarios": 57
+      "scenarios": 57,
+      "claim_level": {
+        "tp": 32,
+        "fp": 0,
+        "fn": 2,
+        "tn": 60
+      }
     },
     {
       "commit": "fdaf02c4b69cd46a7f5c1858fce40d6e33ed7273",
@@ -126,7 +168,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9649,
-      "scenarios": 57
+      "scenarios": 57,
+      "claim_level": {
+        "tp": 32,
+        "fp": 0,
+        "fn": 2,
+        "tn": 60
+      }
     },
     {
       "commit": "96bd3af97fcf68dd8867e342d0be3667a8820d49",
@@ -147,7 +195,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9649,
-      "scenarios": 57
+      "scenarios": 57,
+      "claim_level": {
+        "tp": 33,
+        "fp": 0,
+        "fn": 2,
+        "tn": 60
+      }
     },
     {
       "commit": "fd93688d79915cec97cfefa0da24944ac4d2dd84",
@@ -158,7 +212,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9649,
-      "scenarios": 57
+      "scenarios": 57,
+      "claim_level": {
+        "tp": 33,
+        "fp": 0,
+        "fn": 2,
+        "tn": 60
+      }
     },
     {
       "commit": "596cdfb0d241fb66bfa618a226961ea84f2f7ea9",
@@ -169,7 +229,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9649,
-      "scenarios": 57
+      "scenarios": 57,
+      "claim_level": {
+        "tp": 33,
+        "fp": 0,
+        "fn": 2,
+        "tn": 60
+      }
     },
     {
       "commit": "1f9db52755dfef006599298ced4b4b9767f6bc27",
@@ -180,7 +246,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9649,
-      "scenarios": 57
+      "scenarios": 57,
+      "claim_level": {
+        "tp": 33,
+        "fp": 0,
+        "fn": 2,
+        "tn": 60
+      }
     },
     {
       "commit": "27b1b8d2333da9611c68d02eb1b698aeb8ca8704",
@@ -201,7 +273,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9649,
-      "scenarios": 57
+      "scenarios": 57,
+      "claim_level": {
+        "tp": 33,
+        "fp": 0,
+        "fn": 2,
+        "tn": 60
+      }
     },
     {
       "commit": "ff95690f67c7166cc8aa1fc246fc69df7517045d",
@@ -212,7 +290,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9649,
-      "scenarios": 57
+      "scenarios": 57,
+      "claim_level": {
+        "tp": 33,
+        "fp": 0,
+        "fn": 2,
+        "tn": 60
+      }
     },
     {
       "commit": "3924cd616f407d16161cb5285798bcb2de5578c1",
@@ -223,7 +307,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9649,
-      "scenarios": 57
+      "scenarios": 57,
+      "claim_level": {
+        "tp": 33,
+        "fp": 0,
+        "fn": 2,
+        "tn": 60
+      }
     },
     {
       "commit": "8293c5a9d13059506be17241f6d3078a69c934af",
@@ -234,7 +324,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9649,
-      "scenarios": 57
+      "scenarios": 57,
+      "claim_level": {
+        "tp": 33,
+        "fp": 0,
+        "fn": 2,
+        "tn": 60
+      }
     },
     {
       "commit": "275798fc8a12ea13d16529fff5a78f7c4ef1f580",
@@ -255,7 +351,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9649,
-      "scenarios": 57
+      "scenarios": 57,
+      "claim_level": {
+        "tp": 33,
+        "fp": 0,
+        "fn": 2,
+        "tn": 60
+      }
     },
     {
       "commit": "2d648c29a7da30ce50199659b66e8da9a65f238c",
@@ -266,7 +368,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9649,
-      "scenarios": 57
+      "scenarios": 57,
+      "claim_level": {
+        "tp": 33,
+        "fp": 0,
+        "fn": 2,
+        "tn": 60
+      }
     },
     {
       "commit": "1915ff68c7448435e798fb900e79d454849a395c",
@@ -277,7 +385,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9649,
-      "scenarios": 57
+      "scenarios": 57,
+      "claim_level": {
+        "tp": 33,
+        "fp": 0,
+        "fn": 2,
+        "tn": 60
+      }
     },
     {
       "commit": "31a177ee08482772d20d1995649a01648207c031",
@@ -288,7 +402,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9649,
-      "scenarios": 57
+      "scenarios": 57,
+      "claim_level": {
+        "tp": 33,
+        "fp": 0,
+        "fn": 2,
+        "tn": 60
+      }
     },
     {
       "commit": "673e2f6a62b03ab59fb0a71b601a0fd4546737da",
@@ -309,7 +429,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9661,
-      "scenarios": 59
+      "scenarios": 59,
+      "claim_level": {
+        "tp": 34,
+        "fp": 0,
+        "fn": 2,
+        "tn": 61
+      }
     },
     {
       "commit": "055f4f74ce1101b544d540de091da2b3c0205843",
@@ -330,7 +456,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9661,
-      "scenarios": 59
+      "scenarios": 59,
+      "claim_level": {
+        "tp": 34,
+        "fp": 0,
+        "fn": 2,
+        "tn": 61
+      }
     },
     {
       "commit": "3987e8b1c524827cf7a84e844263d3010bb9ac27",
@@ -341,7 +473,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9661,
-      "scenarios": 59
+      "scenarios": 59,
+      "claim_level": {
+        "tp": 34,
+        "fp": 0,
+        "fn": 2,
+        "tn": 61
+      }
     },
     {
       "commit": "459d7407c05cd53bd51a17a69e94a24056ad09cb",
@@ -352,7 +490,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9661,
-      "scenarios": 59
+      "scenarios": 59,
+      "claim_level": {
+        "tp": 34,
+        "fp": 0,
+        "fn": 2,
+        "tn": 61
+      }
     },
     {
       "commit": "7dd953a6622d6c8719ae93ec5f2ab008252ea0db",
@@ -363,7 +507,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9661,
-      "scenarios": 59
+      "scenarios": 59,
+      "claim_level": {
+        "tp": 34,
+        "fp": 0,
+        "fn": 2,
+        "tn": 61
+      }
     },
     {
       "commit": "1ac667197610ffde0978d9479f0748a7e05e71a0",
@@ -374,7 +524,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9661,
-      "scenarios": 59
+      "scenarios": 59,
+      "claim_level": {
+        "tp": 34,
+        "fp": 0,
+        "fn": 2,
+        "tn": 61
+      }
     },
     {
       "commit": "62bc9a548fb7951cc56f8296a9a0bdff4cafe754",
@@ -385,7 +541,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9661,
-      "scenarios": 59
+      "scenarios": 59,
+      "claim_level": {
+        "tp": 34,
+        "fp": 0,
+        "fn": 2,
+        "tn": 61
+      }
     },
     {
       "commit": "ef5672f1eb16b0053be91b32ad9a54282d73636d",
@@ -396,7 +558,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9661,
-      "scenarios": 59
+      "scenarios": 59,
+      "claim_level": {
+        "tp": 34,
+        "fp": 0,
+        "fn": 2,
+        "tn": 61
+      }
     },
     {
       "commit": "a841942950e5c7d7bbc9d625d349540e0432d237",
@@ -407,7 +575,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9661,
-      "scenarios": 59
+      "scenarios": 59,
+      "claim_level": {
+        "tp": 34,
+        "fp": 0,
+        "fn": 2,
+        "tn": 61
+      }
     },
     {
       "commit": "82c9ddb85d6febd816056afab9d4563860508fff",
@@ -418,7 +592,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9661,
-      "scenarios": 59
+      "scenarios": 59,
+      "claim_level": {
+        "tp": 34,
+        "fp": 0,
+        "fn": 2,
+        "tn": 61
+      }
     },
     {
       "commit": "245de0bef55d77930ffa478cb1fd5c9df5c16bab",
@@ -429,7 +609,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9661,
-      "scenarios": 59
+      "scenarios": 59,
+      "claim_level": {
+        "tp": 34,
+        "fp": 0,
+        "fn": 2,
+        "tn": 61
+      }
     },
     {
       "commit": "702b82a045a2d88a65665d60f8fe4bc5746b0777",
@@ -440,7 +626,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9661,
-      "scenarios": 59
+      "scenarios": 59,
+      "claim_level": {
+        "tp": 34,
+        "fp": 0,
+        "fn": 2,
+        "tn": 61
+      }
     },
     {
       "commit": "46b60b96490186922a0a0814aad1c86f78df80a7",
@@ -451,7 +643,13 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9661,
-      "scenarios": 59
+      "scenarios": 59,
+      "claim_level": {
+        "tp": 34,
+        "fp": 0,
+        "fn": 2,
+        "tn": 61
+      }
     },
     {
       "commit": "a1baa8b78fc6010efccae2e7a7118db1f8e78019",
@@ -472,7 +670,22 @@
         "evals/scorecards/latest.json"
       ],
       "strict_accuracy": 0.9672,
-      "scenarios": 61
+      "scenarios": 61,
+      "claim_level": {
+        "tp": 35,
+        "fp": 0,
+        "fn": 2,
+        "tn": 62
+      }
     }
-  ]
+  ],
+  "latest_scorecard_diff": {
+    "previous": "2026-11-21T16:09:58.103002+00:00",
+    "strict_accuracy": {
+      "was": 0.9661,
+      "now": 0.9672
+    },
+    "newly_failing": [],
+    "newly_passing": []
+  }
 }

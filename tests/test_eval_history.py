@@ -14,7 +14,8 @@ def test_export_eval_history(tmp_path):
     command = [sys.executable, "scripts/export_eval_history.py", "--output", str(output)]
     subprocess.run(command, cwd=ROOT, check=True)
     exported = output.read_bytes()
-    snapshots = json.loads(exported)["snapshots"]
+    data = json.loads(exported)
+    snapshots = data["snapshots"]
 
     subprocess.run(command, cwd=ROOT, check=True)
     assert output.read_bytes() == exported
@@ -23,12 +24,22 @@ def test_export_eval_history(tmp_path):
     assert times == sorted(times)
     assert {point["series"] for point in snapshots} == {"results", "scorecards"}
 
+    latest_scorecard = None
     for point in snapshots:
         for path in point["paths"]:
             blob = subprocess.check_output(["git", "show", f"{point['commit']}:{path}"], cwd=ROOT)
-            golden = json.loads(blob)["golden"]
+            artifact = json.loads(blob)
+            golden = artifact["golden"]
             assert point["strict_accuracy"] == golden["call_strict_accuracy"]
             assert point["scenarios"] == golden["calls"]
+            if point["series"] == "scorecards" and not path.endswith("/latest.json"):
+                latest_scorecard = artifact
+                counts = golden.get("claim_level") or {}
+                expected = {key: counts[key] for key in ("tp", "fp", "fn", "tn") if key in counts}
+                assert point.get("claim_level") == (expected if len(expected) == 4 else None)
+
+    assert latest_scorecard is not None
+    assert data["latest_scorecard_diff"] == latest_scorecard.get("diff")
 
     latest = next(
         point for point in reversed(snapshots) if "evals/results/latest.json" in point["paths"]
