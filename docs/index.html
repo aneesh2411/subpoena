@@ -26,6 +26,8 @@
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 * { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 body { margin:0; background:var(--desk); color:var(--ink); font:16px/1.6 var(--sans); }
 a { color:var(--accent); text-decoration:none; }
 .visually-hidden, .skip-link:not(:focus) {
@@ -495,16 +497,28 @@ function initHero(THREE) {
   syncVisibility();
 }
 if ('IntersectionObserver' in window) {
-  // Let the browser complete initial fragment navigation before measuring proximity.
+  // Let the browser complete initial fragment navigation before measuring
+  // proximity: a smooth-scrolled journey would pass the hero and fool the
+  // observer, so fragment arrivals wait for the scroll to settle.
   addEventListener('load', () => {
-    const loadObserver = new IntersectionObserver((entries) => {
-      if (!entries.some((entry) => entry.isIntersecting)) return;
-      loadObserver.disconnect();
-      // Keep the static receipts visible if the module cannot load.
-      import('./vendor/three.module.js').then(initHero, () => {});
-    }, { rootMargin: '400px 0px' });
-    loadObserver.observe(canvas);
+    const begin = () => {
+      const loadObserver = new IntersectionObserver((entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        loadObserver.disconnect();
+        // Keep the static receipts visible if the module cannot load.
+        import('./vendor/three.module.js').then(initHero, () => {});
+      }, { rootMargin: '400px 0px' });
+      loadObserver.observe(canvas);
+    };
+    if (location.hash) {
+      setTimeout(begin, 800);
+    } else {
+      begin();
+    }
   }, { once: true });
+} else {
+  // No IntersectionObserver: load the scene as before.
+  import('./vendor/three.module.js').then(initHero, () => {});
 }
 </script>
 </body>
