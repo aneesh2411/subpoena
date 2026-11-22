@@ -130,6 +130,9 @@ _PROVIDER = re.compile(r"\bDr\.\s+[A-Z][A-Za-z'-]+")
 _CORRECTION = re.compile(
     r"\b(?:actually|i meant|instead|no,? wait|make that|change that)\b", re.IGNORECASE
 )
+_INLINE_BOOKING_CORRECTION = re.compile(
+    r"[-,—–;]\s*(?:actually|i meant|no,? wait|make that|change that)\b", re.IGNORECASE
+)
 
 
 def _spoken_handoff_topic(sentence: str) -> HandoffTopic | None:
@@ -249,14 +252,29 @@ class RuleBasedExtractor:
                     )
                     last_booking = None
                     corrected = False
-                elif times and _BOOKED.match(sentence) and not _BOOKING_INCOMPLETE.search(sentence):
-                    correction = _CORRECTION.search(sentence)
-                    if len(times) > 1 and correction is None:
+                elif (
+                    times
+                    and (booked := _BOOKED.match(sentence))
+                    and not _BOOKING_INCOMPLETE.search(sentence)
+                ):
+                    provider_text = sentence
+                    start = times[0]
+                    correction = _INLINE_BOOKING_CORRECTION.search(sentence, booked.end())
+                    if correction:
+                        original = sentence[: correction.start()]
+                        revision = sentence[correction.end() :]
+                        original_times = find_times(original, ref=call.started_at, tz=clinic.zone)
+                        revised_times = find_times(revision, ref=call.started_at, tz=clinic.zone)
+                        if len(original_times) != 1 or len(revised_times) != 1:
+                            continue
+                        start = revised_times[0]
+                        if _PROVIDER.search(revision):
+                            provider_text = revision
+                    elif len(times) != 1:
                         continue
-                    start = times[-1] if correction else times[0]
                     if corrected or start != times[0]:
                         meta["corrects_prior"] = True
-                    match = _PROVIDER.search(sentence)
+                    match = _PROVIDER.search(provider_text)
                     provider = match.group(0) if match else None
                     if (
                         provider is None

@@ -181,6 +181,14 @@
         <td role="cell"><span class="label" aria-hidden="true">Claim type</span>AppointmentBooked</td>
         <td role="cell"><span class="label" aria-hidden="true">Severity</span>CRITICAL</td>
         <td role="cell">
+          <span class="label" aria-hidden="true">Scenario</span><a href="index.html#fault-book-offer-then-phantom">Agent makes an offer, then falsely confirms a different slot</a>
+        </td>
+      </tr>
+      <tr role="row">
+        <td role="cell"><span class="label" aria-hidden="true">Suggested fix</span>Create the appointment or call the patient back before they show up.</td>
+        <td role="cell"><span class="label" aria-hidden="true">Claim type</span>AppointmentBooked</td>
+        <td role="cell"><span class="label" aria-hidden="true">Severity</span>CRITICAL</td>
+        <td role="cell">
           <span class="label" aria-hidden="true">Scenario</span><a href="index.html#fault-misspoken-time">System is right, the caller was told another day</a>
         </td>
       </tr>
@@ -345,6 +353,14 @@
         </td>
       </tr>
       <tr role="row">
+        <td role="cell"><span class="label" aria-hidden="true">Suggested fix</span>Correct the appointment to match what the caller was told, or call them back with the real details.</td>
+        <td role="cell"><span class="label" aria-hidden="true">Claim type</span>AppointmentBooked</td>
+        <td role="cell"><span class="label" aria-hidden="true">Severity</span>MEDIUM</td>
+        <td role="cell">
+          <span class="label" aria-hidden="true">Scenario</span><a href="index.html#fault-book-inline-provider-correction">Agent corrects the provider and time but writes the original provider</a>
+        </td>
+      </tr>
+      <tr role="row">
         <td role="cell"><span class="label" aria-hidden="true">Suggested fix</span>Reconcile the calendar with what the caller was told: one appointment, at the promised time, and the old slot released.</td>
         <td role="cell"><span class="label" aria-hidden="true">Claim type</span>Rescheduled</td>
         <td role="cell"><span class="label" aria-hidden="true">Severity</span>MEDIUM</td>
@@ -422,6 +438,14 @@
         <td role="cell"><span class="label" aria-hidden="true">Severity</span>MEDIUM</td>
         <td role="cell">
           <span class="label" aria-hidden="true">Scenario</span><a href="index.html#edge-message-log-outage">Message log is unreachable when the audit runs</a>
+        </td>
+      </tr>
+      <tr role="row">
+        <td role="cell"><span class="label" aria-hidden="true">Suggested fix</span>Review the write with the patient or revert it.</td>
+        <td role="cell"><span class="label" aria-hidden="true">Claim type</span>Finding · UNCLAIMED_WRITE</td>
+        <td role="cell"><span class="label" aria-hidden="true">Severity</span>MEDIUM</td>
+        <td role="cell">
+          <span class="label" aria-hidden="true">Scenario</span><a href="index.html#fault-book-negated-with-write">Agent retracts a booking mid-sentence but still creates it</a>
         </td>
       </tr>
       <tr role="row">

@@ -85,6 +85,7 @@ class Book:
     patient: PatientRef | None = None  # defaults to the caller
     claim_in_utc: bool = False  # emit the claim's time in UTC instead of clinic time
     claim_phone: str | None = None  # emit the claim's phone in another format
+    transcript_reply: str | None = None  # script the reply and omit the structured booking claim
 
 
 @dataclass(frozen=True)
@@ -319,7 +320,7 @@ class _Call:
             return
 
         if _F.SPOKEN_ONLY in modes:  # says it, never logs it, never does it
-            line = n.booked(step.reason, step.provider, start)
+            line = step.transcript_reply or n.booked(step.reason, step.provider, start)
             if step.confirm:
                 line = f"{line} {n.confirmation_sent()}"
             self._say("agent", line)
@@ -370,21 +371,24 @@ class _Call:
             said_provider = next(
                 p for p in ("Dr. Kim", "Dr. Osei", "Dr. Patel") if p != step.provider
             )
-        line = n.booked(step.reason, said_provider, said_start)
+        line = step.transcript_reply or n.booked(step.reason, said_provider, said_start)
         if step.confirm:
             line = f"{line} {n.confirmation_sent()}"
 
-        claim_ref = ref.model_copy(update={"phone": step.claim_phone}) if step.claim_phone else ref
-        self.claims.append(
-            AppointmentBooked(
-                **self._claim_meta(line),
-                patient=claim_ref,
-                provider=step.provider,
-                start=start.astimezone(UTC) if step.claim_in_utc else start,
-                duration_min=step.duration_min,
-                reason=step.reason,
+        if step.transcript_reply is None:
+            claim_ref = (
+                ref.model_copy(update={"phone": step.claim_phone}) if step.claim_phone else ref
             )
-        )
+            self.claims.append(
+                AppointmentBooked(
+                    **self._claim_meta(line),
+                    patient=claim_ref,
+                    provider=step.provider,
+                    start=start.astimezone(UTC) if step.claim_in_utc else start,
+                    duration_min=step.duration_min,
+                    reason=step.reason,
+                )
+            )
         if step.confirm:
             self._confirm(step, modes, ref, start, line)
         self._say("agent", line)

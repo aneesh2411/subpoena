@@ -62,11 +62,12 @@ def evaluate_extractor(
     """
     by_claim_type: dict[str, Counts] = defaultdict(Counts)
     for scenario in scenarios:
-        if Counter(t for t, _, _ in scenario.expected_claims_v2) != Counter(
+        labels = scenario.expected_claims_v2
+        if labels is None or Counter(t for t, _, _ in labels) != Counter(
             t for t, _ in scenario.expected_claims
         ):
             raise ValueError(f"{scenario.id}: extraction requires complete identity labels")
-        expected = Counter((t, identity) for t, _, identity in scenario.expected_claims_v2)
+        expected = Counter((t, identity) for t, _, identity in labels)
         world = build_world(scenario)
         try:
             call = run_suspect(scenario, world).call

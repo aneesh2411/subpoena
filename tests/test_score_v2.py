@@ -199,7 +199,7 @@ class TestGoldenLabels:
     def test_dual_run_reports_both_scorers(self):
         result = run_all(fuzz_n=20)
         assert result.golden_v2 is not None
-        assert result.golden_v2.calls == sum(bool(s.expected_claims_v2) for s in GOLDEN)
+        assert result.golden_v2.calls == len(GOLDEN)
         known_gaps = {"gap-vague-spoken-promise", "gap-garbled-handoff"}
         assert {r.scenario_id for r in result.golden.failures} == known_gaps
         assert result.golden.strict_accuracy == (len(GOLDEN) - len(known_gaps)) / len(GOLDEN)

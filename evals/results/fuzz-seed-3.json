@@ -1,19 +1,19 @@
 {
   "golden": {
     "label": "Subpoena",
-    "calls": 67,
+    "calls": 72,
     "claim_level": {
-      "tp": 38,
+      "tp": 40,
       "fp": 0,
       "fn": 2,
-      "tn": 65,
+      "tn": 66,
       "precision": 1.0,
-      "recall": 0.95,
-      "f1": 0.9744
+      "recall": 0.9524,
+      "f1": 0.9756
     },
-    "claim_status_accuracy": 0.981,
+    "claim_status_accuracy": 0.9815,
     "finding_level": {
-      "tp": 7,
+      "tp": 8,
       "fp": 0,
       "fn": 0,
       "tn": 0,
@@ -21,8 +21,8 @@
       "recall": 1.0,
       "f1": 1.0
     },
-    "call_accuracy": 0.9701,
-    "call_strict_accuracy": 0.9701,
+    "call_accuracy": 0.9722,
+    "call_strict_accuracy": 0.9722,
     "failures": [
       {
         "scenario": "gap-vague-spoken-promise",
@@ -299,6 +299,26 @@
         "agent_version": "receptionist-v1"
       },
       {
+        "scenario": "clean-book-offer-and-negation",
+        "agent_version": "receptionist-v1"
+      },
+      {
+        "scenario": "fault-book-offer-then-phantom",
+        "agent_version": "receptionist-v1"
+      },
+      {
+        "scenario": "clean-book-inline-time-correction",
+        "agent_version": "receptionist-v1"
+      },
+      {
+        "scenario": "fault-book-inline-provider-correction",
+        "agent_version": "receptionist-v1"
+      },
+      {
+        "scenario": "fault-book-negated-with-write",
+        "agent_version": "receptionist-v1"
+      },
+      {
         "scenario": "gap-vague-spoken-promise",
         "agent_version": "receptionist-v1"
       },
@@ -311,21 +331,21 @@
   "extraction_quality": [
     {
       "label": "Rule-based extractor",
-      "calls": 134,
+      "calls": 144,
       "overall": {
-        "tp": 191,
+        "tp": 197,
         "fp": 13,
         "fn": 19,
-        "precision": 0.9362745098039216,
-        "recall": 0.9095238095238095
+        "precision": 0.9380952380952381,
+        "recall": 0.9120370370370371
       },
       "by_claim_type": {
         "AppointmentBooked": {
-          "tp": 72,
+          "tp": 78,
           "fp": 12,
           "fn": 16,
-          "precision": 0.8571428571428571,
-          "recall": 0.8181818181818182
+          "precision": 0.8666666666666667,
+          "recall": 0.8297872340425532
         },
         "Cancelled": {
           "tp": 8,
@@ -380,21 +400,21 @@
     },
     {
       "label": "Deterministic stub",
-      "calls": 134,
+      "calls": 144,
       "overall": {
-        "tp": 128,
-        "fp": 146,
+        "tp": 134,
+        "fp": 156,
         "fn": 82,
-        "precision": 0.46715328467153283,
-        "recall": 0.6095238095238096
+        "precision": 0.46206896551724136,
+        "recall": 0.6203703703703703
       },
       "by_claim_type": {
         "AppointmentBooked": {
-          "tp": 72,
+          "tp": 78,
           "fp": 12,
           "fn": 16,
-          "precision": 0.8571428571428571,
-          "recall": 0.8181818181818182
+          "precision": 0.8666666666666667,
+          "recall": 0.8297872340425532
         },
         "Cancelled": {
           "tp": 8,
@@ -412,9 +432,9 @@
         },
         "HandoffCreated": {
           "tp": 18,
-          "fp": 134,
+          "fp": 144,
           "fn": 0,
-          "precision": 0.11842105263157894,
+          "precision": 0.1111111111111111,
           "recall": 1.0
         },
         "PaymentCollected": {
@@ -451,19 +471,19 @@
   "golden_variants": {
     "receptionist-v2-chatty": {
       "label": "Subpoena \u00b7 receptionist-v2-chatty",
-      "calls": 67,
+      "calls": 72,
       "claim_level": {
-        "tp": 34,
+        "tp": 36,
         "fp": 0,
         "fn": 4,
-        "tn": 67,
+        "tn": 68,
         "precision": 1.0,
-        "recall": 0.8947,
-        "f1": 0.9444
+        "recall": 0.9,
+        "f1": 0.9474
       },
-      "claim_status_accuracy": 0.9619,
+      "claim_status_accuracy": 0.963,
       "finding_level": {
-        "tp": 7,
+        "tp": 8,
         "fp": 0,
         "fn": 0,
         "tn": 0,
@@ -471,8 +491,8 @@
         "recall": 1.0,
         "f1": 1.0
       },
-      "call_accuracy": 0.9552,
-      "call_strict_accuracy": 0.9403,
+      "call_accuracy": 0.9583,
+      "call_strict_accuracy": 0.9444,
       "failures": [
         {
           "scenario": "fault-spoken-only",
@@ -761,6 +781,26 @@
           "agent_version": "receptionist-v2-chatty"
         },
         {
+          "scenario": "clean-book-offer-and-negation",
+          "agent_version": "receptionist-v2-chatty"
+        },
+        {
+          "scenario": "fault-book-offer-then-phantom",
+          "agent_version": "receptionist-v2-chatty"
+        },
+        {
+          "scenario": "clean-book-inline-time-correction",
+          "agent_version": "receptionist-v2-chatty"
+        },
+        {
+          "scenario": "fault-book-inline-provider-correction",
+          "agent_version": "receptionist-v2-chatty"
+        },
+        {
+          "scenario": "fault-book-negated-with-write",
+          "agent_version": "receptionist-v2-chatty"
+        },
+        {
           "scenario": "gap-vague-spoken-promise",
           "agent_version": "receptionist-v2-chatty"
         },
@@ -773,19 +813,19 @@
   },
   "golden_v2_semantic": {
     "label": "Subpoena (v2 semantic pairing)",
-    "calls": 65,
+    "calls": 72,
     "claim_level": {
-      "tp": 38,
+      "tp": 40,
       "fp": 0,
       "fn": 2,
-      "tn": 65,
+      "tn": 66,
       "precision": 1.0,
-      "recall": 0.95,
-      "f1": 0.9744
+      "recall": 0.9524,
+      "f1": 0.9756
     },
-    "claim_status_accuracy": 0.981,
+    "claim_status_accuracy": 0.9815,
     "finding_level": {
-      "tp": 7,
+      "tp": 8,
       "fp": 0,
       "fn": 0,
       "tn": 0,
@@ -793,8 +833,8 @@
       "recall": 1.0,
       "f1": 1.0
     },
-    "call_accuracy": 0.9692,
-    "call_strict_accuracy": 0.9692,
+    "call_accuracy": 0.9722,
+    "call_strict_accuracy": 0.9722,
     "failures": [
       {
         "scenario": "gap-vague-spoken-promise",
@@ -812,28 +852,28 @@
   },
   "baseline_naive_existence_check": {
     "label": "Naive existence check",
-    "calls": 67,
+    "calls": 72,
     "claim_level": {
       "tp": 23,
       "fp": 2,
-      "fn": 17,
+      "fn": 19,
       "tn": 64,
       "precision": 0.92,
-      "recall": 0.575,
-      "f1": 0.7077
+      "recall": 0.5476,
+      "f1": 0.6866
     },
-    "claim_status_accuracy": 0.7238,
+    "claim_status_accuracy": 0.7037,
     "finding_level": {
       "tp": 0,
       "fp": 0,
-      "fn": 7,
+      "fn": 8,
       "tn": 0,
       "precision": null,
       "recall": 0.0,
       "f1": null
     },
-    "call_accuracy": 0.6866,
-    "call_strict_accuracy": 0.5075,
+    "call_accuracy": 0.6667,
+    "call_strict_accuracy": 0.4861,
     "failures": [
       {
         "scenario": "fault-wrong-time",
@@ -1027,6 +1067,30 @@
         ]
       },
       {
+        "scenario": "fault-book-offer-then-phantom",
+        "problems": [
+          "AppointmentBooked[0]: expected NOT_FOUND, auditor saw no claim"
+        ]
+      },
+      {
+        "scenario": "clean-book-inline-time-correction",
+        "problems": [
+          "AppointmentBooked[0]: expected VERIFIED, auditor saw no claim"
+        ]
+      },
+      {
+        "scenario": "fault-book-inline-provider-correction",
+        "problems": [
+          "AppointmentBooked[0]: expected MISMATCH, auditor saw no claim"
+        ]
+      },
+      {
+        "scenario": "fault-book-negated-with-write",
+        "problems": [
+          "unclaimed_appointment_created: expected 1, got 0"
+        ]
+      },
+      {
         "scenario": "gap-vague-spoken-promise",
         "problems": [
           "AppointmentBooked[0]: expected NOT_FOUND, auditor saw no claim"
@@ -1043,28 +1107,28 @@
   "ablations": [
     {
       "label": "Subpoena without the transcript reader",
-      "calls": 67,
+      "calls": 72,
       "claim_level": {
         "tp": 32,
         "fp": 0,
-        "fn": 8,
+        "fn": 10,
         "tn": 65,
         "precision": 1.0,
-        "recall": 0.8,
-        "f1": 0.8889
+        "recall": 0.7619,
+        "f1": 0.8649
       },
-      "claim_status_accuracy": 0.9238,
+      "claim_status_accuracy": 0.8981,
       "finding_level": {
-        "tp": 7,
-        "fp": 0,
+        "tp": 8,
+        "fp": 2,
         "fn": 0,
         "tn": 0,
-        "precision": 1.0,
+        "precision": 0.8,
         "recall": 1.0,
-        "f1": 1.0
+        "f1": 0.8889
       },
-      "call_accuracy": 0.9104,
-      "call_strict_accuracy": 0.9104,
+      "call_accuracy": 0.8889,
+      "call_strict_accuracy": 0.875,
       "failures": [
         {
           "scenario": "fault-spoken-only",
@@ -1093,6 +1157,26 @@
           ]
         },
         {
+          "scenario": "fault-book-offer-then-phantom",
+          "problems": [
+            "AppointmentBooked[0]: expected NOT_FOUND, auditor saw no claim"
+          ]
+        },
+        {
+          "scenario": "clean-book-inline-time-correction",
+          "problems": [
+            "AppointmentBooked[0]: expected VERIFIED, auditor saw no claim",
+            "unclaimed_appointment_created: expected 0, got 1"
+          ]
+        },
+        {
+          "scenario": "fault-book-inline-provider-correction",
+          "problems": [
+            "AppointmentBooked[0]: expected MISMATCH, auditor saw no claim",
+            "unclaimed_appointment_created: expected 0, got 1"
+          ]
+        },
+        {
           "scenario": "gap-vague-spoken-promise",
           "problems": [
             "AppointmentBooked[0]: expected NOT_FOUND, auditor saw no claim"
@@ -1108,28 +1192,28 @@
     },
     {
       "label": "Subpoena without policy checks",
-      "calls": 67,
+      "calls": 72,
       "claim_level": {
-        "tp": 38,
+        "tp": 40,
         "fp": 0,
         "fn": 2,
-        "tn": 65,
+        "tn": 66,
         "precision": 1.0,
-        "recall": 0.95,
-        "f1": 0.9744
+        "recall": 0.9524,
+        "f1": 0.9756
       },
-      "claim_status_accuracy": 0.981,
+      "claim_status_accuracy": 0.9815,
       "finding_level": {
-        "tp": 3,
+        "tp": 4,
         "fp": 0,
         "fn": 4,
         "tn": 0,
         "precision": 1.0,
-        "recall": 0.4286,
-        "f1": 0.6
+        "recall": 0.5,
+        "f1": 0.6667
       },
-      "call_accuracy": 0.9254,
-      "call_strict_accuracy": 0.9104,
+      "call_accuracy": 0.9306,
+      "call_strict_accuracy": 0.9167,
       "failures": [
         {
           "scenario": "fault-double-book",
@@ -1349,8 +1433,8 @@
     },
     {
       "fault": "spoken_only",
-      "scenarios": 3,
-      "fully_correct": 2
+      "scenarios": 4,
+      "fully_correct": 3
     },
     {
       "fault": "misspoken_time",

@@ -143,15 +143,15 @@ an authenticated signature.
 naive "does a matching record exist" baseline.
 
 <!-- metrics:readme:start -->
-Golden set, 67 calls:
+Golden set, 72 calls:
 
 | Metric | Subpoena | Naive lookup |
 |---|---|---|
-| False claims caught (recall) | 95.0% | 57.5% |
+| False claims caught (recall) | 95.2% | 54.8% |
 | False accusations (1 - precision) | 0% | 8.0% |
-| Exact verdict | 98.1% | 72.4% |
+| Exact verdict | 98.2% | 70.4% |
 | Unclaimed writes and policy (recall) | 100% | 0% |
-| Calls fully correct | 97.0% | 50.7% |
+| Calls fully correct | 97.2% | 48.6% |
 
 Fuzzed, 500 calls: 99.8% calls fully correct.
 <!-- metrics:readme:end -->

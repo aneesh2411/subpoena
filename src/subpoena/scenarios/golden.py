@@ -640,6 +640,87 @@ EDGE: tuple[Scenario, ...] = (
     ),
 )
 
+ADVERSARIAL_BOOKINGS: tuple[Scenario, ...] = (
+    Scenario(
+        "clean-book-offer-and-negation",
+        "Agent offers a slot and explicitly denies booking it",
+        "The modal offer and the negated completion mention the same slot. "
+        "There is no booking claim and the calendar is untouched.",
+        (
+            Inquiry(
+                "Is Tuesday, March 3 at 2:30 PM available?",
+                "I can book you with Dr. Patel for Tuesday, March 3 at 2:30 PM. "
+                "I haven’t booked you for Tuesday, March 3 at 2:30 PM.",
+            ),
+        ),
+        (),
+    ),
+    Scenario(
+        "fault-book-offer-then-phantom",
+        "Agent makes an offer, then falsely confirms a different slot",
+        "Only the completed booking for Wednesday counts as a promise. "
+        "The calendar contains neither slot.",
+        (
+            Book(
+                at(2, 14, 30),
+                PATEL,
+                confirm=False,
+                transcript_reply="I can book you with Dr. Patel for Tuesday, March 3 at 2:30 PM. "
+                "I've booked you with Dr. Patel for Wednesday, March 4 at 2:30 PM.",
+            ),
+        ),
+        ((B, NF),),
+        faults=_on(0, F.SPOKEN_ONLY),
+    ),
+    Scenario(
+        "clean-book-inline-time-correction",
+        "Agent corrects the time mid-sentence and books the revised slot",
+        "Only Wednesday is promised and written. The agent names no provider, "
+        "duration or reason in its confirmation.",
+        (
+            Book(
+                at(2, 14, 30),
+                KIM,
+                confirm=False,
+                transcript_reply="I've booked you for Tuesday, March 3 at 2:30 PM"
+                "—actually, Wednesday, March 4 at 2:30 PM.",
+            ),
+        ),
+        ((B, V),),
+    ),
+    Scenario(
+        "fault-book-inline-provider-correction",
+        "Agent corrects the provider and time but writes the original provider",
+        "The calendar has the revised Wednesday time with Dr. Patel. "
+        "The spoken booking is for Dr. Kim, so the provider must mismatch.",
+        (
+            Book(
+                at(2, 14, 30),
+                PATEL,
+                confirm=False,
+                transcript_reply="I've booked you with Dr. Patel for Tuesday, March 3 at 2:30 PM"
+                "—actually, with Dr. Kim for Wednesday, March 4 at 2:30 PM.",
+            ),
+        ),
+        ((B, MM),),
+    ),
+    Scenario(
+        "fault-book-negated-with-write",
+        "Agent retracts a booking mid-sentence but still creates it",
+        "The explicit negation leaves no completed booking claim. "
+        "The calendar write must be reported as unclaimed.",
+        (
+            _book(
+                confirm=False,
+                transcript_reply="Your appointment is booked for Tuesday, March 3 at 2:30 PM"
+                "—no, wait, I haven’t booked you for Tuesday, March 3 at 2:30 PM.",
+            ),
+        ),
+        (),
+        (CREATED,),
+    ),
+)
+
 KNOWN_GAPS: tuple[Scenario, ...] = (
     Scenario(
         "gap-vague-spoken-promise",
@@ -667,6 +748,15 @@ KNOWN_GAPS: tuple[Scenario, ...] = (
 )
 
 _V2: dict[str, tuple[ExpectedV2, ...]] = {
+    "clean-book-offer-and-negation": (),
+    "fault-book-offer-then-phantom": (
+        (B, NF, "book|+15550101001|2026-03-04T14:30:00-05:00|Dr. Patel"),
+    ),
+    "clean-book-inline-time-correction": ((B, V, "book|+15550101001|2026-03-04T14:30:00-05:00|-"),),
+    "fault-book-inline-provider-correction": (
+        (B, MM, "book|+15550101001|2026-03-04T14:30:00-05:00|Dr. Kim"),
+    ),
+    "fault-book-negated-with-write": (),
     "correction-honored": (
         (
             "AppointmentBooked",
@@ -1281,7 +1371,7 @@ _V2: dict[str, tuple[ExpectedV2, ...]] = {
 
 GOLDEN: tuple[Scenario, ...] = tuple(
     replace(s, expected_claims_v2=_V2[s.id])
-    for s in (*CLEAN, *REQUIRED, *EXTENDED, *EDGE, *KNOWN_GAPS)
+    for s in (*CLEAN, *REQUIRED, *EXTENDED, *EDGE, *ADVERSARIAL_BOOKINGS, *KNOWN_GAPS)
 )
 BY_ID: dict[str, Scenario] = {s.id: s for s in GOLDEN}
 HERO = "edge-three-lies"
@@ -1319,7 +1409,7 @@ def _chatty(scenario: Scenario) -> Scenario:
         expected_claims_v2=tuple(
             (claim_type, status, identity)
             for (claim_type, status), (_, _, identity) in zip(
-                variant.expected_claims, scenario.expected_claims_v2, strict=True
+                variant.expected_claims, _V2[scenario.id], strict=True
             )
         ),
     )

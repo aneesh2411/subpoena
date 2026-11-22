@@ -1,0 +1,186 @@
+{
+ "audit_id": "aud-fault-book-offer-then-phantom",
+ "auditor": "subpoena/0.1.0",
+ "created_at": "2026-03-02T09:06:16-05:00",
+ "call": {
+  "call_id": "call-fault-book-offer-then-phantom",
+  "agent_id": "agent:receptionist",
+  "caller": {
+   "name": "Maya Chen",
+   "phone": "+15550101001"
+  },
+  "started_at": "2026-03-02T09:05:00-05:00",
+  "ended_at": "2026-03-02T09:05:16-05:00",
+  "transcript": [
+   {
+    "index": 0,
+    "speaker": "agent",
+    "text": "Thank you for calling Brightside Dental. How can I help?",
+    "at": "2026-03-02T09:05:04-05:00"
+   },
+   {
+    "index": 1,
+    "speaker": "caller",
+    "text": "Hi, I'd like to book a cleaning with Dr. Patel on Wednesday, March 4 at 2:30 PM.",
+    "at": "2026-03-02T09:05:08-05:00"
+   },
+   {
+    "index": 2,
+    "speaker": "agent",
+    "text": "I can book you with Dr. Patel for Tuesday, March 3 at 2:30 PM. I've booked you with Dr. Patel for Wednesday, March 4 at 2:30 PM.",
+    "at": "2026-03-02T09:05:12-05:00"
+   },
+   {
+    "index": 3,
+    "speaker": "agent",
+    "text": "Is there anything else? Have a great day.",
+    "at": "2026-03-02T09:05:16-05:00"
+   }
+  ],
+  "raw_transcript": null,
+  "claims": [],
+  "provenance": {
+   "agent_version": "receptionist-sim/0.1.0",
+   "model": null,
+   "prompt_version": "narrator:standard",
+   "human_handoffs": [],
+   "platform": null,
+   "from_address": null,
+   "to_address": null,
+   "completion_callback_at": null
+  }
+ },
+ "outcome": "DISCREPANCIES",
+ "verdicts": [
+  {
+   "claim": {
+    "claim_id": "call-fault-book-offer-then-phantom-t1",
+    "turn_index": 2,
+    "source": "transcript",
+    "utterance": "I've booked you with Dr. Patel for Wednesday, March 4 at 2:30 PM.",
+    "corrects_prior": false,
+    "type": "AppointmentBooked",
+    "patient": {
+     "name": "Maya Chen",
+     "phone": "+15550101001"
+    },
+    "start": "2026-03-04T14:30:00-05:00",
+    "provider": "Dr. Patel",
+    "duration_min": null,
+    "reason": null
+   },
+   "status": "NOT_FOUND",
+   "severity": "CRITICAL",
+   "summary": "The agent claimed it booked Maya Chen on Wed Mar 4 2026, 2:30 PM EST, but no appointment was created during the call.",
+   "checks": [
+    {
+     "name": "existence",
+     "passed": false,
+     "detail": "No write by the agent during the call corresponds to this claim."
+    },
+    {
+     "name": "exactness",
+     "passed": null,
+     "detail": "Nothing to compare."
+    },
+    {
+     "name": "side_effects",
+     "passed": null,
+     "detail": "Nothing to compare."
+    },
+    {
+     "name": "coverage",
+     "passed": true,
+     "detail": "The calendar change history for the call window was fully observed."
+    }
+   ],
+   "diffs": [],
+   "evidence": [
+    {
+     "source": "journal",
+     "ref": "calendar 2026-03-02T09:05:00-05:00 .. 2026-03-02T09:05:46-05:00",
+     "note": "0 agent write(s) to calendar in the call window. None creates this booking.",
+     "record": null
+    }
+   ],
+   "remediation": "Create the appointment or call the patient back before they show up."
+  }
+ ],
+ "findings": [],
+ "trail": [
+  {
+   "seq": 1,
+   "stage": "evidence",
+   "message": "calendar: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 2,
+   "stage": "evidence",
+   "message": "crm: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 3,
+   "stage": "evidence",
+   "message": "messages: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 4,
+   "stage": "evidence",
+   "message": "tickets: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 5,
+   "stage": "claims",
+   "message": "0 structured claim(s); 1 recovered from the transcript, 1 of them never logged by the agent"
+  },
+  {
+   "seq": 6,
+   "stage": "reconcile",
+   "message": "call-fault-book-offer-then-phantom-t1 (AppointmentBooked): no write corresponds"
+  },
+  {
+   "seq": 7,
+   "stage": "verdict",
+   "message": "call-fault-book-offer-then-phantom-t1 (AppointmentBooked): NOT_FOUND"
+  },
+  {
+   "seq": 8,
+   "stage": "verdict",
+   "message": "Outcome: DISCREPANCIES"
+  }
+ ],
+ "stats": {
+  "claims": 1,
+  "verified": 0,
+  "mismatch": 0,
+  "not_found": 1,
+  "unverifiable": 0,
+  "findings": 0,
+  "trust_score": 0.0,
+  "max_severity": "CRITICAL"
+ },
+ "extraction": {
+  "extractor": "rules",
+  "degraded": false,
+  "detail": null
+ },
+ "fulfillments": [],
+ "coverage_gaps": [],
+ "seal": {
+  "algorithm": "sha256",
+  "content_hash": "c87ce4c00b2e58394756284a0614ab355d1947a8475c69a00d6cc7bfb19ed3a1",
+  "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "chain_hash": "613e66974f6b7119783c465e3416527cded1d38d7ffe9dbe76385a4e595b377e",
+  "signature": "b35716f6e20396ce8fb94d07937a4938c7dd2081c0387184c51cbba5c7e08b37",
+  "key_id": "6508b98a7ace"
+ },
+ "escalation_log": [
+  {
+   "claim_id": "call-fault-book-offer-then-phantom-t1",
+   "block_reason": "The agent claimed it booked Maya Chen on Wed Mar 4 2026, 2:30 PM EST, but no appointment was created during the call.",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "NOT_FOUND"
+  }
+ ]
+}

@@ -42,11 +42,10 @@ def evaluate_v2(
     Returns None when nothing is labelled, so the report can say so instead of
     printing an empty second verdict.
     """
-    labelled = [s for s in scenarios if s.expected_claims_v2]
-    if not labelled:
-        return None
     runs: list[RunScore] = []
-    for scenario in labelled:
+    for scenario in scenarios:
+        if scenario.expected_claims_v2 is None:
+            continue
         report = run_scenario(scenario, extractor=extractor).report
         runs.append(
             replace(
@@ -56,6 +55,8 @@ def evaluate_v2(
                 agent_version=scenario.agent_version,
             )
         )
+    if not runs:
+        return None
     return EvalSummary.of("Subpoena (v2 semantic pairing)", runs)
 
 

@@ -8,8 +8,10 @@ import pytest
 
 from subpoena.auditor import RuleBasedExtractor
 from subpoena.evals import score_run
+from subpoena.evals.score import score_run_v2
 from subpoena.models import CheckName, FieldDiff, Outcome, VerdictStatus
 from subpoena.scenarios import BY_ID, GOLDEN, run_scenario
+from subpoena.scenarios.golden import ADVERSARIAL_BOOKINGS
 from subpoena.scenarios.world import audit_call, build_world, run_suspect
 
 SOLVED = [s for s in GOLDEN if not s.known_gap]
@@ -95,3 +97,23 @@ def test_handoff_topic_is_checked_against_stored_ticket(scenario_id, said, statu
     assert verdict.diffs[-1] == FieldDiff(
         field="topic", claimed=said, actual="billing", match=matches
     )
+
+
+@pytest.mark.parametrize("scenario_id", [scenario.id for scenario in ADVERSARIAL_BOOKINGS])
+def test_adversarial_bookings_match_semantic_labels(scenario_id):
+    scenario = BY_ID[scenario_id]
+    run = run_scenario(scenario)
+    assert run.result.call.claims == ()
+    score = score_run_v2(
+        scenario.id, scenario.expected_claims_v2, scenario.expected_findings, run.report
+    )
+    assert score.problems == ()
+    assert (run.report.outcome is not Outcome.CLEAN) == scenario.expected_dirty
+    if scenario_id == "clean-book-inline-time-correction":
+        (verdict,) = run.report.verdicts
+        assert [diff.field for diff in verdict.diffs] == ["patient", "start"]
+    if scenario_id == "fault-book-inline-provider-correction":
+        (verdict,) = run.report.verdicts
+        assert verdict.diffs[-1] == FieldDiff(
+            field="provider", claimed="Dr. Kim", actual="Dr. Patel", match=False
+        )

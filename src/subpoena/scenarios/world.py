@@ -119,7 +119,8 @@ class Scenario:
     # Identity-labelled twin of expected_claims, attached after construction once
     # reviewed (see golden._V2). Keyword-only position: several scenarios pass
     # expected_findings positionally.
-    expected_claims_v2: tuple[ExpectedV2, ...] = ()
+    # None means unreviewed. An empty tuple labels a call with no claims.
+    expected_claims_v2: tuple[ExpectedV2, ...] | None = None
     # Staff lifecycle on the call's tickets, played after the call and before
     # the audit. New fields go at the end: scenarios pass early fields
     # positionally.

@@ -68,7 +68,7 @@
   <h1>Eval results</h1>
   <p class="intro">Recorded results from <code>evals/results/latest.json</code>.</p>
   <p class="meta">Scorecard check-in date <strong>2026-11-22</strong><br>
-    SHA-256 fingerprint <code>e5ad76137fd79d9921fc5bdd5f6451947f5dbbaafaa9cde302df5f9281a906d8</code></p>
+    SHA-256 fingerprint <code>01f790ab4b7abe3fa0f2f0e0fcf5ced0cd9dcbad2fe1e1bba49a6e8f1a72f75e</code></p>
   <p><a href="data-evals/scorecard.json">Download the scorecard JSON</a></p>
   <section class="panel" aria-labelledby="golden-results">
     <h2 id="golden-results">Golden results and naive baseline</h2>
@@ -76,23 +76,23 @@
       <table role="table">
         <thead role="rowgroup"><tr role="row"><th scope="col">Suite and system</th><th scope="col">Calls</th><th scope="col">Strict call accuracy</th><th scope="col">Claim-level precision</th><th scope="col">Claim-level recall</th></tr></thead>
         <tbody role="rowgroup">
-        <tr role="row"><th scope="row">Golden · Subpoena</th><td>67</td><td>97.01%</td><td>100.00%</td><td>95.00%</td></tr>
-        <tr role="row"><th scope="row">Golden · receptionist-v2-chatty</th><td>67</td><td>94.03%</td><td>100.00%</td><td>89.47%</td></tr>
-        <tr role="row"><th scope="row">Golden · Naive existence check</th><td>67</td><td>50.75%</td><td>92.00%</td><td>57.50%</td></tr>
-        <tr role="row"><th scope="row">Golden v2-semantic · Subpoena</th><td>65</td><td>96.92%</td><td>100.00%</td><td>95.00%</td></tr>
+        <tr role="row"><th scope="row">Golden · Subpoena</th><td>72</td><td>97.22%</td><td>100.00%</td><td>95.24%</td></tr>
+        <tr role="row"><th scope="row">Golden · receptionist-v2-chatty</th><td>72</td><td>94.44%</td><td>100.00%</td><td>90.00%</td></tr>
+        <tr role="row"><th scope="row">Golden · Naive existence check</th><td>72</td><td>48.61%</td><td>92.00%</td><td>54.76%</td></tr>
+        <tr role="row"><th scope="row">Golden v2-semantic · Subpoena</th><td>72</td><td>97.22%</td><td>100.00%</td><td>95.24%</td></tr>
         </tbody>
       </table>
     </div>
   </section>
   <section class="panel" aria-labelledby="extractor-quality">
     <h2 id="extractor-quality">Extractor quality</h2>
-    <p class="intro">Transcript extraction across 134 golden calls from both agent versions. Precision is the share of extracted claims that match a reviewed identity. Recall is the share of reviewed claims recovered. The dash marks an undefined rate.</p>
+    <p class="intro">Transcript extraction across 144 golden calls from both agent versions. Precision is the share of extracted claims that match a reviewed identity. Recall is the share of reviewed claims recovered. The dash marks an undefined rate.</p>
     <div class="table-scroll" tabindex="0" role="region" aria-label="Extractor quality table">
       <table role="table">
         <thead role="rowgroup"><tr role="row"><th scope="col">Extractor and claim type</th><th scope="col">Precision</th><th scope="col">Recall</th><th scope="col">Invented</th><th scope="col">Missed</th></tr></thead>
         <tbody role="rowgroup">
-        <tr role="row"><th scope="row">Rule-based extractor · Overall</th><td>93.63%</td><td>90.95%</td><td>13</td><td>19</td></tr>
-        <tr role="row"><th scope="row">Rule-based extractor · AppointmentBooked</th><td>85.71%</td><td>81.82%</td><td>12</td><td>16</td></tr>
+        <tr role="row"><th scope="row">Rule-based extractor · Overall</th><td>93.81%</td><td>91.20%</td><td>13</td><td>19</td></tr>
+        <tr role="row"><th scope="row">Rule-based extractor · AppointmentBooked</th><td>86.67%</td><td>82.98%</td><td>12</td><td>16</td></tr>
         <tr role="row"><th scope="row">Rule-based extractor · Cancelled</th><td>100.00%</td><td>100.00%</td><td>0</td><td>0</td></tr>
         <tr role="row"><th scope="row">Rule-based extractor · ConfirmationSent</th><td>98.44%</td><td>95.45%</td><td>1</td><td>3</td></tr>
         <tr role="row"><th scope="row">Rule-based extractor · HandoffCreated</th><td>100.00%</td><td>100.00%</td><td>0</td><td>0</td></tr>
@@ -100,11 +100,11 @@
         <tr role="row"><th scope="row">Rule-based extractor · PrescriptionRefilled</th><td>100.00%</td><td>100.00%</td><td>0</td><td>0</td></tr>
         <tr role="row"><th scope="row">Rule-based extractor · RecordsUpdated</th><td>100.00%</td><td>100.00%</td><td>0</td><td>0</td></tr>
         <tr role="row"><th scope="row">Rule-based extractor · Rescheduled</th><td>100.00%</td><td>100.00%</td><td>0</td><td>0</td></tr>
-        <tr role="row"><th scope="row">Deterministic stub · Overall</th><td>46.72%</td><td>60.95%</td><td>146</td><td>82</td></tr>
-        <tr role="row"><th scope="row">Deterministic stub · AppointmentBooked</th><td>85.71%</td><td>81.82%</td><td>12</td><td>16</td></tr>
+        <tr role="row"><th scope="row">Deterministic stub · Overall</th><td>46.21%</td><td>62.04%</td><td>156</td><td>82</td></tr>
+        <tr role="row"><th scope="row">Deterministic stub · AppointmentBooked</th><td>86.67%</td><td>82.98%</td><td>12</td><td>16</td></tr>
         <tr role="row"><th scope="row">Deterministic stub · Cancelled</th><td>100.00%</td><td>100.00%</td><td>0</td><td>0</td></tr>
         <tr role="row"><th scope="row">Deterministic stub · ConfirmationSent</th><td>—</td><td>0.00%</td><td>0</td><td>66</td></tr>
-        <tr role="row"><th scope="row">Deterministic stub · HandoffCreated</th><td>11.84%</td><td>100.00%</td><td>134</td><td>0</td></tr>
+        <tr role="row"><th scope="row">Deterministic stub · HandoffCreated</th><td>11.11%</td><td>100.00%</td><td>144</td><td>0</td></tr>
         <tr role="row"><th scope="row">Deterministic stub · PaymentCollected</th><td>100.00%</td><td>100.00%</td><td>0</td><td>0</td></tr>
         <tr role="row"><th scope="row">Deterministic stub · PrescriptionRefilled</th><td>100.00%</td><td>100.00%</td><td>0</td><td>0</td></tr>
         <tr role="row"><th scope="row">Deterministic stub · RecordsUpdated</th><td>100.00%</td><td>100.00%</td><td>0</td><td>0</td></tr>
@@ -120,7 +120,7 @@
       <table role="table">
         <thead role="rowgroup"><tr role="row"><th scope="col">Claim type</th><th scope="col">Golden claims</th><th scope="col">Strict accuracy</th><th scope="col">Safe rate</th><th scope="col">Known gaps</th></tr></thead>
         <tbody role="rowgroup">
-        <tr role="row"><th scope="row">AppointmentBooked</th><td>44</td><td>97.73%</td><td>100.00%</td><td>1</td></tr>
+        <tr role="row"><th scope="row">AppointmentBooked</th><td>47</td><td>97.87%</td><td>100.00%</td><td>1</td></tr>
         <tr role="row"><th scope="row">Cancelled</th><td>4</td><td>100.00%</td><td>100.00%</td><td>0</td></tr>
         <tr role="row"><th scope="row">ConfirmationSent</th><td>33</td><td>100.00%</td><td>100.00%</td><td>0</td></tr>
         <tr role="row"><th scope="row">HandoffCreated</th><td>9</td><td>88.89%</td><td>88.89%</td><td>1</td></tr>
@@ -138,7 +138,7 @@
       <table role="table">
         <thead role="rowgroup"><tr role="row"><th scope="col">Claim type</th><th scope="col">Golden claims</th><th scope="col">Strict accuracy</th><th scope="col">Safe rate</th><th scope="col">Known gaps</th></tr></thead>
         <tbody role="rowgroup">
-        <tr role="row"><th scope="row">AppointmentBooked</th><td>44</td><td>93.18%</td><td>100.00%</td><td>3</td></tr>
+        <tr role="row"><th scope="row">AppointmentBooked</th><td>47</td><td>93.62%</td><td>100.00%</td><td>3</td></tr>
         <tr role="row"><th scope="row">Cancelled</th><td>4</td><td>100.00%</td><td>100.00%</td><td>0</td></tr>
         <tr role="row"><th scope="row">ConfirmationSent</th><td>33</td><td>100.00%</td><td>100.00%</td><td>0</td></tr>
         <tr role="row"><th scope="row">HandoffCreated</th><td>9</td><td>88.89%</td><td>88.89%</td><td>1</td></tr>
@@ -217,9 +217,9 @@
       <table role="table">
         <thead role="rowgroup"><tr role="row"><th scope="col">Configuration</th><th scope="col">Calls</th><th scope="col">Strict call accuracy</th><th scope="col">Claim-level precision</th><th scope="col">Claim-level recall</th><th scope="col">Finding-level recall</th></tr></thead>
         <tbody role="rowgroup">
-        <tr role="row"><th scope="row">Subpoena</th><td>67</td><td>97.01%</td><td>100.00%</td><td>95.00%</td><td>100.00%</td></tr>
-        <tr role="row"><th scope="row">Subpoena without the transcript reader</th><td>67</td><td>91.04%</td><td>100.00%</td><td>80.00%</td><td>100.00%</td></tr>
-        <tr role="row"><th scope="row">Subpoena without policy checks</th><td>67</td><td>91.04%</td><td>100.00%</td><td>95.00%</td><td>42.86%</td></tr>
+        <tr role="row"><th scope="row">Subpoena</th><td>72</td><td>97.22%</td><td>100.00%</td><td>95.24%</td><td>100.00%</td></tr>
+        <tr role="row"><th scope="row">Subpoena without the transcript reader</th><td>72</td><td>87.50%</td><td>100.00%</td><td>76.19%</td><td>100.00%</td></tr>
+        <tr role="row"><th scope="row">Subpoena without policy checks</th><td>72</td><td>91.67%</td><td>100.00%</td><td>95.24%</td><td>50.00%</td></tr>
         </tbody>
       </table>
     </div>

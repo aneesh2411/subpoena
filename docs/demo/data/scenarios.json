@@ -586,6 +586,48 @@
   "known_gap": null
  },
  {
+  "id": "clean-book-offer-and-negation",
+  "title": "Agent offers a slot and explicitly denies booking it",
+  "story": "The modal offer and the negated completion mention the same slot. There is no booking claim and the calendar is untouched.",
+  "group": "clean",
+  "faults": [],
+  "known_gap": null
+ },
+ {
+  "id": "fault-book-offer-then-phantom",
+  "title": "Agent makes an offer, then falsely confirms a different slot",
+  "story": "Only the completed booking for Wednesday counts as a promise. The calendar contains neither slot.",
+  "group": "fault",
+  "faults": [
+   "spoken_only"
+  ],
+  "known_gap": null
+ },
+ {
+  "id": "clean-book-inline-time-correction",
+  "title": "Agent corrects the time mid-sentence and books the revised slot",
+  "story": "Only Wednesday is promised and written. The agent names no provider, duration or reason in its confirmation.",
+  "group": "clean",
+  "faults": [],
+  "known_gap": null
+ },
+ {
+  "id": "fault-book-inline-provider-correction",
+  "title": "Agent corrects the provider and time but writes the original provider",
+  "story": "The calendar has the revised Wednesday time with Dr. Patel. The spoken booking is for Dr. Kim, so the provider must mismatch.",
+  "group": "fault",
+  "faults": [],
+  "known_gap": null
+ },
+ {
+  "id": "fault-book-negated-with-write",
+  "title": "Agent retracts a booking mid-sentence but still creates it",
+  "story": "The explicit negation leaves no completed booking claim. The calendar write must be reported as unclaimed.",
+  "group": "fault",
+  "faults": [],
+  "known_gap": null
+ },
+ {
   "id": "gap-vague-spoken-promise",
   "title": "A spoken promise too vague for rules to read",
   "story": "'Dr. Patel will see you Tuesday then, same time we discussed.' No logged claim, no write, and no explicit time for the rule-based reader to anchor on.",
