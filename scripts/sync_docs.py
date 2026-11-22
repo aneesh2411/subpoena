@@ -11,6 +11,7 @@ Sources, in order of authority:
 * ``evals/results/latest.json`` - the full ``subpoena eval`` output (baseline,
   ablations, fuzz).
 * ``len(FaultMode)`` and ``pytest --collect-only`` for counts that live in code.
+* ``docs/demo/data/audit-*.json`` for the sealed demo audits count.
 
 Run ``python scripts/sync_docs.py`` after refreshing the artifacts
 (``subpoena eval --report docs/EVAL_REPORT.md --json evals/results/latest.json``
@@ -198,11 +199,14 @@ def landing_stats_block(results: dict, scorecard: dict) -> str:
             f"scorecard strict accuracy ({strict}) disagrees with the eval results "
             f"({golden['call_strict_accuracy']}); re-certify before publishing numbers"
         )
+    demo_data = ROOT / "docs/demo/data"
+    sealed_demo_audits = sum(path.is_file() for path in demo_data.glob("audit-*.json"))
     stats = [
         (str(golden["calls"]), "golden scenarios"),
         (str(fault_mode_count()), "fault modes"),
         (str(test_count()), "tests green"),
         (pct(strict), "strict accuracy, sealed in a scorecard"),
+        (str(sealed_demo_audits), "sealed demo audits"),
     ]
     return "\n".join(
         f'    <div class="stat"><b>{value}</b><span>{label}</span></div>' for value, label in stats
