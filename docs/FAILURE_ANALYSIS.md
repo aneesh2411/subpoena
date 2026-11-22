@@ -288,8 +288,9 @@ and both name a start different from the release. The oracle expects `MISMATCH` 
 wrong target and `NOT_FOUND` for the phantom. With equal evidence scores, the auditor
 returns `UNVERIFIABLE` for both. The sweep also found confirmation verdicts that fall
 back to `UNVERIFIABLE`, and a phantom booking scored as `MISMATCH` alongside a missing
-unclaimed-appointment finding. These errors reduce strict accuracy even when the
-affected claims were correctly flagged as false.
+unclaimed-appointment finding. These errors cost strict accuracy without costing claim
+precision: when the auditor does call a claim false it is always right, and the misses
+above fail closed to `UNVERIFIABLE` rather than accuse on a guess.
 
 The golden set measures the two known transcript gaps separately.
 
