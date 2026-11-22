@@ -13,14 +13,16 @@
     --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--desk); color: var(--ink); font: 15px/1.5 var(--sans); }
+  body { margin: 0; background: var(--desk); color: var(--ink); font: 16px/1.5 var(--sans); }
   header { border-bottom: 1px solid var(--line); padding: 12px 16px; }
   main, .bar { max-width: 1180px; margin: 0 auto; }
-  .bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 12px; }
   .brand { font: 700 18px var(--mono); letter-spacing: .14em; }
-  a { color: var(--accent); }
+  a { display: inline-flex; align-items: center; min-width: 44px; min-height: 44px;
+    max-width: 100%; color: var(--accent); }
+  .meta a { display: flex; }
   a:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
-  main { padding: 24px 16px 48px; }
+  main { padding: 24px 16px 48px; overflow-wrap: anywhere; }
   h1 { margin: 8px 0 28px; font-size: clamp(28px, 5vw, 44px); line-height: 1.12; }
   h2 { margin: 0; font-size: 24px; }
   h3 { margin: 0; font-size: 17px; }
@@ -28,9 +30,9 @@
   section + section { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--line); }
   .story, .meta { color: var(--dim); }
   .meta { font: 12px/1.5 var(--mono); overflow-wrap: anywhere; }
-  .columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+  .columns { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
   .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
-    padding: 16px; min-width: 0; }
+    padding: 12px; min-width: 0; }
   .verdict, .outcome { font-family: var(--mono); font-weight: 700; }
   .verdict, .error { color: #ff9595; }
   .timeline { list-style: none; padding: 0 0 0 12px; margin: 12px 0 0;
@@ -40,25 +42,29 @@
   .coverage-gaps { margin-bottom: 16px; overflow-wrap: anywhere; }
   .label { color: var(--dim); }
   .delivery { display: grid; gap: 12px; }
-  table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
-  th, td { padding: 8px; text-align: left; vertical-align: top;
-    border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
-  th { font: 700 12px var(--mono); color: var(--dim); }
-  th:nth-child(1) { width: 25%; }
-  th:nth-child(2) { width: 10%; }
-  th:nth-child(3) { width: 25%; }
-  td:first-child { font: 12px/1.5 var(--mono); }
-  tr:last-child td { border-bottom: 0; }
+  table { display: block; width: 100%; border-collapse: collapse; margin-top: 10px; }
+  thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  tbody { display: block; }
+  tr { display: block; padding: 8px 0; border-top: 1px solid var(--line); }
+  td { display: grid; grid-template-columns: 6em minmax(0, 1fr); gap: 8px; padding: 2px 0; }
+  th, .cell-label { font-weight: 700; color: var(--dim); }
+  td:first-child > :last-child { font-family: var(--mono); }
+  .outcome .cell-label { font-family: var(--sans); }
   .delivered { color: #72d6a3; }
-  @media (max-width: 700px) {
-    .columns { grid-template-columns: 1fr; }
-    .panel { padding: 12px; }
-    th, td { padding: 6px 3px; font-size: 12px; }
-    th, td:first-child, td.outcome { font-size: 11px; }
-    .date { display: block; }
-    th:nth-child(1) { width: 24%; }
-    th:nth-child(2) { width: 17%; }
-    th:nth-child(3) { width: 30%; }
+  @media (min-width: 760px) {
+    .columns { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .panel { padding: 16px; }
+    table { display: table; table-layout: fixed; }
+    thead { position: static; width: auto; height: auto; overflow: visible; clip-path: none; }
+    tbody { display: table-row-group; }
+    tr { display: table-row; border-top: 0; }
+    th, td { display: table-cell; padding: 8px; text-align: left; vertical-align: top;
+      border-bottom: 1px solid var(--line); }
+    th:nth-child(1) { width: 25%; }
+    th:nth-child(2) { width: 12%; }
+    th:nth-child(3) { width: 25%; }
+    tr:last-child td { border-bottom: 0; }
+    .cell-label { display: none; }
   }
 </style>
 </head>
@@ -171,6 +177,19 @@
   }
 
   function renderDelivery(delivery) {
+    const labels = ["Time (UTC)", "Attempt", "Outcome", "Details"];
+    const addCell = (row, value, className) => {
+      const label = labels[row.cells.length];
+      const cell = add(row, "td", null, className);
+      cell.setAttribute("role", "cell");
+      add(cell, "span", label, "cell-label").setAttribute("aria-hidden", "true");
+      return add(cell, "div", value);
+    };
+    const addRow = (group) => {
+      const row = add(group, "tr");
+      row.setAttribute("role", "row");
+      return row;
+    };
     const root = document.getElementById("delivery");
     for (const event of delivery.enqueued) {
       const panel = add(root, "article", null, "panel");
@@ -179,25 +198,29 @@
       field(panel, "Result", event.result_pointer);
 
       const table = add(panel, "table");
-      const heading = add(add(table, "thead"), "tr");
-      for (const label of ["Time (UTC)", "Attempt", "Outcome", "Details"]) {
+      table.setAttribute("role", "table");
+      const head = add(table, "thead");
+      head.setAttribute("role", "rowgroup");
+      const heading = addRow(head);
+      for (const label of labels) {
         add(heading, "th", label).scope = "col";
       }
       const body = add(table, "tbody");
-      const enqueue = add(body, "tr");
-      showTime(add(enqueue, "td"), utc(event.due_at));
-      add(enqueue, "td", "—");
-      add(enqueue, "td", "Enqueued", "outcome");
-      add(enqueue, "td", "Committed with sealed audit");
+      body.setAttribute("role", "rowgroup");
+      const enqueue = addRow(body);
+      showTime(addCell(enqueue), utc(event.due_at));
+      addCell(enqueue, "—");
+      addCell(enqueue, "Enqueued", "outcome");
+      addCell(enqueue, "Committed with sealed audit");
 
       let previousOutcome;
       for (const {entry, outbox} of delivery.journal) {
         if (entry.event_id !== event.event_id) continue;
-        const row = add(body, "tr");
-        showTime(add(row, "td"), entry.recorded_at);
-        add(row, "td", entry.attempt);
-        const outcome = add(row, "td", entry.outcome, "outcome");
-        const details = add(row, "td");
+        const row = addRow(body);
+        showTime(addCell(row), entry.recorded_at);
+        addCell(row, entry.attempt);
+        const outcome = addCell(row, entry.outcome, "outcome");
+        const details = addCell(row);
         if (outbox?.terminal) {
           outcome.classList.add("delivered");
           details.textContent = "HTTP " + entry.http_status + " · terminal";
