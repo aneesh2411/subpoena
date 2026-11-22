@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
+from subpoena.auditor.seal import Sealer
 from subpoena.models import VerdictStatus
 from subpoena.scenarios.world import (
     KIM,
@@ -127,6 +128,17 @@ def test_equally_matching_claims_cannot_verify_against_one_write():
 
     assert [v.status for v in report.verdicts] == [VerdictStatus.UNVERIFIABLE] * 2
     assert all("ambiguous write assignment" in v.summary for v in report.verdicts)
+    claim_ids = {v.claim.claim_id for v in report.verdicts}
+    for verdict in report.verdicts:
+        assert {candidate.claim_id for candidate in verdict.alternatives} == claim_ids
+        assert all(candidate.exact and candidate.score > 0 for candidate in verdict.alternatives)
+        assert len({write.ref for c in verdict.alternatives for write in c.writes}) == 1
+        assert not verdict.evidence
+    assert {decision.claim_id for decision in report.escalation_log} == claim_ids
+    assert all(decision.score_spread == 0 for decision in report.escalation_log)
+    assert all(d.disposition is VerdictStatus.UNVERIFIABLE for d in report.escalation_log)
+    assert Sealer().verify(report).ok
+    assert not Sealer().verify(report.model_copy(update={"escalation_log": ()})).ok
     assert all("positional fallback" not in e.message for e in report.trail)
 
 
@@ -142,3 +154,20 @@ def test_tied_pairings_with_evidence_for_both_claims_log_positional_fallback():
 
     assert [v.status for v in report.verdicts] == [VerdictStatus.VERIFIED] * 2
     assert any("positional fallback" in e.message for e in report.trail)
+
+
+def test_ambiguous_claims_preserve_distinct_writes_from_tied_assignments():
+    def omit_ticket_details(claims):
+        return tuple(c.model_copy(update={"summary": "", "priority": None}) for c in claims)
+
+    report = _audit(
+        (Handoff("a billing question"), Handoff("an insurance form"), Handoff("a lost filling")),
+        {2: frozenset({F.PHANTOM_HANDOFF})},
+        transform_claims=omit_ticket_details,
+    )
+
+    assert [v.status for v in report.verdicts] == [VerdictStatus.UNVERIFIABLE] * 3
+    for verdict in report.verdicts:
+        assert len(verdict.alternatives) == 6
+        own = [c for c in verdict.alternatives if c.claim_id == verdict.claim.claim_id]
+        assert len({write.ref for candidate in own for write in candidate.writes}) == 2

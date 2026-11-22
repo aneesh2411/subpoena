@@ -7,6 +7,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+from subpoena.auditor.seal import Sealer
+from subpoena.models import AuditReport
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -20,7 +23,8 @@ def test_review_export_is_reproducible(tmp_path: Path) -> None:
         )
 
     relative_data = "data-review/review.json"
-    for relative_path in ("review.html", relative_data):
+    relative_audit = "data-review/ambiguous-assignment.json"
+    for relative_path in ("review.html", relative_data, relative_audit):
         expected = (ROOT / "docs/demo" / relative_path).read_bytes()
         assert (first / relative_path).read_bytes() == expected
         assert (second / relative_path).read_bytes() == expected
@@ -57,3 +61,18 @@ def test_review_export_is_reproducible(tmp_path: Path) -> None:
             "2026-03-03T09:05:00-05:00",
         ]
         assert [call["outcome"] for call in review["calls"]] == ["CLEAN", second_outcome]
+
+    assert f'fetch("{relative_audit}")' in page
+    assert "Competing candidates" in page
+    data = json.loads((first / relative_data).read_bytes())
+    audit = AuditReport.model_validate_json((first / relative_audit).read_bytes())
+    assert Sealer().verify(audit).ok
+    assert [item["result_pointer"] for item in data["assignment_items"]] == [
+        "/verdicts/0",
+        "/verdicts/1",
+    ]
+    assert all(
+        item["audit_chain_hash"] == audit.seal.chain_hash for item in data["assignment_items"]
+    )
+    assert all(len(verdict.alternatives) == 2 for verdict in audit.verdicts)
+    assert [decision.candidate_count for decision in audit.escalation_log] == [2, 2]

@@ -393,6 +393,15 @@
       },
       "coverage_gaps": [],
       "created_at": "2026-03-02T09:06:24-05:00",
+      "escalation_log": [
+        {
+          "block_reason": "A booking was written (apt_0001) but it is not what the caller was told. start: claimed Tue Mar 3 2026, 2:30 PM EST, actual Wed Mar 4 2026, 2:30 PM EST. The calendar holds Wed Mar 4 2026, 2:30 PM EST, the exact value the caller corrected away from at turn 2.",
+          "candidate_count": 0,
+          "claim_id": "call-pages-correction-stale-write-c2",
+          "disposition": "MISMATCH",
+          "score_spread": null
+        }
+      ],
       "extraction": {
         "degraded": false,
         "detail": null,
@@ -403,11 +412,11 @@
       "outcome": "DISCREPANCIES",
       "seal": {
         "algorithm": "sha256",
-        "chain_hash": "eb775325ae967c7ece1aad1e57a49f7fc394f783d8723a0be678dc41279bddcf",
-        "content_hash": "2f3959da31571124c8742a8dce35f32c9c297e169e73def6399b85c4326d2a1f",
+        "chain_hash": "9b0c73cfdd381a92bb34fa7920d9d5d10d5be0b2377e39b00d3067b7fb00ee32",
+        "content_hash": "58a5da39ca3601c27c6d0bcf8fcf6bf19c7d6f8f1b84e852d37767d544133823",
         "key_id": "6508b98a7ace",
         "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-        "signature": "24e2be108bda69ed8b42897b3bb15b8d876700e40325d08f4788120dba3b3d4f"
+        "signature": "3bf7b8738f1802e4c1cf2eb55d9cdcd3bdb0a77229d22c675587a5be28b631cd"
       },
       "stats": {
         "claims": 1,

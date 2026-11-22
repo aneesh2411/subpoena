@@ -1,4 +1,22 @@
 {
+  "assignment_items": [
+    {
+      "audit_chain_hash": "7b67b9098c8a62e26c12101e45f942d25d7b1ce0d61e542e2d2d25a0eb9ffbf8",
+      "audit_id": "aud-review-ambiguous-assignment",
+      "head": "82afded7c8381f5cb378998707ba4608baa90a65c7ec8fe473b18f123558c28b",
+      "item_id": "82afded7c8381f5cb378998707ba4608baa90a65c7ec8fe473b18f123558c28b",
+      "result_pointer": "/verdicts/0",
+      "state": "open"
+    },
+    {
+      "audit_chain_hash": "7b67b9098c8a62e26c12101e45f942d25d7b1ce0d61e542e2d2d25a0eb9ffbf8",
+      "audit_id": "aud-review-ambiguous-assignment",
+      "head": "8daa43117f77c08f032a9f79e7afcd626699f654f67fac66dd9f30396735376c",
+      "item_id": "8daa43117f77c08f032a9f79e7afcd626699f654f67fac66dd9f30396735376c",
+      "result_pointer": "/verdicts/1",
+      "state": "open"
+    }
+  ],
   "reviews": [
     {
       "audits": [

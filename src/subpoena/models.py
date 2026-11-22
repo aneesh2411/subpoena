@@ -365,6 +365,15 @@ class Evidence(Frozen):
     record: dict[str, Any] | None = None
 
 
+class AssignmentAlternative(Frozen):
+    """A scored pairing from a tied best assignment."""
+
+    claim_id: str
+    score: int
+    exact: bool
+    writes: tuple[Evidence, ...]
+
+
 class Verdict(Frozen):
     claim: Claim
     status: VerdictStatus
@@ -374,6 +383,22 @@ class Verdict(Frozen):
     diffs: tuple[FieldDiff, ...] = ()
     evidence: tuple[Evidence, ...] = ()
     remediation: str | None = None
+    alternatives: tuple[AssignmentAlternative, ...] = ()
+
+    @model_serializer(mode="wrap")
+    def _serialize(self, handler: SerializerFunctionWrapHandler):
+        data = handler(self)
+        if not self.alternatives:
+            data.pop("alternatives", None)
+        return data
+
+
+class EscalationDecision(Frozen):
+    claim_id: str
+    block_reason: str
+    candidate_count: int
+    score_spread: int | None
+    disposition: VerdictStatus
 
 
 class FindingKind(StrEnum):
@@ -539,3 +564,12 @@ class AuditReport(Frozen):
     fulfillments: tuple[Fulfillment, ...] = ()
     coverage_gaps: tuple[CoverageGap, ...] = ()
     seal: Seal | None = None
+    escalation_log: tuple[EscalationDecision, ...] = ()
+
+    @model_serializer(mode="wrap")
+    def _serialize(self, handler: SerializerFunctionWrapHandler):
+        data = handler(self)
+        if not self.escalation_log:
+            # Older reports must still serialize to their original sealed contents.
+            data.pop("escalation_log", None)
+        return data

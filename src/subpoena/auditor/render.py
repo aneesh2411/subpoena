@@ -59,6 +59,12 @@ def _verdict_md(n: int, v: Verdict) -> list[str]:
     if v.evidence:
         lines += ["", "Evidence:"]
         lines += [f"- `{e.source}` `{e.ref}`: {e.note}" for e in v.evidence]
+    if v.alternatives:
+        lines += ["", "**Competing candidates**", ""]
+        for candidate in v.alternatives:
+            quality = "exact" if candidate.exact else "partial"
+            lines.append(f"- Claim `{candidate.claim_id}` ({quality}, score {candidate.score})")
+            lines += [f"  - `{e.source}` `{e.ref}` — {e.note}" for e in candidate.writes]
     return [*lines, ""]
 
 

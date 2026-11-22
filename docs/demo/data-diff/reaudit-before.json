@@ -66,6 +66,15 @@
   },
   "coverage_gaps": [],
   "created_at": "2026-03-02T09:05:21-05:00",
+  "escalation_log": [
+    {
+      "block_reason": "The agent claimed it created an urgent handoff ticket, but no ticket was created during the call. Nobody is going to call this person back.",
+      "candidate_count": 0,
+      "claim_id": "call-revisions-demo-c1",
+      "disposition": "NOT_FOUND",
+      "score_spread": null
+    }
+  ],
   "extraction": {
     "degraded": false,
     "detail": null,
@@ -76,11 +85,11 @@
   "outcome": "DISCREPANCIES",
   "seal": {
     "algorithm": "sha256",
-    "chain_hash": "3aa893902695bebd64db3a35383a8f906ebf34dff0e5c6e6d7a9d1aef0f9000e",
-    "content_hash": "74653e2643db97241334b5b9e988e05b08a11ec861faa93143211dddbf53320c",
+    "chain_hash": "443d47ac52064d9cbe8c870f1f61387c0aa96ed4f1878c89b1348a0ded994229",
+    "content_hash": "8fc089b44fa8e2fffa9bfe3116586b6e9d2e2fc464c1f23446f9516263c58ec0",
     "key_id": "edd027d0161b",
     "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-    "signature": "e784a6fe4bf35563ad344413705e578db262d1b282ff80da12a7337e82445f05"
+    "signature": "c2eb3cf59645a30bf4e3570240aef2893f592e2c4658ce965e40299cd7e85cad"
   },
   "stats": {
     "claims": 1,

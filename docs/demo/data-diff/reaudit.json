@@ -42,19 +42,19 @@
   ],
   "journal": {
     "authentication": "authenticated",
-    "journal_head": "8fcaa766377b12616fb1135a9f481ce1a4fd44d9092274f737085ec53039ad31",
+    "journal_head": "a24ca85a99b09c0bdb67c9c1635051af1d8cf657574f7fb25c2d591f5c1ae8a0",
     "revisions": [
       {
         "audit_id": "aud-revisions-first",
         "claim_id": "call-revisions-demo-c1",
-        "evidence": "Re-audit aud-revisions-second (chain 7a22b37d1b325a6c...) of the same call reached a different verdict.",
+        "evidence": "Re-audit aud-revisions-second (chain 062ba80f7520a6a0...) of the same call reached a different verdict.",
         "from_status": "NOT_FOUND",
-        "hash": "8fcaa766377b12616fb1135a9f481ce1a4fd44d9092274f737085ec53039ad31",
-        "item_id": "ae0361d8d0ef1d2f0f1b62375a10b0e5a6aa98d5103abdefb85f2a70eda77673",
+        "hash": "a24ca85a99b09c0bdb67c9c1635051af1d8cf657574f7fb25c2d591f5c1ae8a0",
+        "item_id": "34b04cb74ff08c4bbb27ce67b70d189f867af9f1dac9d1f6d7a5197b91bab47d",
         "key_id": "edd027d0161b",
         "previous_hash": "0000000000000000000000000000000000000000000000000000000000000000",
         "sequence": 1,
-        "signature": "96df3456bef1c8d1ad5409ecfcecf509d2f8a66b97c87b83613b2a71a9990dd7",
+        "signature": "7d001f98871ebb641c00999f4370af67d933dfa0337ba3fd0134e25c1f6dee21",
         "source": "reaudit",
         "timestamp": "2026-03-02T14:05:41.000000+00:00",
         "to_status": "VERIFIED",
@@ -66,7 +66,7 @@
     "after": {
       "audit_id": "aud-revisions-second",
       "call_id": "call-revisions-demo",
-      "chain_hash": "7a22b37d1b325a6c1666c6e1b49a2d99f8726bc1b288d1a089fe290760418801",
+      "chain_hash": "062ba80f7520a6a0c78f6503f76dfa0625035ea0c54a5d2f34643b4496597e72",
       "file": "reaudit-after.json",
       "outcome": "CLEAN",
       "seal": "OK integrity=intact authentication=authenticated (content and chain verified (signature verified))"
@@ -74,7 +74,7 @@
     "before": {
       "audit_id": "aud-revisions-first",
       "call_id": "call-revisions-demo",
-      "chain_hash": "3aa893902695bebd64db3a35383a8f906ebf34dff0e5c6e6d7a9d1aef0f9000e",
+      "chain_hash": "443d47ac52064d9cbe8c870f1f61387c0aa96ed4f1878c89b1348a0ded994229",
       "file": "reaudit-before.json",
       "outcome": "DISCREPANCIES",
       "seal": "OK integrity=intact authentication=authenticated (content and chain verified (signature verified))"

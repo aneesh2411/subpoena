@@ -33,6 +33,7 @@ from subpoena.auditor.seal import GENESIS, Sealer
 from subpoena.auditor.verdicts import unverifiable
 from subpoena.models import (
     AppointmentBooked,
+    AssignmentAlternative,
     AuditReport,
     AuditStats,
     CallRecord,
@@ -42,6 +43,7 @@ from subpoena.models import (
     ClaimSource,
     CoverageGap,
     Entity,
+    EscalationDecision,
     ExtractionHealth,
     Finding,
     Fulfillment,
@@ -65,6 +67,13 @@ class _Handler:
     match: Callable[[Any, AuditContext, bool], Match | None]
     candidates: Callable[[Any, AuditContext, bool], list[tuple[int, Match]]]
     judge: Callable[[Any, Match | None, AuditContext], Verdict]
+
+
+@dataclass(frozen=True)
+class _Block:
+    reason: str
+    scores: tuple[int, ...] = ()
+    alternatives: tuple[AssignmentAlternative, ...] = ()
 
 
 _CALENDAR = (Entity.APPOINTMENT, Entity.PATIENT)
@@ -185,6 +194,7 @@ class Auditor:
             extraction=self._extraction_health(ctx),
             fulfillments=fulfillments,
             coverage_gaps=coverage_gaps,
+            escalation_log=_escalations(verdicts, blocked),
         )
         return self._sealer.seal(report, prev_hash)
 
@@ -224,6 +234,7 @@ class Auditor:
             stats=_stats(verdicts, ()),
             extraction=ExtractionHealth(extractor="none"),
             coverage_gaps=_coverage_gaps((claim,), ctx),
+            escalation_log=_escalations(verdicts, blocked),
         )
         return self._sealer.seal(report, prev_hash)
 
@@ -288,16 +299,16 @@ class Auditor:
 
     def _reconcile(
         self, claims: Sequence[Claim], ctx: AuditContext
-    ) -> tuple[dict[str, Match], dict[str, str]]:
+    ) -> tuple[dict[str, Match], dict[str, _Block]]:
         """Assign writes across each evidence pool before judging individual claims."""
         matches: dict[str, Match] = {}
-        blocked: dict[str, str] = {}
+        blocked: dict[str, _Block] = {}
         by_specificity = sorted(claims, key=self._specificity, reverse=True)
         for claim in by_specificity:
             handler = HANDLERS[claim.type]
             down = [SOURCE[e] for e in handler.needs if ctx.delta.get(e) is None]
             if down:
-                blocked[claim.claim_id] = f"{', '.join(down)} could not be read"
+                blocked[claim.claim_id] = _Block(f"{', '.join(down)} could not be read")
         pools: dict[Entity, list[Claim]] = {}
         for claim in by_specificity:
             if claim.claim_id not in blocked:
@@ -319,14 +330,14 @@ class Auditor:
         ctx: AuditContext,
         strict: bool,
         matches: dict[str, Match],
-        blocked: dict[str, str],
+        blocked: dict[str, _Block],
     ) -> None:
         if claim.claim_id in matches or claim.claim_id in blocked:
             return
         handler = HANDLERS[claim.type]
         down = [SOURCE[e] for e in handler.needs if ctx.delta.get(e) is None]
         if down:
-            blocked[claim.claim_id] = f"{', '.join(down)} could not be read"
+            blocked[claim.claim_id] = _Block(f"{', '.join(down)} could not be read")
             return
         if claim.claim_id in matches or claim.claim_id in blocked:
             return
@@ -337,7 +348,7 @@ class Auditor:
                 candidates = self._loose_candidates(claim, ctx)
                 match = max(candidates, key=lambda c: c[0])[1] if candidates else None
         except AdapterUnavailable as exc:
-            blocked[claim.claim_id] = str(exc)
+            blocked[claim.claim_id] = _Block(str(exc))
             return
         if match is not None:
             self._take(claim, match, ctx, matches, "exact" if strict else "partial")
@@ -380,7 +391,7 @@ class Auditor:
         entity: Entity,
         ctx: AuditContext,
         matches: dict[str, Match],
-        blocked: dict[str, str],
+        blocked: dict[str, _Block],
     ) -> None:
         """Rank assignments by content, using position only for tied pairings."""
         order = sorted(pool, key=lambda c: (-self._specificity(c), c.claim_id))
@@ -395,7 +406,7 @@ class Auditor:
                     if exact_keys.isdisjoint(m.keys)
                 ]
             except AdapterUnavailable as exc:
-                blocked[claim.claim_id] = str(exc)
+                blocked[claim.claim_id] = _Block(str(exc))
                 options.append([None])
                 continue
             ranked = sorted(exact, key=lambda c: -c[0]) + sorted(partial, key=lambda c: -c[0])
@@ -413,7 +424,10 @@ class Auditor:
             )
             for claim, opts in zip(order, options, strict=True):
                 if len(opts) > 1:
-                    blocked[claim.claim_id] = "the write assignment exceeds the search limit"
+                    blocked[claim.claim_id] = _Block(
+                        "the write assignment exceeds the search limit",
+                        tuple(entry[0] for entry in opts if entry is not None),
+                    )
             return
 
         def position(chosen: list[tuple[int, Match, bool] | None]) -> float:
@@ -431,6 +445,7 @@ class Auditor:
         matched_in_any: set[int] = set()
         matched_in_all: set[int] = set()
         alternate_writes: set[int] = set()
+        best_entries: set[int] = set()
 
         def search(
             i: int,
@@ -452,6 +467,7 @@ class Auditor:
                     best_distance = position(chosen)
                     matched_in_any, matched_in_all = paired.copy(), paired
                     alternate_writes.clear()
+                    best_entries.clear()
                 elif key == best_key:
                     matched_in_any.update(paired)
                     matched_in_all.intersection_update(paired)
@@ -459,6 +475,8 @@ class Auditor:
                     distance = position(chosen)
                     if distance < best_distance:
                         best, best_distance = list(chosen), distance
+                if key == best_key:
+                    best_entries.update(map(id, entries))
                 return
             for entry in options[i]:
                 keys = entry[1].keys if entry is not None else ()
@@ -477,6 +495,16 @@ class Auditor:
 
         search(0, set(), set(), [])
         ambiguous = matched_in_any - matched_in_all
+        # Group tied options by claim. Claims can compete indirectly when a
+        # shared write forces another claim to switch to a different candidate.
+        contenders = [
+            [entry for entry in opts if entry is not None and id(entry) in best_entries]
+            for opts in options
+        ]
+        keys = [{key for _, match, _ in group for key in match.keys} for group in contenders]
+        signatures = [
+            {sig for _, match, _ in group for sig in match.signatures} for group in contenders
+        ]
         if alternate_writes & matched_in_all:
             # Position can choose among tied writes for a claim that has evidence
             # in every best assignment. It cannot decide which claim gets evidence.
@@ -484,7 +512,29 @@ class Auditor:
         for i, (claim, entry) in enumerate(zip(order, best, strict=True)):
             if i in ambiguous:
                 reason = "ambiguous write assignment: equally matching claims compete for evidence"
-                blocked[claim.claim_id] = reason
+                connected = {i}
+                pending = [i]
+                while pending:
+                    current = pending.pop()
+                    for other in matched_in_any - connected:
+                        if not keys[current].isdisjoint(keys[other]) or not signatures[
+                            current
+                        ].isdisjoint(signatures[other]):
+                            connected.add(other)
+                            pending.append(other)
+                alternatives = tuple(
+                    AssignmentAlternative(
+                        claim_id=order[index].claim_id,
+                        score=score,
+                        exact=exact,
+                        writes=tuple(nc.evidence("Candidate write") for nc in match.changes),
+                    )
+                    for index in sorted(connected)
+                    for score, match, exact in contenders[index]
+                )
+                blocked[claim.claim_id] = _Block(
+                    reason, tuple(candidate.score for candidate in alternatives), alternatives
+                )
                 ctx.log("reconcile", f"{claim.claim_id} ({claim.type}): {reason}")
             elif entry is not None:
                 _, match, is_exact = entry
@@ -492,10 +542,12 @@ class Auditor:
 
     @staticmethod
     def _judge(
-        claim: Claim, match: Match | None, blocked: dict[str, str], ctx: AuditContext
+        claim: Claim, match: Match | None, blocked: dict[str, _Block], ctx: AuditContext
     ) -> Verdict:
-        if claim.claim_id in blocked:
-            verdict = unverifiable(claim, blocked[claim.claim_id])
+        if (block := blocked.get(claim.claim_id)) is not None:
+            verdict = unverifiable(claim, block.reason).model_copy(
+                update={"alternatives": block.alternatives}
+            )
         elif (
             ambiguous := ctx.ambiguous_identity(
                 getattr(claim, "patient", None), at_call_start=isinstance(claim, RecordsUpdated)
@@ -555,6 +607,27 @@ class Auditor:
             f.model_copy(update={"finding_id": f"{ctx.call.call_id}-f{i}"})
             for i, f in enumerate(found, start=1)
         )
+
+
+def _escalations(
+    verdicts: Sequence[Verdict], blocked: dict[str, _Block]
+) -> tuple[EscalationDecision, ...]:
+    decisions = []
+    for verdict in verdicts:
+        if verdict.status is VerdictStatus.VERIFIED:
+            continue
+        block = blocked.get(verdict.claim.claim_id)
+        scores = block.scores if block else ()
+        decisions.append(
+            EscalationDecision(
+                claim_id=verdict.claim.claim_id,
+                block_reason=block.reason if block else verdict.summary,
+                candidate_count=len(scores),
+                score_spread=max(scores) - min(scores) if scores else None,
+                disposition=verdict.status,
+            )
+        )
+    return tuple(decisions)
 
 
 def _apply_attribution(

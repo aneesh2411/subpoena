@@ -99,11 +99,11 @@
   "outcome": "CLEAN",
   "seal": {
     "algorithm": "sha256",
-    "chain_hash": "7a22b37d1b325a6c1666c6e1b49a2d99f8726bc1b288d1a089fe290760418801",
+    "chain_hash": "062ba80f7520a6a0c78f6503f76dfa0625035ea0c54a5d2f34643b4496597e72",
     "content_hash": "da775ea09d9d503671a1e833eb40d6027ad7df51bc37d3b9ae78c98ef5720ad1",
     "key_id": "edd027d0161b",
-    "prev_hash": "3aa893902695bebd64db3a35383a8f906ebf34dff0e5c6e6d7a9d1aef0f9000e",
-    "signature": "d8c115ff1e4d5a10bbdc9bb78bc4dee49f5c157526fa1153b6e4a7d464a5ef6d"
+    "prev_hash": "443d47ac52064d9cbe8c870f1f61387c0aa96ed4f1878c89b1348a0ded994229",
+    "signature": "e5c75855bc8fd385093a1725c0062902386f8b3a1e650327d0399545479679bd"
   },
   "stats": {
     "claims": 1,

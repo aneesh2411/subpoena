@@ -28,6 +28,8 @@
   .intro { margin-block: 1rem; }
   .meta, .flag { font: 700 .8rem/1.6 var(--mono); }
   .flag { color: var(--amber); margin-top: .85rem; }
+  #assignments { margin-top: 2rem; }
+  #assignments article { margin-top: .75rem; }
   #queue { display: grid; gap: .75rem; margin-top: 2rem; }
   article {
     padding: .9rem 1rem; background: var(--card); border: 1px solid var(--line);
@@ -54,6 +56,10 @@
   <p id="status" role="status">Loading the review queue…</p>
   <noscript>Enable JavaScript to view the review queue.</noscript>
   <div id="queue"></div>
+  <section id="assignments" aria-labelledby="assignments-heading" hidden>
+    <h2 id="assignments-heading">Ambiguous write assignments</h2>
+    <a href="data-review/ambiguous-assignment.json">Download the sealed audit and escalation log</a>
+  </section>
 </main>
 <script>
   const queue = document.getElementById("queue");
@@ -90,12 +96,39 @@
     statusMessage.textContent = "No review candidates.";
   }
 
-  fetch("data-review/review.json")
-    .then(response => {
-      if (!response.ok) throw new Error("Could not load run data");
-      return response.json();
+  function renderAssignments({assignment_items}, audit) {
+    const section = document.getElementById("assignments");
+    for (const item of assignment_items) {
+      const index = Number(item.result_pointer.split("/").at(-1));
+      const verdict = audit.verdicts[index];
+      const card = add(section, "article");
+      add(card, "h3", verdict.claim.claim_id + " · " + verdict.status);
+      add(card, "p", verdict.summary);
+      add(card, "h3", "Competing candidates");
+      const candidates = add(card, "ol");
+      for (const candidate of verdict.alternatives) {
+        const entry = add(candidates, "li");
+        const quality = candidate.exact ? "exact" : "partial";
+        add(entry, "p", candidate.claim_id + " · " + quality + " · score " + candidate.score);
+        for (const write of candidate.writes) {
+          add(entry, "p", write.source + " / " + write.ref + " · " + write.note, "meta");
+        }
+      }
+      add(card, "p", item.state.toUpperCase() + " · Pending a human decision", "flag");
+    }
+    section.hidden = assignment_items.length === 0;
+  }
+
+  async function load(response) {
+    if (!response.ok) throw new Error("Could not load run data");
+    return response.json();
+  }
+
+  Promise.all([fetch("data-review/review.json").then(load), fetch("data-review/ambiguous-assignment.json").then(load)])
+    .then(([data, audit]) => {
+      render(data);
+      renderAssignments(data, audit);
     })
-    .then(render)
     .catch(() => {
       statusMessage.textContent = "Could not load the review queue. "
         + "Serve this directory over HTTP with its data-review folder beside the page.";

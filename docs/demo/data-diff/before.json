@@ -79,6 +79,15 @@
   },
   "coverage_gaps": [],
   "created_at": "2026-03-02T09:06:16-05:00",
+  "escalation_log": [
+    {
+      "block_reason": "A booking was written (apt_0001) but it is not what the caller was told. start: claimed Tue Mar 3 2026, 2:30 PM EST, actual Tue Mar 3 2026, 3:30 PM EST.",
+      "candidate_count": 0,
+      "claim_id": "call-fault-wrong-time-c1",
+      "disposition": "MISMATCH",
+      "score_spread": null
+    }
+  ],
   "extraction": {
     "degraded": false,
     "detail": null,
@@ -89,11 +98,11 @@
   "outcome": "DISCREPANCIES",
   "seal": {
     "algorithm": "sha256",
-    "chain_hash": "68f04bf23d9b35914b8ac352462d72be5d12217949998d649c6c4d2f25a2ffe8",
-    "content_hash": "7c67ef8c00f5b0249d472ba482eb98f03c0233ca8805f81ca9a7cbf12dade042",
+    "chain_hash": "ebf3cd36a45afcb24f3a88c087ded145ea4d64f1842f1bcf213f38b2b3596375",
+    "content_hash": "aa98cd054f2beaea3369edac958dd2c15e792ffc9f150ff2218dc397085902d9",
     "key_id": "6508b98a7ace",
     "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-    "signature": "245f53a1589184a13b861c5d3a66a4744ab28dc58e9455cd63ac405993e3531f"
+    "signature": "f5a3aa3c8eb5367d305af275794ea824edf5bd5fc92b593eccd2cc05e869d2db"
   },
   "stats": {
     "claims": 2,

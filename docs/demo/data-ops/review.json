@@ -55,6 +55,22 @@
     },
     "coverage_gaps": [],
     "created_at": "2026-11-19T18:07:41Z",
+    "escalation_log": [
+      {
+        "block_reason": "The agent claimed it booked Rosa Delgado on Tue Nov 24 2026, 3:00 PM EST, but no appointment was created during the call.",
+        "candidate_count": 0,
+        "claim_id": "tool-log-7f3a",
+        "disposition": "NOT_FOUND",
+        "score_spread": null
+      },
+      {
+        "block_reason": "The agent claimed it sent an SMS confirmation to +14805550142, but the message log shows nothing sent during the call.",
+        "candidate_count": 0,
+        "claim_id": "tool-log-7f3b",
+        "disposition": "NOT_FOUND",
+        "score_spread": null
+      }
+    ],
     "extraction": {
       "degraded": false,
       "detail": null,
@@ -65,11 +81,11 @@
     "outcome": "DISCREPANCIES",
     "seal": {
       "algorithm": "sha256",
-      "chain_hash": "cdf54967b70c27aa0f12d70218eaccfa93fedd16eb2ca444e8d7cc6746e99574",
-      "content_hash": "efc8fd7519a2f4c26b401b8d810795484ec11bb339e87669cf4e0be69f65414c",
+      "chain_hash": "36c6b20524485347a124fd7a3e7d04d526998190374152062137610d9890991b",
+      "content_hash": "7beb9d90da51d2202ce41a43544d7aedc0d8a87b481081d5a9d00e984fb5889e",
       "key_id": "6508b98a7ace",
       "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-      "signature": "cf0c9e9e4fe3d977225b671a88fd52a1ff2e3b414a769652fe7d534e00a0967c"
+      "signature": "bc52678bb8e42bd055e86ec8656798ce215c35bcd69fd829c74ebf737481698c"
     },
     "stats": {
       "claims": 2,
@@ -240,18 +256,18 @@
   "authentication": "authenticated",
   "items": [
     {
-      "audit_chain_hash": "cdf54967b70c27aa0f12d70218eaccfa93fedd16eb2ca444e8d7cc6746e99574",
+      "audit_chain_hash": "36c6b20524485347a124fd7a3e7d04d526998190374152062137610d9890991b",
       "audit_id": "aud-twilio-ops",
-      "head": "f3fb22673896d98a2095a58823ae56ec7113d9d34a2e80062e5faf165b4be53f",
-      "item_id": "f4c7c0f782d522110756091ec5b2d3cc23e8e714310595227ad0c8698ecd6ff0",
+      "head": "9c2f6c1343d3573344c0997722160c29a7040aa6f99030797958ae3d03f92c6d",
+      "item_id": "e3d5d09138f59b27fbfba9a592941746ed1a1132de79c94995503578c9516a94",
       "result_pointer": "/verdicts/0",
       "state": "resolved"
     },
     {
-      "audit_chain_hash": "cdf54967b70c27aa0f12d70218eaccfa93fedd16eb2ca444e8d7cc6746e99574",
+      "audit_chain_hash": "36c6b20524485347a124fd7a3e7d04d526998190374152062137610d9890991b",
       "audit_id": "aud-twilio-ops",
-      "head": "679c954a7ad92f1e943f06871dd07c5d1d01094132cedf86153862aab2a94fdc",
-      "item_id": "3607dad2be607eaea2a09d5495d6cc7dc0c2f02cf334514b2cd926526fea1f69",
+      "head": "e79c8d345c974f055604d23a9a79b4cb43fdac009e28f0e5429e3c57d3c672f2",
+      "item_id": "4f1e02480e7348ade32099576ed96ee4639763b883da344022dd4a9849e71f4a",
       "result_pointer": "/verdicts/1",
       "state": "open"
     }
@@ -260,14 +276,14 @@
     {
       "actor": "reviewer",
       "from_state": "open",
-      "hash": "4de5b9ba7bef0bdb1526a2c8f2f9ea76dbfb2af2bc3479aac9f59cbee0f2691d",
-      "item_id": "f4c7c0f782d522110756091ec5b2d3cc23e8e714310595227ad0c8698ecd6ff0",
+      "hash": "a8a981ec4a42b4a3f1c825dec73f6c106cfba6bccc886bba73be63bba5f73414",
+      "item_id": "e3d5d09138f59b27fbfba9a592941746ed1a1132de79c94995503578c9516a94",
       "key_id": "6508b98a7ace",
       "previous_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-      "previous_item_head": "f4c7c0f782d522110756091ec5b2d3cc23e8e714310595227ad0c8698ecd6ff0",
+      "previous_item_head": "e3d5d09138f59b27fbfba9a592941746ed1a1132de79c94995503578c9516a94",
       "reason": "Checked the booking claim against the appointment ledger.",
       "sequence": 1,
-      "signature": "3e8397db1116b73432bf9b12913c7948371c635678e1e53008c3bcaf85efead5",
+      "signature": "54f24640e464307371c230ab8a5874d4ff9189616bef9dad2ceca2ce6e150a9c",
       "timestamp": "2026-11-19T18:07:46.000000+00:00",
       "to_state": "acknowledged",
       "version": 1
@@ -275,14 +291,14 @@
     {
       "actor": "supervisor",
       "from_state": "acknowledged",
-      "hash": "f3fb22673896d98a2095a58823ae56ec7113d9d34a2e80062e5faf165b4be53f",
-      "item_id": "f4c7c0f782d522110756091ec5b2d3cc23e8e714310595227ad0c8698ecd6ff0",
+      "hash": "9c2f6c1343d3573344c0997722160c29a7040aa6f99030797958ae3d03f92c6d",
+      "item_id": "e3d5d09138f59b27fbfba9a592941746ed1a1132de79c94995503578c9516a94",
       "key_id": "6508b98a7ace",
-      "previous_hash": "4de5b9ba7bef0bdb1526a2c8f2f9ea76dbfb2af2bc3479aac9f59cbee0f2691d",
-      "previous_item_head": "4de5b9ba7bef0bdb1526a2c8f2f9ea76dbfb2af2bc3479aac9f59cbee0f2691d",
+      "previous_hash": "a8a981ec4a42b4a3f1c825dec73f6c106cfba6bccc886bba73be63bba5f73414",
+      "previous_item_head": "a8a981ec4a42b4a3f1c825dec73f6c106cfba6bccc886bba73be63bba5f73414",
       "reason": "Closed the finding after recording the missing booking.",
       "sequence": 2,
-      "signature": "5f5e94655d5102a4fa4a7d050109216ff0f1a3bd877525fef67f87cc7bd9b0bf",
+      "signature": "6acc0c510dfc371f6bbab2a5116d98a39e3c145a323f25bd718cb221bda22a30",
       "timestamp": "2026-11-19T18:07:47.000000+00:00",
       "to_state": "resolved",
       "version": 1
@@ -290,14 +306,14 @@
     {
       "actor": "reviewer",
       "from_state": "open",
-      "hash": "c84a232d277bef935fe5e4ac4c79212607734281352187e53398d928aff773be",
-      "item_id": "3607dad2be607eaea2a09d5495d6cc7dc0c2f02cf334514b2cd926526fea1f69",
+      "hash": "6b1c8971acf7c0751b168b8c6ab21e572709636d229e7912b8202e1015cf1ca0",
+      "item_id": "4f1e02480e7348ade32099576ed96ee4639763b883da344022dd4a9849e71f4a",
       "key_id": "6508b98a7ace",
-      "previous_hash": "f3fb22673896d98a2095a58823ae56ec7113d9d34a2e80062e5faf165b4be53f",
-      "previous_item_head": "3607dad2be607eaea2a09d5495d6cc7dc0c2f02cf334514b2cd926526fea1f69",
+      "previous_hash": "9c2f6c1343d3573344c0997722160c29a7040aa6f99030797958ae3d03f92c6d",
+      "previous_item_head": "4f1e02480e7348ade32099576ed96ee4639763b883da344022dd4a9849e71f4a",
       "reason": "Checked the confirmation claim against the message log.",
       "sequence": 3,
-      "signature": "8b26cd6a7ffbc5229f937bb4e0f785ccbba5739d171ba49bf47f3fc88c9d3454",
+      "signature": "79d62e4225faa81e08a5a39e8651c3fe9b7419e3ac6ec30aed7643376cdf793c",
       "timestamp": "2026-11-19T18:07:49.000000+00:00",
       "to_state": "acknowledged",
       "version": 1
@@ -305,14 +321,14 @@
     {
       "actor": "supervisor",
       "from_state": "acknowledged",
-      "hash": "83b80f4c52967749544d8c889ea0586b245dee73af19bd70f7cf7cfdcb00568e",
-      "item_id": "3607dad2be607eaea2a09d5495d6cc7dc0c2f02cf334514b2cd926526fea1f69",
+      "hash": "c847399bac9272d41d6347925a60f8f78c722d752a8942dfeeb3bb7b1e012106",
+      "item_id": "4f1e02480e7348ade32099576ed96ee4639763b883da344022dd4a9849e71f4a",
       "key_id": "6508b98a7ace",
-      "previous_hash": "c84a232d277bef935fe5e4ac4c79212607734281352187e53398d928aff773be",
-      "previous_item_head": "c84a232d277bef935fe5e4ac4c79212607734281352187e53398d928aff773be",
+      "previous_hash": "6b1c8971acf7c0751b168b8c6ab21e572709636d229e7912b8202e1015cf1ca0",
+      "previous_item_head": "6b1c8971acf7c0751b168b8c6ab21e572709636d229e7912b8202e1015cf1ca0",
       "reason": "Requested a check of the provider's delivery records.",
       "sequence": 4,
-      "signature": "686c9c7cadac3bccae4d23a20435bf699c8be6bfaaf3beb7dc5c10367125dbb8",
+      "signature": "cf0c98ef77045c703ae42c0fa7180b70252c52414dd147018e987e8de82ecf4b",
       "timestamp": "2026-11-19T18:07:50.000000+00:00",
       "to_state": "disputed",
       "version": 1
@@ -320,20 +336,20 @@
     {
       "actor": "reviewer",
       "from_state": "disputed",
-      "hash": "679c954a7ad92f1e943f06871dd07c5d1d01094132cedf86153862aab2a94fdc",
-      "item_id": "3607dad2be607eaea2a09d5495d6cc7dc0c2f02cf334514b2cd926526fea1f69",
+      "hash": "e79c8d345c974f055604d23a9a79b4cb43fdac009e28f0e5429e3c57d3c672f2",
+      "item_id": "4f1e02480e7348ade32099576ed96ee4639763b883da344022dd4a9849e71f4a",
       "key_id": "6508b98a7ace",
-      "previous_hash": "83b80f4c52967749544d8c889ea0586b245dee73af19bd70f7cf7cfdcb00568e",
-      "previous_item_head": "83b80f4c52967749544d8c889ea0586b245dee73af19bd70f7cf7cfdcb00568e",
+      "previous_hash": "c847399bac9272d41d6347925a60f8f78c722d752a8942dfeeb3bb7b1e012106",
+      "previous_item_head": "c847399bac9272d41d6347925a60f8f78c722d752a8942dfeeb3bb7b1e012106",
       "reason": "Returned the finding to the queue for follow-up.",
       "sequence": 5,
-      "signature": "ba8e42941265944639b4faf37a6e0808cb98638e0289cffd7eaecb0ed06b7270",
+      "signature": "02fb6f4ff09c5ec058dffa7000401fbcec6dc5187a4bf4efbe7caaa02e9cd5ce",
       "timestamp": "2026-11-19T18:07:51.000000+00:00",
       "to_state": "open",
       "version": 1
     }
   ],
-  "journal_head": "679c954a7ad92f1e943f06871dd07c5d1d01094132cedf86153862aab2a94fdc",
+  "journal_head": "e79c8d345c974f055604d23a9a79b4cb43fdac009e28f0e5429e3c57d3c672f2",
   "outage_audit": {
     "audit_id": "aud-edge-calendar-outage",
     "auditor": "subpoena/0.1.0",
@@ -424,6 +440,15 @@
       }
     ],
     "created_at": "2026-03-02T09:06:16-05:00",
+    "escalation_log": [
+      {
+        "block_reason": "calendar could not be read",
+        "candidate_count": 0,
+        "claim_id": "call-edge-calendar-outage-c1",
+        "disposition": "UNVERIFIABLE",
+        "score_spread": null
+      }
+    ],
     "extraction": {
       "degraded": false,
       "detail": null,
@@ -434,11 +459,11 @@
     "outcome": "INCONCLUSIVE",
     "seal": {
       "algorithm": "sha256",
-      "chain_hash": "cc66948be036873e8f5039cc623cbe8d972ae20fbe3b1b699cdfb159de724e59",
-      "content_hash": "98d21795d295f6a58e7bb03c51e48e1fed1d956cdd203a9a8542c31e7e3f8a66",
+      "chain_hash": "d5574912e7dce00bb3a364331ae0437de0f9cbbf43f0b329e8f966af75ab2b43",
+      "content_hash": "592007d28f68ff6bb00ba4e72bb090ce6c52c27e02e9994b2c6c591772d9c084",
       "key_id": "6508b98a7ace",
       "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-      "signature": "d2da60de195906b940e16cbec6e9c904e1e1e356fd21c315082db2b85fa120e0"
+      "signature": "ba3b0d9de545ed697a3ac69120d5c7577a52f9590f0a682a6d4f7a6979d0e987"
     },
     "stats": {
       "claims": 2,
@@ -629,7 +654,7 @@
   "rejection": {
     "after_sequence": 2,
     "from_state": "resolved",
-    "item_id": "f4c7c0f782d522110756091ec5b2d3cc23e8e714310595227ad0c8698ecd6ff0",
+    "item_id": "e3d5d09138f59b27fbfba9a592941746ed1a1132de79c94995503578c9516a94",
     "message": "invalid review state transition",
     "status": 409,
     "to_state": "open"

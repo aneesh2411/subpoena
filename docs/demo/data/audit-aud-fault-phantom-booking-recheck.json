@@ -335,10 +335,19 @@
  "coverage_gaps": [],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "e6cd46be30fa3e83e9f867f4864abf384e9f9577052ea2f046a3cffda5bd9961",
+  "content_hash": "802643f5f1e777ef9665ba7966cbf7999cb4179802b551a92ef09319764f4dba",
   "prev_hash": "9331161c26a3ea53e7d7f43eeb9aadd6d138d578a1bf5990bb51a4a048d626a0",
-  "chain_hash": "688d33ef34da6d3716bbe73945c5b6c5eeaa5cac32fde0d068f484ed02ec68c7",
-  "signature": "f15d2dc52ade90795eced66280c613d9e1ec9530ab9d0a64bf9363db5976072f",
+  "chain_hash": "9a2fa4109cbb2c2665ee8320c0171d1abd097d0e544d1689250d0ce97dd5a71f",
+  "signature": "693c116263d015005172a02aa8703701983fe9c37bacd3e9a7af3df35ddaf9c7",
   "key_id": "6508b98a7ace"
- }
+ },
+ "escalation_log": [
+  {
+   "claim_id": "call-fault-phantom-booking-c1",
+   "block_reason": "A booking was written (apt_0001) but it is not what the caller was told. start: claimed Tue Mar 3 2026, 2:30 PM EST, actual Tue Mar 3 2026, 3:30 PM EST.",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "MISMATCH"
+  }
+ ]
 }

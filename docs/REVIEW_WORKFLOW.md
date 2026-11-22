@@ -32,6 +32,20 @@ distinct item if the new audit contains the same finding.
   or a missing signing key for an existing signed journal write returns 503.
   Integrity failures return 500. A rejected write leaves no receipt or state change.
 
+## Assignment escalation evidence
+
+When claims compete for writes in tied best assignments, their verdicts stay
+UNVERIFIABLE. The report's `alternatives` lists the tied candidate pairings
+involved in the conflict. Each pairing identifies the claim, its content
+score, whether it was an exact match, and the write or writes it would use.
+
+The sealed `escalation_log` records each non-VERIFIED claim's reason and
+disposition. For assignment blocks, `candidate_count` counts the scored
+pairings considered in the block, and `score_spread` is their maximum score
+minus their minimum. A count of zero and a null spread indicate that the
+decision recorded no scored options. The review demo includes a downloadable
+sealed example.
+
 ## Receipts and verification
 
 The review journal uses the audit database, so a file-backed
