@@ -5,6 +5,7 @@ one by hand. Refresh the artifacts, then re-sync the docs:
 
 ```bash
 subpoena eval --report docs/EVAL_REPORT.md --json evals/results/latest.json
+subpoena eval --seed 3 --json evals/results/fuzz-seed-3.json
 python scripts/sync_docs.py
 ```
 
@@ -244,13 +245,28 @@ If multiple records match at the strongest available level, the auditor returns
 - **Two silent CRM edits in one call** (`fuzz-7-0000`). Both records match by name
   when the audit runs. The journal shows which record held the caller's phone
   during each exchange, so both bookings verify.
-- **A wrong-target cancel and a phantom cancel share one release** (`fuzz-7-0227`).
-  The oracle knows which step released the decoy appointment. Both claims only
-  partially match that release by content, so reconcile returns `UNVERIFIABLE` for
-  both. The expected statuses are `MISMATCH` for the wrong-target cancel and
-  `NOT_FOUND` for the phantom cancel. Four cases of this ambiguity remain in the
-  500-call seed 3 run (`0014`, `0157`, `0179`, `0250`), which reaches 99.2% strict
-  accuracy.
+### Shared-release cancellation ties
+
+Reconciliation compares the patient resolved over each exchange, the claimed start,
+and the provider when the claim names one. For these five cases, both cancellation
+claims resolve to the release's patient, both name a different start from that release,
+and neither names a provider. The shared candidates have equal content scores, so
+both cancellations remain `UNVERIFIABLE`. Seed 7 reaches 99.8% strict accuracy and
+seed 3 reaches 99.2%.
+
+| Case | Wrong-target claim | Phantom claim | Shared release |
+|---|---|---|---|
+| `fuzz-7-0227` | Mar 16 12:30 | Mar 9 09:00 | Mar 2 11:00, Dr. Patel |
+| `fuzz-3-0014` | Mar 18 13:00 | Mar 10 08:00 | Mar 2 12:00, Dr. Kim |
+| `fuzz-3-0157` | Mar 10 09:30 | Mar 11 09:30 | Mar 2 12:00, Dr. Kim |
+| `fuzz-3-0179` | Mar 10 08:30 | Mar 10 11:00 | Mar 2 11:00, Dr. Osei |
+| `fuzz-3-0250` | Mar 9 11:00 | Mar 19 10:00 | Mar 2 11:00, Dr. Kim |
+
+Times are clinic-local. The other release in `fuzz-3-0014` belongs to a
+reschedule whose replacement write identifies the move. The oracle uses the
+injected fault to identify the wrong-target cancel as `MISMATCH` and the phantom
+as `NOT_FOUND`. Awarding the shared release to one of the cancellation claims
+based on exchange timing alone would resolve an evidence-ownership tie by position.
 
 The golden set measures the two known transcript gaps separately.
 

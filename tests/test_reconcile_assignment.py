@@ -7,6 +7,7 @@ from dataclasses import replace
 from subpoena.auditor.seal import Sealer
 from subpoena.models import VerdictStatus
 from subpoena.scenarios.world import (
+    DANIEL,
     KIM,
     MAYA,
     PATEL,
@@ -171,3 +172,41 @@ def test_ambiguous_claims_preserve_distinct_writes_from_tied_assignments():
         assert len(verdict.alternatives) == 6
         own = [c for c in verdict.alternatives if c.claim_id == verdict.claim.claim_id]
         assert len({write.ref for candidate in own for write in candidate.writes}) == 2
+
+
+def test_cancel_provider_breaks_tie_between_partial_matches():
+    def add_providers(claims):
+        first, second = claims
+        return (
+            first.model_copy(update={"provider": KIM}),
+            second.model_copy(update={"provider": PATEL}),
+        )
+
+    release = at(1, 9)
+    report = _audit(
+        (Cancel(start=S1), Cancel(start=S2)),
+        {0: frozenset({F.PHANTOM_CANCEL}), 1: frozenset({F.WRONG_APPOINTMENT_CANCELLED})},
+        seeds=(
+            SeedAppointment(MAYA, PATEL, release),
+            SeedAppointment(MAYA, KIM, S1),
+            SeedAppointment(MAYA, PATEL, S2),
+        ),
+        transform_claims=add_providers,
+    )
+
+    assert [v.status for v in report.verdicts] == [VerdictStatus.NOT_FOUND, VerdictStatus.MISMATCH]
+
+
+def test_cancel_at_claimed_slot_for_another_patient_is_mismatch():
+    def change_patient(claims):
+        return (claims[0].model_copy(update={"patient": DANIEL}),)
+
+    report = _audit(
+        (Cancel(start=S1),),
+        {},
+        seeds=(SeedAppointment(MAYA, PATEL, S1),),
+        transform_claims=change_patient,
+    )
+
+    assert report.verdicts[0].status is VerdictStatus.MISMATCH
+    assert [diff.field for diff in report.verdicts[0].diffs if not diff.match] == ["patient"]

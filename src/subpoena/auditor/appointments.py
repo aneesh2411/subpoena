@@ -392,12 +392,16 @@ def candidates_cancelled(
     out: list[tuple[int, Match]] = []
     for nc in ctx.free(Entity.APPOINTMENT):
         before = _appt(nc.before)
-        if not _released(nc) or before is None or before.patient_id not in ids:
+        if not _released(nc) or before is None:
             continue
-        exact = before.start == claim.start
-        if strict and not exact:
-            continue
-        out.append((int(exact), Match(primary=nc)))
+        who = before.patient_id in ids
+        when = before.start == claim.start
+        where = claim.provider is not None and _same(before.provider, claim.provider)
+        same_slot = when and (claim.provider is None or where)
+        eligible = (who and same_slot) if strict else (who or same_slot)
+        if eligible:
+            # A patient-only release stays at the fallback score in the shared pool.
+            out.append((2 * when + where, Match(primary=nc)))
     return out
 
 
@@ -435,17 +439,29 @@ def judge_cancelled(claim: Cancelled, match: Match | None, ctx: AuditContext) ->
     assert before is not None
     diffs = [
         FieldDiff(
+            field="patient",
+            claimed=ref_label(claim.patient),
+            actual=ctx.patient_label(before.patient_id),
+            match=before.patient_id in ctx.patient_ids(claim),
+        ),
+        FieldDiff(
             field="start",
             claimed=ctx.show(claim.start),
             actual=ctx.show(before.start),
             match=before.start == claim.start,
-        )
+        ),
     ]
+    if claim.provider is not None:
+        diffs.append(_text_diff("provider", claim.provider, before.provider))
     return conclude(
         claim,
         diffs,
         [match.primary.evidence("Released by the agent during the call")],
-        field_severity={"start": Severity.CRITICAL},
+        field_severity={
+            "patient": Severity.CRITICAL,
+            "start": Severity.CRITICAL,
+            "provider": Severity.CRITICAL,
+        },
         verified=f"Appointment for {what} was cancelled as claimed ({before.id}).",
         mismatch=f"The agent cancelled a different appointment ({before.id}) than it claimed.",
         remediation="Restore the wrongly cancelled appointment and cancel the intended one.",

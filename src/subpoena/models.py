@@ -172,6 +172,15 @@ class Cancelled(ClaimBase):
     type: Literal["Cancelled"] = "Cancelled"
     patient: PatientRef
     start: AwareDatetime
+    provider: str | None = Field(default=None, max_length=120)
+
+    @model_serializer(mode="wrap")
+    def _serialize(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data = handler(self)
+        # Preserve the canonical payload of receipts sealed before this field existed.
+        if self.provider is None:
+            data.pop("provider", None)
+        return data
 
 
 class ConfirmationSent(ClaimBase):

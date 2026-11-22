@@ -238,7 +238,15 @@ class RuleBasedExtractor:
                 elif _CANCELLED.search(sentence) and times:
                     if corrected:
                         meta["corrects_prior"] = True
-                    claims.append(Cancelled(**meta, patient=call.caller, start=times[0]))
+                    match = _PROVIDER.search(sentence)
+                    claims.append(
+                        Cancelled(
+                            **meta,
+                            patient=call.caller,
+                            start=times[0],
+                            provider=match.group() if match else None,
+                        )
+                    )
                     last_booking = None
                     corrected = False
                 elif times and _BOOKED.match(sentence) and not _BOOKING_INCOMPLETE.search(sentence):
@@ -409,7 +417,7 @@ class LLMClaimExtractor:
                 **meta, patient=call.caller, old_start=item.old_start, new_start=item.new_start
             )
         if item.type == "Cancelled" and item.start:
-            return Cancelled(**meta, patient=call.caller, start=item.start)
+            return Cancelled(**meta, patient=call.caller, start=item.start, provider=item.provider)
         if item.type == "ConfirmationSent" and call.caller.phone:
             return ConfirmationSent(
                 **meta, channel=item.channel, to=call.caller.phone, about_start=item.start
