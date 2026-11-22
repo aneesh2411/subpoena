@@ -63,10 +63,12 @@
 <main>
   <a class="back" href="index.html">← Demo viewer</a>
   <h1>Triage inbox</h1>
-  <p id="claim-filter" hidden>
-    Showing calls with <strong id="active-claim-type"></strong> verdicts.
-    <a href="inbox.html">Clear filter</a>
-  </p>
+  <template id="claim-filter-template">
+    <p id="claim-filter">
+      Showing calls with <strong id="active-claim-type"></strong> verdicts.
+      <a href="inbox.html">Clear filter</a>
+    </p>
+  </template>
   <div class="toolbar">
     <p id="status" role="status">Loading audited calls…</p>
     <label class="toggle"><input id="show-all" type="checkbox" disabled> Show all calls</label>
@@ -163,8 +165,10 @@ async function load() {
       : loaded;
     calls.sort((a, b) => a.rank - b.rank);
     if (claimType) {
-      document.getElementById("active-claim-type").textContent = claimType;
-      document.getElementById("claim-filter").hidden = false;
+      const template = document.getElementById("claim-filter-template");
+      const note = template.content.cloneNode(true);
+      note.querySelector("#active-claim-type").textContent = claimType;
+      template.replaceWith(note);
       showAll.checked = true;
     }
     render(calls);
