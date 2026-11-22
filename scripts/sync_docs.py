@@ -256,6 +256,18 @@ def sync(*, check: bool) -> int:
             drifted.append(rel)
             if not check:
                 path.write_text(text)
+    # The social card bakes the landing stats into an image; keep it in lockstep.
+    social = ROOT / "docs/social-preview.png"
+    try:
+        import generate_social_preview
+    except ImportError:  # Pillow is optional; skip the card when it is absent.
+        generate_social_preview = None
+    if generate_social_preview is not None and social.exists():
+        rendered = generate_social_preview.render_png()
+        if rendered != social.read_bytes():
+            drifted.append("docs/social-preview.png")
+            if not check:
+                social.write_bytes(rendered)
     if drifted:
         verb = "drifted" if check else "updated"
         print(f"{verb}: {', '.join(drifted)}")

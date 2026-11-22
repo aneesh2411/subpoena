@@ -1,9 +1,12 @@
 """Render the Pages social card after updating the landing metrics.
 
-Install Pillow==12.2.0, then run python scripts/generate_social_preview.py.
-The renderer uses Pillow's bundled Aileron font and adds no time-dependent data.
+Needs Pillow; run python scripts/generate_social_preview.py. scripts/sync_docs.py
+calls render_png() directly when Pillow is available so the card cannot drift
+from the landing stats. The renderer uses Pillow's bundled Aileron font and
+adds no time-dependent data.
 """
 
+import io
 import re
 from html import unescape
 from pathlib import Path
@@ -32,7 +35,7 @@ def landing_stats() -> list[tuple[str, str]]:
     return [(unescape(value), unescape(label)) for value, label in rows]
 
 
-def main() -> None:
+def render_png() -> bytes:
     stats = landing_stats()
     image = Image.new("RGB", (WIDTH, HEIGHT), "#14161a")
     draw = ImageDraw.Draw(image)
@@ -58,7 +61,13 @@ def main() -> None:
         draw.text((x + 16, y + 9), value, font=value_font, fill="#2457a4")
         draw.text((x + 16, y + 81), label, font=label_font, fill=INK)
 
-    image.save(DOCS / "social-preview.png", format="PNG", compress_level=9)
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG", compress_level=9)
+    return buffer.getvalue()
+
+
+def main() -> None:
+    (DOCS / "social-preview.png").write_bytes(render_png())
 
 
 if __name__ == "__main__":
