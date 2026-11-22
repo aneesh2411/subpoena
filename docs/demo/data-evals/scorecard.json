@@ -128,7 +128,7 @@
   },
   "provenance": {
     "check_in_date": "2026-11-22",
-    "sha256": "d827a12bdf02722c2036da0c88c6ecc13ee3a6af9146e0a034c6a6dde9d548d4",
+    "sha256": "e5ad76137fd79d9921fc5bdd5f6451947f5dbbaafaa9cde302df5f9281a906d8",
     "source": "evals/results/latest.json"
   },
   "results": {
@@ -766,56 +766,25 @@
     ],
     "fuzz": {
       "call_accuracy": 1.0,
-      "call_strict_accuracy": 0.988,
+      "call_strict_accuracy": 0.998,
       "calls": 500,
       "claim_level": {
-        "f1": 0.9937,
+        "f1": 1.0,
         "fn": 0,
-        "fp": 6,
-        "precision": 0.9876,
+        "fp": 0,
+        "precision": 1.0,
         "recall": 1.0,
-        "tn": 519,
+        "tn": 525,
         "tp": 476
       },
-      "claim_status_accuracy": 0.992,
+      "claim_status_accuracy": 0.998,
       "failures": [
-        {
-          "problems": [
-            "AppointmentBooked[0]: expected VERIFIED, got UNVERIFIABLE",
-            "AppointmentBooked[1]: expected VERIFIED, got UNVERIFIABLE"
-          ],
-          "scenario": "fuzz-7-0000"
-        },
-        {
-          "problems": [
-            "AppointmentBooked[0]: expected VERIFIED, got MISMATCH"
-          ],
-          "scenario": "fuzz-7-0146"
-        },
-        {
-          "problems": [
-            "AppointmentBooked[0]: expected VERIFIED, got MISMATCH"
-          ],
-          "scenario": "fuzz-7-0158"
-        },
         {
           "problems": [
             "Cancelled[0]: expected MISMATCH, got UNVERIFIABLE",
             "Cancelled[1]: expected NOT_FOUND, got UNVERIFIABLE"
           ],
           "scenario": "fuzz-7-0227"
-        },
-        {
-          "problems": [
-            "AppointmentBooked[0]: expected VERIFIED, got MISMATCH"
-          ],
-          "scenario": "fuzz-7-0235"
-        },
-        {
-          "problems": [
-            "AppointmentBooked[0]: expected VERIFIED, got MISMATCH"
-          ],
-          "scenario": "fuzz-7-0253"
         }
       ],
       "finding_level": {
@@ -841,56 +810,25 @@
     },
     "fuzz_v2_semantic": {
       "call_accuracy": 1.0,
-      "call_strict_accuracy": 0.988,
+      "call_strict_accuracy": 0.998,
       "calls": 500,
       "claim_level": {
-        "f1": 0.9937,
+        "f1": 1.0,
         "fn": 0,
-        "fp": 6,
-        "precision": 0.9876,
+        "fp": 0,
+        "precision": 1.0,
         "recall": 1.0,
-        "tn": 519,
+        "tn": 525,
         "tp": 476
       },
-      "claim_status_accuracy": 0.992,
+      "claim_status_accuracy": 0.998,
       "failures": [
-        {
-          "problems": [
-            "book|+15550101003|2026-03-10T08:30:00-04:00|Dr. Patel: expected VERIFIED, got UNVERIFIABLE",
-            "book|+15550101003|2026-03-19T09:00:00-04:00|Dr. Osei: expected VERIFIED, got UNVERIFIABLE"
-          ],
-          "scenario": "fuzz-7-0000"
-        },
-        {
-          "problems": [
-            "book|+15550101003|2026-03-19T13:30:00-04:00|Dr. Kim: expected VERIFIED, got MISMATCH"
-          ],
-          "scenario": "fuzz-7-0146"
-        },
-        {
-          "problems": [
-            "book|+15550101002|2026-03-26T11:30:00-04:00|Dr. Osei: expected VERIFIED, got MISMATCH"
-          ],
-          "scenario": "fuzz-7-0158"
-        },
         {
           "problems": [
             "cancel|+15550101004|2026-03-09T09:00:00-04:00: expected NOT_FOUND, got UNVERIFIABLE",
             "cancel|+15550101004|2026-03-16T12:30:00-04:00: expected MISMATCH, got UNVERIFIABLE"
           ],
           "scenario": "fuzz-7-0227"
-        },
-        {
-          "problems": [
-            "book|+15550101004|2026-03-03T09:30:00-05:00|Dr. Patel: expected VERIFIED, got MISMATCH"
-          ],
-          "scenario": "fuzz-7-0235"
-        },
-        {
-          "problems": [
-            "book|+15550101003|2026-03-05T12:00:00-05:00|Dr. Patel: expected VERIFIED, got MISMATCH"
-          ],
-          "scenario": "fuzz-7-0253"
         }
       ],
       "finding_level": {

@@ -26,7 +26,7 @@ Golden set: 67 hand-labelled calls, 105 claims, 7 findings beyond claims.
 
 Claim-level confusion for Subpoena: 38 true positives, 0 false positives, 2 false negatives, 65 true negatives.
 
-Fuzzed set: 500 generated calls, 1001 claims, 100 findings. 98.8% of calls fully correct.
+Fuzzed set: 500 generated calls, 1001 claims, 100 findings. 99.8% of calls fully correct.
 <!-- metrics:fa-results:end -->
 
 ## 2. The two failures

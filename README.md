@@ -144,7 +144,7 @@ Golden set, 67 calls:
 | Unclaimed writes and policy (recall) | 100% | 0% |
 | Calls fully correct | 97.0% | 50.7% |
 
-Fuzzed, 500 calls: 98.8% calls fully correct.
+Fuzzed, 500 calls: 99.8% calls fully correct.
 <!-- metrics:readme:end -->
 
 The two golden failures are real limits, labelled as known gaps and counted against the

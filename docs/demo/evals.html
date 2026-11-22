@@ -68,7 +68,7 @@
   <h1>Eval results</h1>
   <p class="intro">Recorded results from <code>evals/results/latest.json</code>.</p>
   <p class="meta">Scorecard check-in date <strong>2026-11-22</strong><br>
-    SHA-256 fingerprint <code>d827a12bdf02722c2036da0c88c6ecc13ee3a6af9146e0a034c6a6dde9d548d4</code></p>
+    SHA-256 fingerprint <code>e5ad76137fd79d9921fc5bdd5f6451947f5dbbaafaa9cde302df5f9281a906d8</code></p>
   <p><a href="data-evals/scorecard.json">Download the scorecard JSON</a></p>
   <section class="panel" aria-labelledby="golden-results">
     <h2 id="golden-results">Golden results and naive baseline</h2>
@@ -156,8 +156,8 @@
       <table role="table">
         <thead role="rowgroup"><tr role="row"><th scope="col">Mode</th><th scope="col">Calls</th><th scope="col">Seed</th><th scope="col">Strict pass rate</th></tr></thead>
         <tbody role="rowgroup">
-        <tr role="row"><th scope="row">Fuzz</th><td>500</td><td>7</td><td>98.80%</td></tr>
-        <tr role="row"><th scope="row">Fuzz v2-semantic</th><td>500</td><td>7</td><td>98.80%</td></tr>
+        <tr role="row"><th scope="row">Fuzz</th><td>500</td><td>7</td><td>99.80%</td></tr>
+        <tr role="row"><th scope="row">Fuzz v2-semantic</th><td>500</td><td>7</td><td>99.80%</td></tr>
         </tbody>
       </table>
     </div>
@@ -184,48 +184,16 @@
     </ul>
     <h3>Fuzz</h3>
     <ul>
-      <li><strong>fuzz-7-0000</strong><ul>
-        <li><code>AppointmentBooked[0]: expected VERIFIED, got UNVERIFIABLE</code></li>
-        <li><code>AppointmentBooked[1]: expected VERIFIED, got UNVERIFIABLE</code></li>
-      </ul></li>
-      <li><strong>fuzz-7-0146</strong><ul>
-        <li><code>AppointmentBooked[0]: expected VERIFIED, got MISMATCH</code></li>
-      </ul></li>
-      <li><strong>fuzz-7-0158</strong><ul>
-        <li><code>AppointmentBooked[0]: expected VERIFIED, got MISMATCH</code></li>
-      </ul></li>
       <li><strong>fuzz-7-0227</strong><ul>
         <li><code>Cancelled[0]: expected MISMATCH, got UNVERIFIABLE</code></li>
         <li><code>Cancelled[1]: expected NOT_FOUND, got UNVERIFIABLE</code></li>
       </ul></li>
-      <li><strong>fuzz-7-0235</strong><ul>
-        <li><code>AppointmentBooked[0]: expected VERIFIED, got MISMATCH</code></li>
-      </ul></li>
-      <li><strong>fuzz-7-0253</strong><ul>
-        <li><code>AppointmentBooked[0]: expected VERIFIED, got MISMATCH</code></li>
-      </ul></li>
     </ul>
     <h3>Fuzz v2-semantic</h3>
     <ul>
-      <li><strong>fuzz-7-0000</strong><ul>
-        <li><code>book|+15550101003|2026-03-10T08:30:00-04:00|Dr. Patel: expected VERIFIED, got UNVERIFIABLE</code></li>
-        <li><code>book|+15550101003|2026-03-19T09:00:00-04:00|Dr. Osei: expected VERIFIED, got UNVERIFIABLE</code></li>
-      </ul></li>
-      <li><strong>fuzz-7-0146</strong><ul>
-        <li><code>book|+15550101003|2026-03-19T13:30:00-04:00|Dr. Kim: expected VERIFIED, got MISMATCH</code></li>
-      </ul></li>
-      <li><strong>fuzz-7-0158</strong><ul>
-        <li><code>book|+15550101002|2026-03-26T11:30:00-04:00|Dr. Osei: expected VERIFIED, got MISMATCH</code></li>
-      </ul></li>
       <li><strong>fuzz-7-0227</strong><ul>
         <li><code>cancel|+15550101004|2026-03-09T09:00:00-04:00: expected NOT_FOUND, got UNVERIFIABLE</code></li>
         <li><code>cancel|+15550101004|2026-03-16T12:30:00-04:00: expected MISMATCH, got UNVERIFIABLE</code></li>
-      </ul></li>
-      <li><strong>fuzz-7-0235</strong><ul>
-        <li><code>book|+15550101004|2026-03-03T09:30:00-05:00|Dr. Patel: expected VERIFIED, got MISMATCH</code></li>
-      </ul></li>
-      <li><strong>fuzz-7-0253</strong><ul>
-        <li><code>book|+15550101003|2026-03-05T12:00:00-05:00|Dr. Patel: expected VERIFIED, got MISMATCH</code></li>
       </ul></li>
     </ul>
   </section>
