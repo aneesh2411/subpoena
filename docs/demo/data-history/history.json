@@ -677,13 +677,40 @@
         "fn": 2,
         "tn": 62
       }
+    },
+    {
+      "commit": "a1ed60b08cedde1fa99582a597d535463cd93951",
+      "commit_time": 1795330814,
+      "series": "results",
+      "paths": [
+        "evals/results/latest.json"
+      ],
+      "strict_accuracy": 0.9683,
+      "scenarios": 63
+    },
+    {
+      "commit": "a1ed60b08cedde1fa99582a597d535463cd93951",
+      "commit_time": 1795330814,
+      "series": "scorecards",
+      "paths": [
+        "evals/scorecards/20261122-d7b2c9e937da.json",
+        "evals/scorecards/latest.json"
+      ],
+      "strict_accuracy": 0.9683,
+      "scenarios": 63,
+      "claim_level": {
+        "tp": 36,
+        "fp": 0,
+        "fn": 2,
+        "tn": 63
+      }
     }
   ],
   "latest_scorecard_diff": {
-    "previous": "2026-11-21T16:09:58.103002+00:00",
+    "previous": "2026-11-22T03:23:27.471165+00:00",
     "strict_accuracy": {
-      "was": 0.9661,
-      "now": 0.9672
+      "was": 0.9672,
+      "now": 0.9683
     },
     "newly_failing": [],
     "newly_passing": []
