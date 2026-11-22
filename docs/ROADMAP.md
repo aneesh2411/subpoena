@@ -17,7 +17,7 @@ Working today:
   (v2 semantic) scoring runs over both the golden set and the fuzzer, beside the
   positional headline.
 - FastAPI service, CLI demo, single-page replay view.
-- 890 tests, lint clean.
+- 891 tests, lint clean.
 
 Not done:
 
