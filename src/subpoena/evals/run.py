@@ -7,6 +7,7 @@ from dataclasses import dataclass, field, replace
 from typing import Any, Literal
 
 from subpoena.auditor import ClaimExtractor
+from subpoena.evals.extraction import ExtractionSummary, golden_extraction_quality
 from subpoena.evals.fuzz import generate
 from subpoena.evals.score import EvalSummary, RunScore, score_run, score_run_v2
 from subpoena.scenarios import GOLDEN, Scenario, run_scenario
@@ -97,9 +98,12 @@ class EvalResult:
     fuzz_v2: EvalSummary | None = None
     golden_variants: dict[str, EvalSummary] = field(default_factory=dict)
 
+    extraction_quality: tuple[ExtractionSummary, ...] = ()
+
     def as_dict(self) -> dict[str, object]:
         return {
             "golden": self.golden.as_versioned_dict(),
+            "extraction_quality": [summary.as_dict() for summary in self.extraction_quality],
             "golden_variants": {
                 version: summary.as_versioned_dict()
                 for version, summary in self.golden_variants.items()
@@ -147,6 +151,7 @@ def run_all(
         golden_v2=evaluate_v2(GOLDEN, extractor=extractor),
         fuzz_v2=evaluate_v2(fuzz_scenarios, extractor=extractor),
         golden_variants=golden_versions,
+        extraction_quality=golden_extraction_quality(),
     )
 
 

@@ -128,7 +128,7 @@
   },
   "provenance": {
     "check_in_date": "2026-11-22",
-    "sha256": "2fe98955583552462cb7f5bdfbf98a54e541fe9679449f4b15921dde4fa77cfd",
+    "sha256": "c625d2c290dc2757e6cff05edcbd0e0b021b0f532fc0ea9d32600347e7ec4eb0",
     "source": "evals/results/latest.json"
   },
   "results": {
@@ -622,6 +622,146 @@
         "fault": "garbled_handoff",
         "fully_correct": 0,
         "scenarios": 1
+      }
+    ],
+    "extraction_quality": [
+      {
+        "by_claim_type": {
+          "AppointmentBooked": {
+            "fn": 20,
+            "fp": 18,
+            "precision": 0.7906976744186046,
+            "recall": 0.7727272727272727,
+            "tp": 68
+          },
+          "Cancelled": {
+            "fn": 0,
+            "fp": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "tp": 8
+          },
+          "ConfirmationSent": {
+            "fn": 3,
+            "fp": 1,
+            "precision": 0.984375,
+            "recall": 0.9545454545454546,
+            "tp": 63
+          },
+          "HandoffCreated": {
+            "fn": 0,
+            "fp": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "tp": 18
+          },
+          "PaymentCollected": {
+            "fn": 0,
+            "fp": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "tp": 4
+          },
+          "PrescriptionRefilled": {
+            "fn": 0,
+            "fp": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "tp": 4
+          },
+          "RecordsUpdated": {
+            "fn": 0,
+            "fp": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "tp": 4
+          },
+          "Rescheduled": {
+            "fn": 0,
+            "fp": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "tp": 18
+          }
+        },
+        "calls": 134,
+        "label": "Rule-based extractor",
+        "overall": {
+          "fn": 23,
+          "fp": 19,
+          "precision": 0.9077669902912622,
+          "recall": 0.8904761904761904,
+          "tp": 187
+        }
+      },
+      {
+        "by_claim_type": {
+          "AppointmentBooked": {
+            "fn": 20,
+            "fp": 18,
+            "precision": 0.7906976744186046,
+            "recall": 0.7727272727272727,
+            "tp": 68
+          },
+          "Cancelled": {
+            "fn": 0,
+            "fp": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "tp": 8
+          },
+          "ConfirmationSent": {
+            "fn": 66,
+            "fp": 0,
+            "precision": null,
+            "recall": 0.0,
+            "tp": 0
+          },
+          "HandoffCreated": {
+            "fn": 0,
+            "fp": 134,
+            "precision": 0.11842105263157894,
+            "recall": 1.0,
+            "tp": 18
+          },
+          "PaymentCollected": {
+            "fn": 0,
+            "fp": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "tp": 4
+          },
+          "PrescriptionRefilled": {
+            "fn": 0,
+            "fp": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "tp": 4
+          },
+          "RecordsUpdated": {
+            "fn": 0,
+            "fp": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "tp": 4
+          },
+          "Rescheduled": {
+            "fn": 0,
+            "fp": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "tp": 18
+          }
+        },
+        "calls": 134,
+        "label": "Deterministic stub",
+        "overall": {
+          "fn": 86,
+          "fp": 152,
+          "precision": 0.4492753623188406,
+          "recall": 0.5904761904761905,
+          "tp": 124
+        }
       }
     ],
     "fuzz": {

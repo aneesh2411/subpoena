@@ -68,7 +68,7 @@
   <h1>Eval results</h1>
   <p class="intro">Recorded results from <code>evals/results/latest.json</code>.</p>
   <p class="meta">Scorecard check-in date <strong>2026-11-22</strong><br>
-    SHA-256 fingerprint <code>2fe98955583552462cb7f5bdfbf98a54e541fe9679449f4b15921dde4fa77cfd</code></p>
+    SHA-256 fingerprint <code>c625d2c290dc2757e6cff05edcbd0e0b021b0f532fc0ea9d32600347e7ec4eb0</code></p>
   <p><a href="data-evals/scorecard.json">Download the scorecard JSON</a></p>
   <section class="panel">
     <h2>Golden results and naive baseline</h2>
@@ -80,6 +80,35 @@
         <tr role="row"><th scope="row">Golden · receptionist-v2-chatty</th><td>67</td><td>94.03%</td><td>100.00%</td><td>89.47%</td></tr>
         <tr role="row"><th scope="row">Golden · Naive existence check</th><td>67</td><td>50.75%</td><td>92.00%</td><td>57.50%</td></tr>
         <tr role="row"><th scope="row">Golden v2-semantic · Subpoena</th><td>65</td><td>96.92%</td><td>100.00%</td><td>95.00%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="panel">
+    <h2>Extractor quality</h2>
+    <p class="intro">Transcript extraction across 134 golden calls from both agent versions. Precision is the share of extracted claims that match a reviewed identity. Recall is the share of reviewed claims recovered. The dash marks an undefined rate.</p>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Extractor quality">
+      <table role="table">
+        <thead role="rowgroup"><tr role="row"><th scope="col">Extractor and claim type</th><th scope="col">Precision</th><th scope="col">Recall</th><th scope="col">Invented</th><th scope="col">Missed</th></tr></thead>
+        <tbody role="rowgroup">
+        <tr role="row"><th scope="row">Rule-based extractor · Overall</th><td>90.78%</td><td>89.05%</td><td>19</td><td>23</td></tr>
+        <tr role="row"><th scope="row">Rule-based extractor · AppointmentBooked</th><td>79.07%</td><td>77.27%</td><td>18</td><td>20</td></tr>
+        <tr role="row"><th scope="row">Rule-based extractor · Cancelled</th><td>100.00%</td><td>100.00%</td><td>0</td><td>0</td></tr>
+        <tr role="row"><th scope="row">Rule-based extractor · ConfirmationSent</th><td>98.44%</td><td>95.45%</td><td>1</td><td>3</td></tr>
+        <tr role="row"><th scope="row">Rule-based extractor · HandoffCreated</th><td>100.00%</td><td>100.00%</td><td>0</td><td>0</td></tr>
+        <tr role="row"><th scope="row">Rule-based extractor · PaymentCollected</th><td>100.00%</td><td>100.00%</td><td>0</td><td>0</td></tr>
+        <tr role="row"><th scope="row">Rule-based extractor · PrescriptionRefilled</th><td>100.00%</td><td>100.00%</td><td>0</td><td>0</td></tr>
+        <tr role="row"><th scope="row">Rule-based extractor · RecordsUpdated</th><td>100.00%</td><td>100.00%</td><td>0</td><td>0</td></tr>
+        <tr role="row"><th scope="row">Rule-based extractor · Rescheduled</th><td>100.00%</td><td>100.00%</td><td>0</td><td>0</td></tr>
+        <tr role="row"><th scope="row">Deterministic stub · Overall</th><td>44.93%</td><td>59.05%</td><td>152</td><td>86</td></tr>
+        <tr role="row"><th scope="row">Deterministic stub · AppointmentBooked</th><td>79.07%</td><td>77.27%</td><td>18</td><td>20</td></tr>
+        <tr role="row"><th scope="row">Deterministic stub · Cancelled</th><td>100.00%</td><td>100.00%</td><td>0</td><td>0</td></tr>
+        <tr role="row"><th scope="row">Deterministic stub · ConfirmationSent</th><td>—</td><td>0.00%</td><td>0</td><td>66</td></tr>
+        <tr role="row"><th scope="row">Deterministic stub · HandoffCreated</th><td>11.84%</td><td>100.00%</td><td>134</td><td>0</td></tr>
+        <tr role="row"><th scope="row">Deterministic stub · PaymentCollected</th><td>100.00%</td><td>100.00%</td><td>0</td><td>0</td></tr>
+        <tr role="row"><th scope="row">Deterministic stub · PrescriptionRefilled</th><td>100.00%</td><td>100.00%</td><td>0</td><td>0</td></tr>
+        <tr role="row"><th scope="row">Deterministic stub · RecordsUpdated</th><td>100.00%</td><td>100.00%</td><td>0</td><td>0</td></tr>
+        <tr role="row"><th scope="row">Deterministic stub · Rescheduled</th><td>100.00%</td><td>100.00%</td><td>0</td><td>0</td></tr>
         </tbody>
       </table>
     </div>

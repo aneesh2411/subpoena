@@ -22,6 +22,7 @@ DEMO = ROOT / "docs" / "demo"
 # The results JSON has no timestamp. Record the check-in date for the exact
 # checked-in snapshots without depending on Git history at export time.
 CHECK_IN_DATES = {
+    "c625d2c290dc2757e6cff05edcbd0e0b021b0f532fc0ea9d32600347e7ec4eb0": "2026-11-22",
     "a4b870667615d1cde07a603a9aa926777910510adabc8437d8c67969dc3ef6aa": "2026-11-22",
     "bad938d0d1d16e15f1dc8f4798e00ef56228c936b0d4dfcf4ab2bd58e772e700": "2026-11-22",
     "714910e542d1c1588fece3f828d72d7a38a43110fa268a22d8ec76659847bce9": "2026-11-19",
@@ -322,6 +323,34 @@ def render(results: dict, check_in_date: str | None, fingerprint: str) -> str:
             ],
         ),
     ]
+    if extraction_quality := results.get("extraction_quality"):
+        sections.insert(
+            1,
+            table(
+                "Extractor quality",
+                ("Extractor and claim type", "Precision", "Recall", "Invented", "Missed"),
+                [
+                    (
+                        f"{summary['label']} · {claim_type}",
+                        percent(counts["precision"]),
+                        percent(counts["recall"]),
+                        str(counts["fp"]),
+                        str(counts["fn"]),
+                    )
+                    for summary in extraction_quality
+                    for claim_type, counts in (
+                        ("Overall", summary["overall"]),
+                        *summary["by_claim_type"].items(),
+                    )
+                ],
+                description=(
+                    f"Transcript extraction across {extraction_quality[0]['calls']} golden calls "
+                    "from both agent versions. Precision is the share of extracted claims that "
+                    "match a reviewed identity. Recall is the share of reviewed claims recovered. "
+                    "The dash marks an undefined rate."
+                ),
+            ),
+        )
     return PAGE.format(
         date=check_in_date or "Unavailable",
         fingerprint=fingerprint,
