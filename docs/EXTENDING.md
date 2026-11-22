@@ -69,7 +69,8 @@ try:
     tickets = SingleTicketReader(ticket, creation)
     reader = SystemOfRecordReader(sqlite.calendar, sqlite.crm, sqlite.messages, tickets)
     report = Auditor(reader, use_transcript=False, clock=lambda: call.ended_at).audit(
-        call, audit_id="aud-extending-ticket-reader",
+        call,
+        audit_id="aud-extending-ticket-reader",
     )
     (verdict,) = report.verdicts
     assert verdict.status is VerdictStatus.VERIFIED
@@ -116,18 +117,27 @@ scenario = Scenario(
         ("HandoffCreated", VerdictStatus.VERIFIED),
     ),
     expected_claims_v2=(
-        ("AppointmentBooked", VerdictStatus.VERIFIED,
-         "book|+15550101001|2026-03-04T11:00:00-05:00|Dr. Kim"),
+        (
+            "AppointmentBooked",
+            VerdictStatus.VERIFIED,
+            "book|+15550101001|2026-03-04T11:00:00-05:00|Dr. Kim",
+        ),
         ("HandoffCreated", VerdictStatus.VERIFIED, "handoff|+15550101001|urgent"),
     ),
 )
 
 report = run_scenario(scenario).report
 positional = score_run(
-    scenario.id, scenario.expected_claims, scenario.expected_findings, report,
+    scenario.id,
+    scenario.expected_claims,
+    scenario.expected_findings,
+    report,
 )
 identity = score_run_v2(
-    scenario.id, scenario.expected_claims_v2, scenario.expected_findings, report,
+    scenario.id,
+    scenario.expected_claims_v2,
+    scenario.expected_findings,
+    report,
 )
 assert positional.strict_correct, positional.problems
 assert identity.strict_correct, identity.problems

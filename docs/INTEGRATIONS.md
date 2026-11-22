@@ -48,7 +48,8 @@ from subpoena.sor.sqlite import SqliteStore
 
 calls = load_action_log(
     Path("tests/fixtures/action_log/multi_call.jsonl"),
-    agent_id="my-agent", agent_version="release-7",
+    agent_id="my-agent",
+    agent_version="release-7",
 )
 store = SqliteStore()
 try:
@@ -86,8 +87,11 @@ from subpoena.sor.rest_tickets import RestTickets
 fixture = run_path("tests/test_sor_rest_tickets.py")
 service = fixture["FakeTicketService"]()
 tickets = RestTickets(
-    "https://tickets.invalid/api/v2", patient_field_id=101, actor_field_id=102,
-    actor="agent:call-1", open_request=service.open,
+    "https://tickets.invalid/api/v2",
+    patient_field_id=101,
+    actor_field_id=102,
+    actor="agent:call-1",
+    open_request=service.open,
 )
 ticket = tickets.create_ticket(patient_id="pat_1", summary="Call back", priority="urgent")
 (change,) = tickets.changes(service.now, service.now)
@@ -119,7 +123,10 @@ now = CALL_START
 service = FakeCalendarService(lambda: now)
 calendars = {PATEL: "cal-patel"}
 writer = GoogleCalendarAdapter(
-    service, calendars, actor="receptionist-agent", clock=lambda: now,
+    service,
+    calendars,
+    actor="receptionist-agent",
+    clock=lambda: now,
 )
 reader = GoogleCalendarReader(service, calendars, cache=SnapshotCache())
 appointment = writer.create_appointment(patient_id="pat_0001", provider=PATEL, start=at(2, 14))
