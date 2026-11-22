@@ -10,7 +10,15 @@ from datetime import timedelta
 from enum import StrEnum
 from typing import Annotated, Any, Literal
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
+from pydantic import (
+    AwareDatetime,
+    BaseModel,
+    ConfigDict,
+    Field,
+    SerializerFunctionWrapHandler,
+    model_serializer,
+    model_validator,
+)
 
 
 class Frozen(BaseModel):
@@ -23,6 +31,7 @@ class Frozen(BaseModel):
 
 Channel = Literal["sms", "email"]
 Priority = Literal["low", "normal", "urgent"]
+HandoffTopic = Literal["billing", "refill", "records"]
 
 
 class Entity(StrEnum):
@@ -75,6 +84,7 @@ class Ticket(Frozen):
     status: Literal["open", "closed"] = "open"
     assignee: str | None = None
     created_at: AwareDatetime
+    topic: HandoffTopic | None = None
 
 
 class Change(Frozen):
@@ -150,6 +160,15 @@ class HandoffCreated(ClaimBase):
     patient: PatientRef | None = None
     summary: str = Field(default="", max_length=2000)
     priority: Priority | None = None
+    topic: HandoffTopic | None = None
+
+    @model_serializer(mode="wrap")
+    def _serialize(self, handler: SerializerFunctionWrapHandler):
+        data = handler(self)
+        if self.topic is None:
+            # Keep legacy topicless claims byte-identical for audit seal verification.
+            data.pop("topic", None)
+        return data
 
 
 Claim = Annotated[

@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 import pytest
 
+from subpoena.auditor import RuleBasedExtractor
 from subpoena.evals import score_run
-from subpoena.models import Outcome
-from subpoena.scenarios import GOLDEN, run_scenario
+from subpoena.models import CheckName, FieldDiff, Outcome, VerdictStatus
+from subpoena.scenarios import BY_ID, GOLDEN, run_scenario
+from subpoena.scenarios.world import audit_call, build_world, run_suspect
 
 SOLVED = [s for s in GOLDEN if not s.known_gap]
 GAPS = [s for s in GOLDEN if s.known_gap]
@@ -65,3 +69,29 @@ def test_every_verdict_carries_three_checks_and_a_trail():
                     assert names[3:] == ["attribution", "coverage"]
                 else:
                     assert names[3:] == ["coverage"]
+
+
+@pytest.mark.parametrize(
+    ("scenario_id", "said", "status"),
+    [
+        ("clean-handoff-topic", "billing", VerdictStatus.VERIFIED),
+        ("fault-wrong-handoff-topic", "records", VerdictStatus.MISMATCH),
+    ],
+)
+def test_handoff_topic_is_checked_against_stored_ticket(scenario_id, said, status):
+    scenario = BY_ID[scenario_id]
+    world = build_world(scenario)
+    try:
+        result = run_suspect(scenario, world)
+        # Exercise transcript extraction even without an agent-supplied claim.
+        result = replace(result, call=result.call.model_copy(update={"claims": ()}))
+        report = audit_call(scenario, world, result, extractor=RuleBasedExtractor())
+    finally:
+        world.store.close()
+    (verdict,) = report.verdicts
+    assert verdict.status is status
+    matches = status is VerdictStatus.VERIFIED
+    assert next(c for c in verdict.checks if c.name == CheckName.EXACTNESS).passed is matches
+    assert verdict.diffs[-1] == FieldDiff(
+        field="topic", claimed=said, actual="billing", match=matches
+    )

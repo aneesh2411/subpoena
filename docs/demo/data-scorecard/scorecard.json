@@ -1,5 +1,5 @@
 {
-  "audits": 60,
+  "audits": 62,
   "by_claim_type": {
     "AppointmentBooked": {
       "MISMATCH": 5,
@@ -20,10 +20,10 @@
       "VERIFIED": 27
     },
     "HandoffCreated": {
-      "MISMATCH": 1,
+      "MISMATCH": 2,
       "NOT_FOUND": 2,
       "UNVERIFIABLE": 0,
-      "VERIFIED": 4
+      "VERIFIED": 5
     },
     "Rescheduled": {
       "MISMATCH": 5,

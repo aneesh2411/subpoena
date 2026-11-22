@@ -101,6 +101,7 @@
     AppointmentBooked: "Booking",
     ConfirmationSent: "Confirmation",
     Rescheduled: "Reschedule",
+    HandoffCreated: "Handoff",
   };
 
   function add(parent, tag, text, className) {
@@ -158,6 +159,14 @@
       const label = claimLabels[verdict.claim.type] ?? verdict.claim.type;
       add(result, "strong", label + " · " + verdict.status, "status " + verdict.status);
       add(result, "p", verdict.summary);
+      const topic = verdict.diffs.find(diff => diff.field === "topic");
+      if (topic) {
+        const comparison = add(result, "dl");
+        add(comparison, "dt", "Stated topic");
+        add(comparison, "dd", topic.claimed);
+        add(comparison, "dt", "Ticket topic");
+        add(comparison, "dd", topic.actual);
+      }
     }
   }
 
@@ -186,6 +195,7 @@
       for (const scenario of scenarios) renderScenario(content, scenario);
       document.getElementById("scenarios").append(content);
       loading.remove();
+      document.getElementById(location.hash.slice(1))?.scrollIntoView();
     })
     .catch(() => { loading.textContent = "Could not load the audited scenarios."; });
 </script>

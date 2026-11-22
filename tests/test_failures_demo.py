@@ -34,9 +34,9 @@ def test_export_matches_golden_failures_and_replays(tmp_path: Path) -> None:
 
     gallery = json.loads((first / DATA).read_bytes())
     golden = json.loads((ROOT / "evals/results/latest.json").read_bytes())["golden"]
-    assert gallery["calls"] == golden["calls"] == 59
+    assert gallery["calls"] == golden["calls"] == len(BY_ID)
     assert gallery["call_strict_accuracy"] == golden["call_strict_accuracy"]
-    assert gallery["strict_passes"] == 57
+    assert gallery["strict_passes"] == len(BY_ID) - 2
 
     failures = gallery["failures"]
     assert [row["scenario_id"] for row in failures] == [

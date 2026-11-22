@@ -38,14 +38,24 @@ def test_callflows_export_matches_golden_runs(tmp_path: Path) -> None:
     assert f'fetch("{relative_data}")' in page
 
     ids = {case["id"] for case in cases}
-    assert len(cases) == len(ids) == 3
+    handoff_ids = {"clean-handoff-topic", "fault-wrong-handoff-topic"}
+    assert len(cases) == len(ids) == 5
+    assert handoff_ids <= ids
+    for artifact in (relative_data, "walkthrough-callflows.html"):
+        assert (tmp_path / artifact).read_bytes() == (ROOT / "docs/demo" / artifact).read_bytes()
     golden = {scenario.id: scenario for scenario in GOLDEN}
     status_profiles = set()
     for case in cases:
         scenario = golden[case["id"]]
         report = run_scenario(scenario, extractor=RuleBasedExtractor()).report
         statuses = [verdict.status.value for verdict in report.verdicts]
-        status_profiles.add(tuple(sorted(statuses)))
+        if scenario.id in handoff_ids:
+            (verdict,) = case["verdicts"]
+            topic = next(diff for diff in verdict["diffs"] if diff["field"] == "topic")
+            assert topic["actual"] == "billing"
+            assert topic["match"] is (scenario.id == "clean-handoff-topic")
+        else:
+            status_profiles.add(tuple(sorted(statuses)))
         assert case["title"] == scenario.title
         assert case["outcome"] == report.outcome.value
         assert [verdict["status"] for verdict in case["verdicts"]] == statuses
@@ -54,11 +64,9 @@ def test_callflows_export_matches_golden_runs(tmp_path: Path) -> None:
         for status, key in STAT_KEYS.items():
             assert case["stats"][key] == counts[status]
         assert case["stats"] == report.stats.model_dump(mode="json")
-        assert case["verdicts"] == [
-            verdict.model_dump(mode="json") for verdict in report.verdicts
-        ]
+        assert case["verdicts"] == [verdict.model_dump(mode="json") for verdict in report.verdicts]
         assert case["evidence_trail"] == [
             event.model_dump(mode="json") for event in report.trail if event.stage == "evidence"
         ]
-    assert len(status_profiles) == len(cases)
+    assert len(status_profiles) == len(cases) - len(handoff_ids)
     assert any({"MISMATCH", "NOT_FOUND"}.intersection(profile) for profile in status_profiles)

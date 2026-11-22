@@ -135,9 +135,10 @@ def candidates_handoff(
         ticket = Ticket.model_validate(nc.after)
         who = claim.patient is None or ticket.patient_id in ids
         priority = claim.priority is None or ticket.priority == claim.priority
-        if strict and not (who and priority):
+        topic = claim.topic is None or ticket.topic == claim.topic
+        if strict and not (who and priority and topic):
             continue
-        score = 2 * who + priority
+        score = 2 * who + priority + (topic if claim.topic is not None else 0)
         out.append((score, Match(primary=nc)))
     return out
 
@@ -179,17 +180,28 @@ def judge_handoff(claim: HandoffCreated, match: Match | None, ctx: AuditContext)
                 match=claim.priority == ticket.priority,
             )
         )
+    note = "Ticket created during the call. The summary is free text and is not compared"
+    remediation = (
+        "Fix the ticket's patient and priority so the right person is called back "
+        "with the right urgency."
+    )
+    if claim.topic is not None:
+        diffs.append(
+            FieldDiff(
+                field="topic",
+                claimed=claim.topic,
+                actual=ticket.topic or "(not recorded)",
+                match=claim.topic == ticket.topic,
+            )
+        )
+        note = "Ticket created during the call. Compared the structured topic on the record."
+        remediation = "Correct the ticket fields that differ from what the caller was told."
     return conclude(
         claim,
         diffs,
-        [
-            match.primary.evidence(
-                "Ticket created during the call. The summary is free text and is not compared"
-            )
-        ],
+        [match.primary.evidence(note)],
         field_severity={"patient": Severity.HIGH, "priority": Severity.HIGH},
         verified=f"Handoff ticket exists as claimed ({ticket.id}, priority {ticket.priority}).",
         mismatch=f"A ticket was created ({ticket.id}) but not as the caller was told.",
-        remediation="Fix the ticket's patient and priority so the right person is called back "
-        "with the right urgency.",
+        remediation=remediation,
     )

@@ -465,6 +465,7 @@
     "patient_id": "pat_0001",
     "priority": "urgent",
     "status": "open",
-    "summary": "call back about billing"
+    "summary": "call back about billing",
+    "topic": null
   }
 }

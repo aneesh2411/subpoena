@@ -23,6 +23,7 @@ from subpoena.models import (
     Claim,
     ConfirmationSent,
     HandoffCreated,
+    HandoffTopic,
     Patient,
     PatientRef,
     Priority,
@@ -107,6 +108,8 @@ class Handoff:
     reason: str
     priority: Priority = "normal"
     patient: PatientRef | None = None
+    ticket_topic: HandoffTopic | None = None
+    spoken_topic: HandoffTopic | None = None
 
 
 @dataclass(frozen=True)
@@ -491,15 +494,17 @@ class _Call:
                 patient_id=patient.id if patient else None,
                 summary=summary,
                 priority="low" if _F.DOWNGRADED_HANDOFF in modes else step.priority,
+                **({"topic": step.ticket_topic} if step.ticket_topic is not None else {}),
             )
 
-        line = n.handoff(step.reason, urgent=step.priority == "urgent")
+        line = n.handoff(step.spoken_topic or step.reason, urgent=step.priority == "urgent")
         self.claims.append(
             HandoffCreated(
                 **self._claim_meta(line),
                 patient=ref,
                 summary=f"Caller needs help with {step.reason}",
                 priority=step.priority,
+                topic=step.spoken_topic,
             )
         )
         self._say("agent", line)

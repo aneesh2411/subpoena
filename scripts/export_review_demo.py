@@ -129,15 +129,13 @@ def review_sagas() -> tuple[SagaRun, ...]:
         id="review-shared-phone-1",
         title="Billing callback",
         story="The caller asks for a billing callback.",
-        steps=(Handoff(reason="billing"),),
+        steps=(Handoff(reason="billing", ticket_topic="billing"),),
         expected_claims=(("HandoffCreated", VerdictStatus.VERIFIED),),
     )
     shared_phone = replace(
         billing, id="review-shared-phone-2", caller=PatientRef(name="Mina Chen", phone=MAYA.phone)
     )
-    missing_phone = replace(
-        billing, id="review-missing-phone-2", caller=PatientRef(name=MAYA.name)
-    )
+    missing_phone = replace(billing, id="review-missing-phone-2", caller=PatientRef(name=MAYA.name))
     payment = replace(
         billing, id="review-topic-1", steps=(Handoff(reason="billing invoice payment"),)
     )

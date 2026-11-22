@@ -11,7 +11,7 @@ from urllib.error import HTTPError
 from urllib.parse import quote, urlencode, urljoin, urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
-from subpoena.models import Change, Entity, Priority, Ticket
+from subpoena.models import Change, Entity, HandoffTopic, Priority, Ticket
 from subpoena.sor.base import COMPLETE, AdapterUnavailable, Coverage, TicketQueueAdapter
 
 
@@ -24,6 +24,7 @@ class RestTickets(TicketQueueAdapter):
     """Use an API root such as https://example.zendesk.com/api/v2.
 
     Configure text custom fields for the CRM patient ID and creation actor. The
+    topic_field_id optionally maps the structured topic to a custom field. The
     writer's actor should be scoped to the call (e.g. "agent:call-id"). Reads
     attribute evidence only to the actor persisted on each remote record.
 
@@ -49,6 +50,7 @@ class RestTickets(TicketQueueAdapter):
         complete_creation_history: bool = False,
         timeout: float = 10,
         open_request: Callable[..., Any] | None = None,
+        topic_field_id: int | None = None,
     ) -> None:
         self._root = api_root.rstrip("/") + "/"
         root = urlsplit(self._root)
@@ -57,6 +59,7 @@ class RestTickets(TicketQueueAdapter):
         self._origin = (root.scheme, root.netloc)
         self._patient_field = patient_field_id
         self._actor_field = actor_field_id
+        self._topic_field = topic_field_id
         self._actor = actor
         self._authorization = authorization
         self._complete = complete_creation_history
@@ -137,6 +140,7 @@ class RestTickets(TicketQueueAdapter):
                 priority="urgent" if priority == "high" else priority or "normal",
                 status="closed" if status in {"solved", "closed"} else "open",
                 created_at=record["created_at"],
+                topic=fields.get(self._topic_field),
             )
             actor = fields.get(self._actor_field)
             return ticket, actor if isinstance(actor, str) else ""
@@ -172,6 +176,7 @@ class RestTickets(TicketQueueAdapter):
         summary: str,
         priority: Priority = "normal",
         external_id: str | None = None,
+        topic: HandoffTopic | None = None,
     ) -> Ticket:
         ticket = {
             "subject": summary,
@@ -182,6 +187,10 @@ class RestTickets(TicketQueueAdapter):
                 {"id": self._actor_field, "value": self._actor},
             ],
         }
+        if topic is not None:
+            if self._topic_field is None:
+                raise ValueError("configure a ticket topic field before writing a topic")
+            ticket["custom_fields"].append({"id": self._topic_field, "value": topic})
         key = None
         if external_id is not None:
             if not external_id:
@@ -226,7 +235,9 @@ class RestTickets(TicketQueueAdapter):
                 entity_id=ticket.id,
                 op="insert",
                 before=None,
-                after=ticket.model_dump(mode="json"),
+                after=ticket.model_dump(
+                    mode="json", exclude={"topic"} if ticket.topic is None else None
+                ),
                 actor=actor,
                 at=ticket.created_at,
             )

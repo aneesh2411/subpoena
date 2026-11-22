@@ -25,9 +25,7 @@ def test_export_eval_history(tmp_path):
 
     for point in snapshots:
         for path in point["paths"]:
-            blob = subprocess.check_output(
-                ["git", "show", f"{point['commit']}:{path}"], cwd=ROOT
-            )
+            blob = subprocess.check_output(["git", "show", f"{point['commit']}:{path}"], cwd=ROOT)
             golden = json.loads(blob)["golden"]
             assert point["strict_accuracy"] == golden["call_strict_accuracy"]
             assert point["scenarios"] == golden["calls"]
@@ -35,7 +33,10 @@ def test_export_eval_history(tmp_path):
     latest = next(
         point for point in reversed(snapshots) if "evals/results/latest.json" in point["paths"]
     )
-    golden = json.loads((ROOT / "evals/results/latest.json").read_text(encoding="utf-8"))["golden"]
+    # The exporter reads commits, so its latest point must match the commit tree
+    # even while new eval results are being prepared in the working tree.
+    committed = subprocess.check_output(["git", "show", "HEAD:evals/results/latest.json"], cwd=ROOT)
+    golden = json.loads(committed)["golden"]
     assert latest["strict_accuracy"] == golden["call_strict_accuracy"]
     assert latest["scenarios"] == golden["calls"]
 

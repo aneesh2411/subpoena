@@ -17,7 +17,8 @@ The payload fields use the same types and limits as the corresponding Claim:
 * ``confirmation_sent`` → ConfirmationSent. Required: ``to``.
   Optional: ``channel`` (``sms`` by default or ``email``), ``about_start``.
 * ``handoff`` → HandoffCreated. Optional: ``patient``, ``summary``,
-  ``priority`` (``low``, ``normal``, or ``urgent``).
+  ``priority`` (``low``, ``normal``, or ``urgent``), and ``topic`` (
+  ``billing``, ``refill``, or ``records``).
 * ``cancellation`` → Cancelled. Required: ``patient``, ``start``.
 
 A patient object requires a string ``name`` and can include a string ``phone``.

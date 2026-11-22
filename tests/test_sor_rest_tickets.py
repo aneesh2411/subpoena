@@ -128,6 +128,21 @@ def test_create_read_and_search(service):
     assert len(service.tickets) == 1
 
 
+def test_structured_topic_round_trips_in_the_configured_field(service):
+    writer = RestTickets(
+        ROOT,
+        patient_field_id=PATIENT_FIELD,
+        actor_field_id=ACTOR_FIELD,
+        topic_field_id=103,
+        actor="agent:call-1",
+        open_request=service.open,
+    )
+    ticket = writer.create_ticket(patient_id=None, summary="Call back", topic="refill")
+    assert writer.get_ticket(ticket.id).topic == "refill"
+    (change,) = writer.changes(NOW, NOW)
+    assert change.after["topic"] == "refill"
+
+
 def test_retry_after_committed_create_with_search_lag(service):
     service.hide_search_results = True
     service.fail_response_after_create = True
@@ -158,7 +173,7 @@ def test_window_includes_both_bounds_and_read_preserves_actor(service):
         row.entity == Entity.TICKET and row.op == "insert" and row.actor == "agent:call-1"
         for row in changes
     )
-    assert changes[0].after == first.model_dump(mode="json")
+    assert changes[0].after == first.model_dump(mode="json", exclude={"topic"})
 
 
 def test_failed_later_page_is_unavailable(service):

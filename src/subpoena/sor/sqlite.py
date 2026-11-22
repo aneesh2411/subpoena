@@ -22,6 +22,7 @@ from subpoena.models import (
     Change,
     Channel,
     Entity,
+    HandoffTopic,
     Message,
     Patient,
     Priority,
@@ -64,7 +65,7 @@ CREATE TABLE IF NOT EXISTS messages(
 CREATE TABLE IF NOT EXISTS tickets(
     id TEXT PRIMARY KEY, patient_id TEXT, summary TEXT NOT NULL,
     priority TEXT NOT NULL DEFAULT 'normal', status TEXT NOT NULL DEFAULT 'open',
-    assignee TEXT, created_at TEXT NOT NULL);
+    assignee TEXT, created_at TEXT NOT NULL, topic TEXT);
 CREATE TABLE IF NOT EXISTS id_seq(entity TEXT PRIMARY KEY, n INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS session_ctx(
     id INTEGER PRIMARY KEY CHECK (id = 1), actor TEXT NOT NULL, now TEXT NOT NULL);
@@ -81,14 +82,18 @@ CREATE TRIGGER IF NOT EXISTS change_log_no_delete BEFORE DELETE ON change_log
 """
 
 
-def _journal_triggers() -> str:
+def _journal_triggers() -> list[str]:
     """Generate INSERT/UPDATE/DELETE journal triggers for every audited table."""
     ctx = "(SELECT actor FROM session_ctx WHERE id = 1), (SELECT now FROM session_ctx WHERE id = 1)"
     sql: list[str] = []
     for entity, (table, cols) in _TABLES.items():
 
-        def snap(alias: str, cols: tuple[str, ...] = cols) -> str:
-            return "json_object(" + ", ".join(f"'{c}', {alias}.{c}" for c in cols) + ")"
+        def snap(alias: str, cols: tuple[str, ...] = cols, entity: Entity = entity) -> str:
+            snapshot = "json_object(" + ", ".join(f"'{c}', {alias}.{c}" for c in cols) + ")"
+            if entity is Entity.TICKET:
+                # Preserve the shape of historical evidence when no topic is recorded.
+                return f"json_patch({snapshot}, json_object('topic', {alias}.topic))"
+            return snapshot
 
         for op, when, ident, before, after in (
             ("insert", "INSERT", "NEW.id", "NULL", snap("NEW")),
@@ -100,7 +105,7 @@ def _journal_triggers() -> str:
                 f"BEGIN INSERT INTO change_log(entity, entity_id, op, before, after, actor, at) "
                 f"VALUES ('{entity.value}', {ident}, '{op}', {before}, {after}, {ctx}); END;"
             )
-    return "\n".join(sql)
+    return sql
 
 
 class SqliteStore:
@@ -112,7 +117,22 @@ class SqliteStore:
         self._lock = threading.RLock()
         with self._lock:
             self._conn.execute("PRAGMA foreign_keys = ON")
-            self._conn.executescript(_SCHEMA + _journal_triggers())
+            self._conn.executescript(_SCHEMA)
+            self._conn.execute("BEGIN IMMEDIATE")
+            try:
+                columns = self._conn.execute("PRAGMA table_info(tickets)").fetchall()
+                if "topic" not in {col["name"] for col in columns}:
+                    self._conn.execute("ALTER TABLE tickets ADD COLUMN topic TEXT")
+                    for op in ("insert", "update", "delete"):
+                        self._conn.execute(f"DROP TRIGGER IF EXISTS journal_tickets_{op}")
+                for trigger in _journal_triggers():
+                    self._conn.execute(trigger)
+            except sqlite3.Error:
+                self._conn.rollback()
+                self._conn.close()
+                raise
+            else:
+                self._conn.commit()
 
     def session(self, actor: str, clock: Clock) -> SystemOfRecord:
         """A handle whose writes are journaled under ``actor`` at ``clock()``."""
@@ -365,19 +385,30 @@ class _Tickets(_Adapter):
     entity = Entity.TICKET
 
     def create_ticket(
-        self, *, patient_id: str | None, summary: str, priority: Priority = "normal"
+        self,
+        *,
+        patient_id: str | None,
+        summary: str,
+        priority: Priority = "normal",
+        topic: HandoffTopic | None = None,
     ) -> Ticket:
         now = self._clock()
         with self._tx() as conn:
             new_id = self._store._next_id(conn, Entity.TICKET)
-            conn.execute(
-                "INSERT INTO tickets(id, patient_id, summary, priority, created_at)"
-                " VALUES (?, ?, ?, ?, ?)",
-                (new_id, patient_id, summary, priority, to_utc_iso(now)),
+            ticket = Ticket(
+                id=new_id,
+                patient_id=patient_id,
+                summary=summary,
+                priority=priority,
+                created_at=now,
+                topic=topic,
             )
-        return Ticket(
-            id=new_id, patient_id=patient_id, summary=summary, priority=priority, created_at=now
-        )
+            conn.execute(
+                "INSERT INTO tickets(id, patient_id, summary, priority, created_at, topic)"
+                " VALUES (?, ?, ?, ?, ?, ?)",
+                (new_id, patient_id, summary, priority, to_utc_iso(now), topic),
+            )
+        return ticket
 
     _EDITABLE = {"assignee", "status"}
     _STATUSES = {"open", "closed"}

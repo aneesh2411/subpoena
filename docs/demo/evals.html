@@ -68,8 +68,8 @@
 <main>
   <h1>Eval results</h1>
   <p class="intro">Recorded results from <code>evals/results/latest.json</code>.</p>
-  <p class="meta">Scorecard check-in date <strong>2026-11-19</strong><br>
-    SHA-256 fingerprint <code>714910e542d1c1588fece3f828d72d7a38a43110fa268a22d8ec76659847bce9</code></p>
+  <p class="meta">Scorecard check-in date <strong>2026-11-22</strong><br>
+    SHA-256 fingerprint <code>acc6ffc5d6fe70d314294b2391b8d2a2ffdb8f18c6e3c3a82a0755d4b8f06cc6</code></p>
   <p><a href="data-evals/scorecard.json">Download the scorecard JSON</a></p>
   <section class="panel">
     <h2>Golden results and naive baseline</h2>
@@ -77,9 +77,9 @@
       <table role="table">
         <thead role="rowgroup"><tr role="row"><th scope="col">Suite and system</th><th scope="col">Calls</th><th scope="col">Strict call accuracy</th><th scope="col">Claim-level precision</th><th scope="col">Claim-level recall</th></tr></thead>
         <tbody role="rowgroup">
-        <tr role="row"><th scope="row">Golden · Subpoena</th><td>59</td><td>96.61%</td><td>100.00%</td><td>94.44%</td></tr>
-        <tr role="row"><th scope="row">Golden · Naive existence check</th><td>59</td><td>50.85%</td><td>90.91%</td><td>55.56%</td></tr>
-        <tr role="row"><th scope="row">Golden v2-semantic · Subpoena</th><td>57</td><td>96.49%</td><td>100.00%</td><td>94.44%</td></tr>
+        <tr role="row"><th scope="row">Golden · Subpoena</th><td>61</td><td>96.72%</td><td>100.00%</td><td>94.59%</td></tr>
+        <tr role="row"><th scope="row">Golden · Naive existence check</th><td>61</td><td>50.82%</td><td>90.91%</td><td>54.05%</td></tr>
+        <tr role="row"><th scope="row">Golden v2-semantic · Subpoena</th><td>59</td><td>96.61%</td><td>100.00%</td><td>94.59%</td></tr>
         </tbody>
       </table>
     </div>
@@ -127,9 +127,9 @@
       <table role="table">
         <thead role="rowgroup"><tr role="row"><th scope="col">Configuration</th><th scope="col">Calls</th><th scope="col">Strict call accuracy</th><th scope="col">Claim-level precision</th><th scope="col">Claim-level recall</th><th scope="col">Finding-level recall</th></tr></thead>
         <tbody role="rowgroup">
-        <tr role="row"><th scope="row">Subpoena</th><td>59</td><td>96.61%</td><td>100.00%</td><td>94.44%</td><td>100.00%</td></tr>
-        <tr role="row"><th scope="row">Subpoena without the transcript reader</th><td>59</td><td>89.83%</td><td>100.00%</td><td>77.78%</td><td>100.00%</td></tr>
-        <tr role="row"><th scope="row">Subpoena without policy checks</th><td>59</td><td>89.83%</td><td>100.00%</td><td>94.44%</td><td>42.86%</td></tr>
+        <tr role="row"><th scope="row">Subpoena</th><td>61</td><td>96.72%</td><td>100.00%</td><td>94.59%</td><td>100.00%</td></tr>
+        <tr role="row"><th scope="row">Subpoena without the transcript reader</th><td>61</td><td>90.16%</td><td>100.00%</td><td>78.38%</td><td>100.00%</td></tr>
+        <tr role="row"><th scope="row">Subpoena without policy checks</th><td>61</td><td>90.16%</td><td>100.00%</td><td>94.59%</td><td>42.86%</td></tr>
         </tbody>
       </table>
     </div>

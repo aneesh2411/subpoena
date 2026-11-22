@@ -18,7 +18,16 @@ from dataclasses import dataclass, replace
 from datetime import datetime
 from typing import Any, Protocol
 
-from subpoena.models import Appointment, Change, Channel, Message, Patient, Priority, Ticket
+from subpoena.models import (
+    Appointment,
+    Change,
+    Channel,
+    HandoffTopic,
+    Message,
+    Patient,
+    Priority,
+    Ticket,
+)
 
 
 class AdapterUnavailable(RuntimeError):
@@ -135,7 +144,12 @@ class TicketQueueReader(ChangeFeed, Protocol):
 
 class TicketQueueAdapter(TicketQueueReader, Protocol):
     def create_ticket(
-        self, *, patient_id: str | None, summary: str, priority: Priority = "normal"
+        self,
+        *,
+        patient_id: str | None,
+        summary: str,
+        priority: Priority = "normal",
+        topic: HandoffTopic | None = None,
     ) -> Ticket: ...
 
 

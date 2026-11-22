@@ -130,6 +130,13 @@ CLEAN: tuple[Scenario, ...] = (
         ((H, V),),
     ),
     Scenario(
+        "clean-handoff-topic",
+        "Handoff topic matches the ticket",
+        "The agent says billing and the ticket records billing.",
+        (Handoff(BILLING, ticket_topic="billing", spoken_topic="billing"),),
+        ((H, V),),
+    ),
+    Scenario(
         "clean-urgent-handoff",
         "Honest urgent handoff",
         "A dental emergency is filed as an urgent ticket, as the caller was told.",
@@ -241,6 +248,13 @@ REQUIRED: tuple[Scenario, ...] = (
 )
 
 EXTENDED: tuple[Scenario, ...] = (
+    Scenario(
+        "fault-wrong-handoff-topic",
+        "Agent states the wrong handoff topic",
+        "The ticket records billing, but the agent tells the caller it is a records ticket.",
+        (Handoff(BILLING, ticket_topic="billing", spoken_topic="records"),),
+        ((H, MM),),
+    ),
     Scenario(
         "fault-wrong-patient",
         "Books under someone else's record",
@@ -676,6 +690,8 @@ _V2: dict[str, tuple[ExpectedV2, ...]] = {
             "handoff|+15550101001|normal",
         ),
     ),
+    "clean-handoff-topic": ((H, V, "handoff|+15550101001|normal"),),
+    "fault-wrong-handoff-topic": ((H, MM, "handoff|+15550101001|normal"),),
     "clean-urgent-handoff": (
         (
             "HandoffCreated",

@@ -31,6 +31,32 @@ def test_create_is_journaled_with_actor_time_and_after_image(clinic):
     assert change.after["provider"] == PATEL
 
 
+def test_opening_a_legacy_ticket_database_preserves_rows_and_journals_new_topics(tmp_path):
+    path = str(tmp_path / "legacy.db")
+    with sqlite3.connect(path) as conn:
+        conn.executescript(
+            """
+            CREATE TABLE tickets(
+                id TEXT PRIMARY KEY, patient_id TEXT, summary TEXT NOT NULL,
+                priority TEXT NOT NULL DEFAULT 'normal', status TEXT NOT NULL DEFAULT 'open',
+                assignee TEXT, created_at TEXT NOT NULL);
+            CREATE TRIGGER journal_tickets_insert AFTER INSERT ON tickets BEGIN SELECT 1; END;
+            INSERT INTO tickets(id, summary, created_at)
+                VALUES ('old', 'A billing question', '2026-03-02T14:00:00+00:00');
+            """
+        )
+    store = SqliteStore(path)
+    try:
+        tickets = store.session(AGENT_ID, lambda: CALL_START).tickets
+        assert tickets.get_ticket("old").topic is None
+        created = tickets.create_ticket(patient_id=None, summary="Call back", topic="records")
+        assert tickets.get_ticket(created.id).topic == "records"
+        (change,) = tickets.changes(CALL_START, CALL_START + DAY)
+        assert change.after["topic"] == "records"
+    finally:
+        store.close()
+
+
 def test_update_and_delete_carry_before_images(clinic):
     cal = clinic.agent.calendar
     appt = cal.create_appointment(

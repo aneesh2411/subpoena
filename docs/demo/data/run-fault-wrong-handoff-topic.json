@@ -1,0 +1,254 @@
+{
+ "audit_id": "aud-fault-wrong-handoff-topic",
+ "auditor": "subpoena/0.1.0",
+ "created_at": "2026-03-02T09:06:16-05:00",
+ "call": {
+  "call_id": "call-fault-wrong-handoff-topic",
+  "agent_id": "agent:receptionist",
+  "caller": {
+   "name": "Maya Chen",
+   "phone": "+15550101001"
+  },
+  "started_at": "2026-03-02T09:05:00-05:00",
+  "ended_at": "2026-03-02T09:05:16-05:00",
+  "transcript": [
+   {
+    "index": 0,
+    "speaker": "agent",
+    "text": "Thank you for calling Brightside Dental. How can I help?",
+    "at": "2026-03-02T09:05:04-05:00"
+   },
+   {
+    "index": 1,
+    "speaker": "caller",
+    "text": "I also have a billing question about my last invoice. Can someone help with that?",
+    "at": "2026-03-02T09:05:08-05:00"
+   },
+   {
+    "index": 2,
+    "speaker": "agent",
+    "text": "I've created a ticket for the front desk about records. Someone will call you back.",
+    "at": "2026-03-02T09:05:12-05:00"
+   },
+   {
+    "index": 3,
+    "speaker": "agent",
+    "text": "Is there anything else? Have a great day.",
+    "at": "2026-03-02T09:05:16-05:00"
+   }
+  ],
+  "raw_transcript": null,
+  "claims": [
+   {
+    "claim_id": "call-fault-wrong-handoff-topic-c1",
+    "turn_index": 2,
+    "source": "structured",
+    "utterance": "I've created a ticket for the front desk about records. Someone will call you back.",
+    "corrects_prior": false,
+    "type": "HandoffCreated",
+    "patient": {
+     "name": "Maya Chen",
+     "phone": "+15550101001"
+    },
+    "summary": "Caller needs help with a billing question about my last invoice",
+    "priority": "normal",
+    "topic": "records"
+   }
+  ],
+  "provenance": {
+   "agent_version": "receptionist-sim/0.1.0",
+   "model": null,
+   "prompt_version": "narrator:standard",
+   "human_handoffs": [],
+   "platform": null,
+   "from_address": null,
+   "to_address": null,
+   "completion_callback_at": null
+  }
+ },
+ "outcome": "DISCREPANCIES",
+ "verdicts": [
+  {
+   "claim": {
+    "claim_id": "call-fault-wrong-handoff-topic-c1",
+    "turn_index": 2,
+    "source": "structured",
+    "utterance": "I've created a ticket for the front desk about records. Someone will call you back.",
+    "corrects_prior": false,
+    "type": "HandoffCreated",
+    "patient": {
+     "name": "Maya Chen",
+     "phone": "+15550101001"
+    },
+    "summary": "Caller needs help with a billing question about my last invoice",
+    "priority": "normal",
+    "topic": "records"
+   },
+   "status": "MISMATCH",
+   "severity": "MEDIUM",
+   "summary": "A ticket was created (tkt_0001) but not as the caller was told. topic: claimed records, actual billing.",
+   "checks": [
+    {
+     "name": "existence",
+     "passed": true,
+     "detail": "A write by the agent during the call corresponds to this claim."
+    },
+    {
+     "name": "exactness",
+     "passed": false,
+     "detail": "Differs on: topic."
+    },
+    {
+     "name": "side_effects",
+     "passed": null,
+     "detail": "Not applicable."
+    },
+    {
+     "name": "attribution",
+     "passed": true,
+     "detail": "Every backing write carries this call's own stamp."
+    },
+    {
+     "name": "coverage",
+     "passed": true,
+     "detail": "The tickets change history for the call window was fully observed."
+    }
+   ],
+   "diffs": [
+    {
+     "field": "patient",
+     "claimed": "Maya Chen (+15550101001)",
+     "actual": "Maya Chen (+15550101001)",
+     "match": true
+    },
+    {
+     "field": "priority",
+     "claimed": "normal",
+     "actual": "normal",
+     "match": true
+    },
+    {
+     "field": "topic",
+     "claimed": "records",
+     "actual": "billing",
+     "match": false
+    }
+   ],
+   "evidence": [
+    {
+     "source": "tickets",
+     "ref": "tkt_0001",
+     "note": "Ticket created during the call. Compared the structured topic on the record. (journal #6; net: created)",
+     "record": {
+      "id": "tkt_0001",
+      "patient_id": "pat_0001",
+      "summary": "Caller needs help with a billing question about my last invoice",
+      "priority": "normal",
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-03-02T14:05:08+00:00",
+      "topic": "billing"
+     }
+    }
+   ],
+   "remediation": "Correct the ticket fields that differ from what the caller was told."
+  }
+ ],
+ "findings": [],
+ "trail": [
+  {
+   "seq": 1,
+   "stage": "evidence",
+   "message": "calendar: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 2,
+   "stage": "evidence",
+   "message": "crm: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 3,
+   "stage": "evidence",
+   "message": "messages: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 4,
+   "stage": "evidence",
+   "message": "tickets: 1 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 5,
+   "stage": "claims",
+   "message": "1 structured claim(s); 1 recovered from the transcript, 0 of them never logged by the agent"
+  },
+  {
+   "seq": 6,
+   "stage": "reconcile",
+   "message": "call-fault-wrong-handoff-topic-c1 (HandoffCreated): partial match -> tkt_0001"
+  },
+  {
+   "seq": 7,
+   "stage": "verdict",
+   "message": "call-fault-wrong-handoff-topic-c1 (HandoffCreated): MISMATCH"
+  },
+  {
+   "seq": 8,
+   "stage": "fulfillment",
+   "message": "ticket tkt_0001: recorded; the callback is still pending"
+  },
+  {
+   "seq": 9,
+   "stage": "verdict",
+   "message": "Outcome: DISCREPANCIES"
+  }
+ ],
+ "stats": {
+  "claims": 1,
+  "verified": 0,
+  "mismatch": 1,
+  "not_found": 0,
+  "unverifiable": 0,
+  "findings": 0,
+  "trust_score": 0.0,
+  "max_severity": "MEDIUM"
+ },
+ "extraction": {
+  "extractor": "rules",
+  "degraded": false,
+  "detail": null
+ },
+ "fulfillments": [
+  {
+   "ticket_id": "tkt_0001",
+   "state": "recorded",
+   "pending": true,
+   "summary": "The ticket was created and nothing further happened. Nobody is known to be calling back.",
+   "evidence": [
+    {
+     "source": "tickets",
+     "ref": "tkt_0001",
+     "note": "Ticket created during the call (journal #6)",
+     "record": {
+      "id": "tkt_0001",
+      "patient_id": "pat_0001",
+      "summary": "Caller needs help with a billing question about my last invoice",
+      "priority": "normal",
+      "status": "open",
+      "assignee": null,
+      "created_at": "2026-03-02T14:05:08+00:00",
+      "topic": "billing"
+     }
+    }
+   ]
+  }
+ ],
+ "coverage_gaps": [],
+ "seal": {
+  "algorithm": "sha256",
+  "content_hash": "4bbde6557b012c0454da7dd346b2220bdf3590388bdb5335770dd3dd897b633e",
+  "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "chain_hash": "f87b0e3d90f4680824dc06b72bbc85616aad26bc26e38314e479e0191619dec3",
+  "signature": "5d74c019071591686ea6cc19320ab15aa3e4846b80bf183f07833a8c5b05e145",
+  "key_id": "6508b98a7ace"
+ }
+}

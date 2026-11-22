@@ -200,10 +200,10 @@ class TestGoldenLabels:
         result = run_all(fuzz_n=20)
         assert result.golden_v2 is not None
         assert result.golden_v2.calls == sum(bool(s.expected_claims_v2) for s in GOLDEN)
-        # v1 keeps its historical headline; v2 fails only on the known gaps.
-        assert round(result.golden.strict_accuracy, 4) == 0.9661
-        v2_failures = {r.scenario_id for r in result.golden_v2.failures}
-        assert v2_failures == {"gap-vague-spoken-promise", "gap-garbled-handoff"}
+        known_gaps = {"gap-vague-spoken-promise", "gap-garbled-handoff"}
+        assert {r.scenario_id for r in result.golden.failures} == known_gaps
+        assert result.golden.strict_accuracy == (len(GOLDEN) - len(known_gaps)) / len(GOLDEN)
+        assert {r.scenario_id for r in result.golden_v2.failures} == known_gaps
 
     def test_v2_scores_each_scenario_like_v1_on_the_golden_set(self):
         # On a correctly audited golden call the two scorers agree.

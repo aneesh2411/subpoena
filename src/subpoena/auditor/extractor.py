@@ -15,7 +15,7 @@ import json
 import re
 from collections.abc import Sequence
 from datetime import datetime
-from typing import Any, Literal, Protocol
+from typing import Any, Literal, Protocol, cast, get_args
 
 from pydantic import AwareDatetime, BaseModel, ValidationError
 
@@ -29,6 +29,7 @@ from subpoena.models import (
     ConfirmationSent,
     ExtractionHealth,
     HandoffCreated,
+    HandoffTopic,
     Rescheduled,
 )
 from subpoena.util import ClinicConfig, find_times, norm_text
@@ -54,11 +55,26 @@ _BOOKED = re.compile(r"\b(?:booked|scheduled|got you down|reserved)\b", re.IGNOR
 _SENT = re.compile(r"\b(?:sent|texted|emailed)\b", re.IGNORECASE)
 _CONFIRMATION = re.compile(r"\b(?:confirmation|text|email)\b", re.IGNORECASE)
 _HANDOFF = re.compile(r"\b(?:ticket|flagged|escalated)\b", re.IGNORECASE)
+_TOPIC_WORDS = "|".join(get_args(HandoffTopic))
+_TOPIC = re.compile(
+    r"\b(?:ticket(?: for (?:the front desk|the on-call dentist))?|flagged|escalated)"
+    rf"\s+(?:(?:about|for)\s+|(?:with )?topic[ :]+)"
+    rf"(?P<subject>{_TOPIC_WORDS})\s*[.!]?\s*$"
+    rf"|\b(?P<label>{_TOPIC_WORDS})\s+ticket\b",
+    re.IGNORECASE,
+)
 _URGENT = re.compile(r"\b(?:urgent|right away|emergency)\b", re.IGNORECASE)
 _PROVIDER = re.compile(r"\bDr\.\s+[A-Z][A-Za-z'-]+")
 _CORRECTION = re.compile(
     r"\b(?:actually|i meant|instead|no,? wait|make that|change that)\b", re.IGNORECASE
 )
+
+
+def _spoken_handoff_topic(sentence: str) -> HandoffTopic | None:
+    match = _TOPIC.search(sentence)
+    if match is None:
+        return None
+    return cast(HandoffTopic, (match["subject"] or match["label"]).lower())
 
 
 class RuleBasedExtractor:
@@ -137,6 +153,7 @@ class RuleBasedExtractor:
                             patient=call.caller,
                             summary=sentence,
                             priority="urgent" if _URGENT.search(sentence) else "normal",
+                            topic=_spoken_handoff_topic(sentence),
                         )
                     )
         return claims
@@ -246,7 +263,18 @@ class LLMClaimExtractor:
             )
         if item.type == "HandoffCreated":
             return HandoffCreated(
-                **meta, patient=call.caller, summary=meta["utterance"], priority=item.priority
+                **meta,
+                patient=call.caller,
+                summary=meta["utterance"],
+                priority=item.priority,
+                topic=next(
+                    (
+                        topic
+                        for sentence in _SENTENCE.split(meta["utterance"])
+                        if _HANDOFF.search(sentence) and (topic := _spoken_handoff_topic(sentence))
+                    ),
+                    None,
+                ),
             )
         return None
 
@@ -260,8 +288,8 @@ def _provider_clash(a: Claim, b: Claim) -> bool:
     return pa is not None and pb is not None and norm_text(pa) != norm_text(pb)
 
 
-def _handoff_topic(claim: HandoffCreated) -> str:
-    """Compare literal topics in the ticket summary and the built-in spoken wording."""
+def _handoff_summary(claim: HandoffCreated) -> str:
+    """Normalize legacy claim summaries for matching spoken and logged claims."""
     summary = norm_text(claim.summary).rstrip(".")
     for prefix in (
         "caller needs help with ",
@@ -294,11 +322,16 @@ def _same_promise(spoken: Claim, logged: Claim) -> bool:
             and (spoken.about_start is None or spoken.about_start == logged.about_start)
         )
     if isinstance(spoken, HandoffCreated) and isinstance(logged, HandoffCreated):
-        topic = _handoff_topic(spoken)
+        summary = _handoff_summary(spoken)
+        same_content = (
+            spoken.topic == logged.topic
+            if spoken.topic is not None and logged.topic is not None
+            else not summary or summary == _handoff_summary(logged)
+        )
         return (
             (spoken.patient is None or spoken.patient == logged.patient)
             and (spoken.priority is None or spoken.priority == logged.priority)
-            and (not topic or topic == _handoff_topic(logged))
+            and same_content
         )
     return False
 
@@ -339,6 +372,7 @@ def merge_claims(structured: Sequence[Claim], spoken: Sequence[Claim]) -> tuple[
     """
     used: set[str] = set()
     extra: list[Claim] = []
+    spoken_topics: dict[str, HandoffTopic] = {}
     flagged: set[str] = set()  # structured claims a spoken correction corroborates
     seen_spoken: dict[tuple, int] = {}
     for claim in spoken:
@@ -361,14 +395,20 @@ def merge_claims(structured: Sequence[Claim], spoken: Sequence[Claim]) -> tuple[
             )
         if partner is not None:
             used.add(partner.claim_id)
+            if isinstance(claim, HandoffCreated) and claim.topic is not None:
+                spoken_topics[partner.claim_id] = claim.topic
             if claim.corrects_prior:
                 flagged.add(partner.claim_id)
         elif earlier_turn is None or earlier_turn == claim.turn_index:
             extra.append(claim)
-    merged = [
-        c.model_copy(update={"corrects_prior": True}) if c.claim_id in flagged else c
-        for c in structured
-    ]
+    merged = []
+    for claim in structured:
+        updates: dict[str, Any] = {}
+        if claim.claim_id in flagged:
+            updates["corrects_prior"] = True
+        if claim.claim_id in spoken_topics:
+            updates["topic"] = spoken_topics[claim.claim_id]
+        merged.append(claim.model_copy(update=updates) if updates else claim)
     merged.extend(extra)
     order = {c.claim_id: i for i, c in enumerate(merged)}
     return tuple(

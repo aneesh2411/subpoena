@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from datetime import UTC
 
+import pytest
+
 from subpoena.auditor import LLMClaimExtractor, RuleBasedExtractor, merge_claims
 from subpoena.llm import StaticLLM, llm_from_env
 from subpoena.models import AppointmentBooked, ClaimSource, ConfirmationSent, VerdictStatus
@@ -41,6 +43,23 @@ def test_reads_each_kind_of_explicit_statement(clinic):
     assert handoff.priority == "urgent"
     assert {c.source for c in claims} == {ClaimSource.TRANSCRIPT}
     assert [c.turn_index for c in claims] == [0, 0, 1, 2, 3]
+
+
+@pytest.mark.parametrize(
+    ("line", "topic"),
+    [
+        ("I've created a ticket for the front desk about BILLING.", "billing"),
+        ("I've created a refill ticket.", "refill"),
+        ("I've created a ticket for records.", "records"),
+        ("I've created a ticket for parking.", None),
+        ("I've created a ticket about a callback about billing.", None),
+        ("I've created a ticket about a billing question on my last invoice.", None),
+    ],
+)
+def test_handoff_topic_comes_from_explicit_ticket_wording(clinic, line, topic):
+    (claim,) = _extract(clinic, line)
+    assert claim.type == "HandoffCreated"
+    assert claim.topic == topic
 
 
 def test_does_not_invent_claims(clinic):
