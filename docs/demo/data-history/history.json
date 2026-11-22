@@ -375,6 +375,104 @@
       ],
       "strict_accuracy": 0.9661,
       "scenarios": 59
+    },
+    {
+      "commit": "62bc9a548fb7951cc56f8296a9a0bdff4cafe754",
+      "commit_time": 1795127804,
+      "series": "scorecards",
+      "paths": [
+        "evals/scorecards/20261119-cbc1b143c3e1.json",
+        "evals/scorecards/latest.json"
+      ],
+      "strict_accuracy": 0.9661,
+      "scenarios": 59
+    },
+    {
+      "commit": "ef5672f1eb16b0053be91b32ad9a54282d73636d",
+      "commit_time": 1795191232,
+      "series": "scorecards",
+      "paths": [
+        "evals/scorecards/20261120-6d3760b48e28.json",
+        "evals/scorecards/latest.json"
+      ],
+      "strict_accuracy": 0.9661,
+      "scenarios": 59
+    },
+    {
+      "commit": "a841942950e5c7d7bbc9d625d349540e0432d237",
+      "commit_time": 1795214346,
+      "series": "scorecards",
+      "paths": [
+        "evals/scorecards/20261120-15b5d279a12a.json",
+        "evals/scorecards/latest.json"
+      ],
+      "strict_accuracy": 0.9661,
+      "scenarios": 59
+    },
+    {
+      "commit": "82c9ddb85d6febd816056afab9d4563860508fff",
+      "commit_time": 1795214466,
+      "series": "scorecards",
+      "paths": [
+        "evals/scorecards/20261120-368c772d800e.json",
+        "evals/scorecards/latest.json"
+      ],
+      "strict_accuracy": 0.9661,
+      "scenarios": 59
+    },
+    {
+      "commit": "245de0bef55d77930ffa478cb1fd5c9df5c16bab",
+      "commit_time": 1795214632,
+      "series": "scorecards",
+      "paths": [
+        "evals/scorecards/20261120-31bb3219dfc5.json",
+        "evals/scorecards/latest.json"
+      ],
+      "strict_accuracy": 0.9661,
+      "scenarios": 59
+    },
+    {
+      "commit": "702b82a045a2d88a65665d60f8fe4bc5746b0777",
+      "commit_time": 1795276810,
+      "series": "scorecards",
+      "paths": [
+        "evals/scorecards/20261121-bf1500f9fc88.json",
+        "evals/scorecards/latest.json"
+      ],
+      "strict_accuracy": 0.9661,
+      "scenarios": 59
+    },
+    {
+      "commit": "46b60b96490186922a0a0814aad1c86f78df80a7",
+      "commit_time": 1795277523,
+      "series": "scorecards",
+      "paths": [
+        "evals/scorecards/20261121-0eba2236e69f.json",
+        "evals/scorecards/latest.json"
+      ],
+      "strict_accuracy": 0.9661,
+      "scenarios": 59
+    },
+    {
+      "commit": "a1baa8b78fc6010efccae2e7a7118db1f8e78019",
+      "commit_time": 1795317949,
+      "series": "results",
+      "paths": [
+        "evals/results/latest.json"
+      ],
+      "strict_accuracy": 0.9672,
+      "scenarios": 61
+    },
+    {
+      "commit": "a1baa8b78fc6010efccae2e7a7118db1f8e78019",
+      "commit_time": 1795317949,
+      "series": "scorecards",
+      "paths": [
+        "evals/scorecards/20261122-844c8251cc38.json",
+        "evals/scorecards/latest.json"
+      ],
+      "strict_accuracy": 0.9672,
+      "scenarios": 61
     }
   ]
 }
