@@ -106,12 +106,23 @@ def not_found(
     )
 
 
-def unverifiable(claim: Claim, reason: str) -> Verdict:
+def unverifiable(
+    claim: Claim,
+    reason: str,
+    *,
+    severity: Severity | None = None,
+    remediation: str | None = None,
+    summary: str | None = None,
+) -> Verdict:
     return Verdict(
         claim=claim,
         status=VerdictStatus.UNVERIFIABLE,
-        severity=Severity.MEDIUM,
-        summary=f"Could not be checked: {reason}. No verdict is better than a guessed one.",
+        severity=severity if severity is not None else Severity.MEDIUM,
+        summary=summary
+        if summary is not None
+        else f"Could not be checked: {reason}. No verdict is better than a guessed one.",
         checks=(Check(name=CheckName.EXISTENCE, passed=None, detail=reason),),
-        remediation="Re-run the audit when the system of record is reachable.",
+        remediation=remediation
+        if remediation is not None
+        else "Re-run the audit when the system of record is reachable.",
     )

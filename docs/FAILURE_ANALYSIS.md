@@ -93,7 +93,10 @@ flagged because a dependency was down.
 
 **Fix.** If a claim that might own a write could not be verified, the unclaimed-write check
 for that system is skipped and the call is `INCONCLUSIVE`. Added to the golden set as
-`edge-crm-outage`.
+`edge-crm-outage`. The verdict asks the reviewer to retry once the system of record is
+reachable. When patient identity cannot be established for a claim's exchange window,
+the verdict is `UNVERIFIABLE` with `HIGH` severity and asks the reviewer to confirm the
+phone number on file for that exchange before retrying (see `edge-same-name-patients`).
 
 **Lesson.** The two directions of reconciliation are coupled. Anything that stops a claim
 from being judged also makes "leftover writes" meaningless for that system.

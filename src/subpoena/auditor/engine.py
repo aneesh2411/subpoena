@@ -73,6 +73,9 @@ class _Block:
     reason: str
     scores: tuple[int, ...] = ()
     alternatives: tuple[AssignmentAlternative, ...] = ()
+    severity: Severity | None = None
+    remediation: str | None = None
+    summary: str | None = None
 
 
 _CALENDAR = (Entity.APPOINTMENT, Entity.PATIENT)
@@ -311,7 +314,15 @@ class Auditor:
                 continue
             try:
                 if (reason := ctx.identity_issue(claim)) is not None:
-                    blocked[claim.claim_id] = _Block(reason)
+                    blocked[claim.claim_id] = _Block(
+                        reason,
+                        severity=Severity.HIGH,
+                        remediation=(
+                            "Disambiguate the patient by confirming the phone number on file "
+                            "for the claim's exchange, then re-run the audit."
+                        ),
+                        summary=f"Could not resolve patient identity: {reason}.",
+                    )
             except AdapterUnavailable as exc:
                 blocked[claim.claim_id] = _Block(str(exc))
         pools: dict[Entity, list[Claim]] = {}
@@ -548,9 +559,13 @@ class Auditor:
         claim: Claim, match: Match | None, blocked: dict[str, _Block], ctx: AuditContext
     ) -> Verdict:
         if (block := blocked.get(claim.claim_id)) is not None:
-            verdict = unverifiable(claim, block.reason).model_copy(
-                update={"alternatives": block.alternatives}
-            )
+            verdict = unverifiable(
+                claim,
+                block.reason,
+                severity=block.severity,
+                remediation=block.remediation,
+                summary=block.summary,
+            ).model_copy(update={"alternatives": block.alternatives})
         else:
             try:
                 verdict = HANDLERS[claim.type].judge(claim, match, ctx)

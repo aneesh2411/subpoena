@@ -209,7 +209,12 @@ def test_crm_outage_makes_calendar_claims_unverifiable(clinic):
     _book(clinic)
     reader = with_outage(clinic.as_actor("auditor"), "crm")
     report = clinic.audit(clinic.call([_booked()]), reader=reader)
-    assert report.verdicts[0].status is UV
+    (verdict,) = report.verdicts
+    assert (verdict.status, verdict.severity) == (UV, Severity.MEDIUM)
+    assert verdict.summary == (
+        "Could not be checked: crm could not be read. No verdict is better than a guessed one."
+    )
+    assert verdict.remediation == "Re-run the audit when the system of record is reachable."
     assert report.outcome is Outcome.INCONCLUSIVE
     assert report.stats.trust_score is None
 

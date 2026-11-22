@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from subpoena.models import PatientRef, VerdictStatus
+from subpoena.models import PatientRef, Severity, VerdictStatus
 from subpoena.scenarios import run_scenario
 from subpoena.scenarios.world import PATEL, Scenario, at
 from subpoena.suspect import Book as _Book
@@ -42,6 +42,16 @@ def test_ambiguous_name_yields_unverifiable_not_verified():
     assert booked.status == VerdictStatus.UNVERIFIABLE
     assert "matches 2 patient records" in booked.summary
     assert "no phone number disambiguates" in booked.summary
+
+
+def test_ambiguous_identity_requires_disambiguation_before_retrying():
+    (verdict,) = run_scenario(BOOKING_SCENARIO).report.verdicts
+    assert verdict.severity == Severity.HIGH
+    assert verdict.summary.startswith("Could not resolve patient identity:")
+    assert verdict.remediation == (
+        "Disambiguate the patient by confirming the phone number on file "
+        "for the claim's exchange, then re-run the audit."
+    )
 
 
 def test_unmatched_phone_is_reported_as_ambiguous():

@@ -87,8 +87,8 @@
     "reason": "cleaning"
    },
    "status": "UNVERIFIABLE",
-   "severity": "MEDIUM",
-   "summary": "Could not be checked: 'Maya Chen' matches 2 patient records during the claim's exchange and no phone number disambiguates them. No verdict is better than a guessed one.",
+   "severity": "HIGH",
+   "summary": "Could not resolve patient identity: 'Maya Chen' matches 2 patient records during the claim's exchange and no phone number disambiguates them.",
    "checks": [
     {
      "name": "existence",
@@ -98,7 +98,7 @@
    ],
    "diffs": [],
    "evidence": [],
-   "remediation": "Re-run the audit when the system of record is reachable."
+   "remediation": "Disambiguate the patient by confirming the phone number on file for the claim's exchange, then re-run the audit."
   }
  ],
  "findings": [],
@@ -152,7 +152,7 @@
   "unverifiable": 1,
   "findings": 0,
   "trust_score": null,
-  "max_severity": "MEDIUM"
+  "max_severity": "HIGH"
  },
  "extraction": {
   "extractor": "rules",
@@ -163,10 +163,10 @@
  "coverage_gaps": [],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "132326ef63b5b88e3ccdfdd07f409a97291bf9310663cc843c8095303226fb4e",
+  "content_hash": "c48b49c7b42c746d5c6d283b1440424f586947fb5b6b0eb5c83536892eb35848",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "900b9c4a690ad14cb6ff8e96365da8c09ff99ed6654df60b45b6de410cb07ab6",
-  "signature": "687f728988b2b06721374c5c219c2b7c5f57a985acfcef5df320badc38488b9b",
+  "chain_hash": "2ded894b6166ba57035b248614d8249c0ac5832066c6b7c0621fe2781525af3a",
+  "signature": "0a3e78f10ef97ed2b98176ff98e72991ac2f02d0212c56de3f4db8d82cc01593",
   "key_id": "6508b98a7ace"
  },
  "escalation_log": [
