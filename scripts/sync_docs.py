@@ -1,13 +1,14 @@
 """Regenerate every displayed metric from the committed eval artifacts.
 
-Numbers in README.md, docs/FAILURE_ANALYSIS.md and docs/index.html are
+Metrics in README.md, docs/FAILURE_ANALYSIS.md and docs/index.html are
 generated, never hand-copied. Each generated region sits between
 ``<!-- metrics:NAME:start -->`` and ``<!-- metrics:NAME:end -->`` markers;
 this script rewrites what is inside and nothing else.
 
 Sources, in order of authority:
 
-* ``evals/scorecards/latest.json`` - the sealed certification of the golden set.
+* ``evals/scorecards/latest.json`` - the sealed certification of the golden set
+  and the timestamp of the latest certified run.
 * ``evals/results/latest.json`` - the full ``subpoena eval`` output (baseline,
   ablations, fuzz).
 * ``len(FaultMode)`` and ``pytest --collect-only`` for counts that live in code.
@@ -25,6 +26,7 @@ import json
 import re
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -33,6 +35,8 @@ SCORECARD = ROOT / "evals" / "scorecards" / "latest.json"
 
 START = "<!-- metrics:{name}:start -->"
 END = "<!-- metrics:{name}:end -->"
+
+MONTH_ABBREVIATIONS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
 
 
 def pct(value: float | None) -> str:
@@ -201,12 +205,15 @@ def landing_stats_block(results: dict, scorecard: dict) -> str:
         )
     demo_data = ROOT / "docs/demo/data"
     sealed_demo_audits = sum(path.is_file() for path in demo_data.glob("audit-*.json"))
+    certified_at = datetime.fromisoformat(scorecard["certified_at"])
+    month = MONTH_ABBREVIATIONS[certified_at.month - 1]
     stats = [
         (str(golden["calls"]), "golden scenarios"),
         (str(fault_mode_count()), "fault modes"),
         (str(test_count()), "tests green"),
         (pct(strict), "strict accuracy, sealed in a scorecard"),
         (str(sealed_demo_audits), "sealed demo audits"),
+        (f"{month} {certified_at.day}", "eval run"),
     ]
     return "\n".join(
         f'    <div class="stat"><b>{value}</b><span>{label}</span></div>' for value, label in stats
