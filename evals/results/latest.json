@@ -313,19 +313,19 @@
       "label": "Rule-based extractor",
       "calls": 134,
       "overall": {
-        "tp": 187,
-        "fp": 19,
-        "fn": 23,
-        "precision": 0.9077669902912622,
-        "recall": 0.8904761904761904
+        "tp": 191,
+        "fp": 13,
+        "fn": 19,
+        "precision": 0.9362745098039216,
+        "recall": 0.9095238095238095
       },
       "by_claim_type": {
         "AppointmentBooked": {
-          "tp": 68,
-          "fp": 18,
-          "fn": 20,
-          "precision": 0.7906976744186046,
-          "recall": 0.7727272727272727
+          "tp": 72,
+          "fp": 12,
+          "fn": 16,
+          "precision": 0.8571428571428571,
+          "recall": 0.8181818181818182
         },
         "Cancelled": {
           "tp": 8,
@@ -382,19 +382,19 @@
       "label": "Deterministic stub",
       "calls": 134,
       "overall": {
-        "tp": 124,
-        "fp": 152,
-        "fn": 86,
-        "precision": 0.4492753623188406,
-        "recall": 0.5904761904761905
+        "tp": 128,
+        "fp": 146,
+        "fn": 82,
+        "precision": 0.46715328467153283,
+        "recall": 0.6095238095238096
       },
       "by_claim_type": {
         "AppointmentBooked": {
-          "tp": 68,
-          "fp": 18,
-          "fn": 20,
-          "precision": 0.7906976744186046,
-          "recall": 0.7727272727272727
+          "tp": 72,
+          "fp": 12,
+          "fn": 16,
+          "precision": 0.8571428571428571,
+          "recall": 0.8181818181818182
         },
         "Cancelled": {
           "tp": 8,

@@ -232,3 +232,46 @@ def test_no_live_model_unless_explicitly_enabled(monkeypatch):
     monkeypatch.setenv("SUBPOENA_LLM", "anthropic")
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     assert llm_from_env() is None
+
+
+@pytest.mark.parametrize(
+    "opening",
+    [
+        "Have I booked you for",
+        "I've booked you for",  # With interrogative punctuation below.
+        "I could have booked you for",
+        "I'll have you booked for",
+        "You're not booked for",
+        "You aren’t booked for",
+        "You're tentatively booked for",
+        "If you're booked for",
+        "The clinician is booked for",
+    ],
+)
+def test_booking_requires_an_affirmative_commitment(clinic, opening):
+    punctuation = "?" if opening == "I've booked you for" else "."
+    assert not _extract(clinic, f"{opening} Tuesday, March 3 at 2:30 PM{punctuation}")
+
+
+@pytest.mark.parametrize(
+    "opening",
+    [
+        "You're confirmed with Dr. Patel for",
+        "Your appointment is now scheduled with Dr. Patel for",
+        "I've set you up with Dr. Patel for",
+    ],
+)
+def test_reads_completed_booking_phrasing(clinic, opening):
+    (booking,) = _extract(clinic, f"{opening} Tuesday, March 3 at 2:30 PM.")
+    assert isinstance(booking, AppointmentBooked)
+    assert (booking.start, booking.provider) == (SLOT, PATEL)
+
+
+def test_recap_repeats_booking_only_when_the_details_differ(clinic):
+    claims = _extract(
+        clinic,
+        "I've booked you with Dr. Patel for Tuesday, March 3 at 2:30 PM.",
+        "Just to confirm, I've booked you with Dr. Patel for Tuesday, March 3 at 2:30 PM.",
+        "To recap, you're booked with Dr. Kim for Tuesday, March 3 at 2:30 PM.",
+    )
+    assert [(c.start, c.provider) for c in claims] == [(SLOT, PATEL), (SLOT, "Dr. Kim")]

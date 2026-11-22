@@ -68,6 +68,7 @@ def test_extractor_flags_the_claim_after_a_caller_correction() -> None:
     assert [c.start for c in claims] == [SLOT, FIXED]
     assert claims[0].corrects_prior is False
     assert claims[1].corrects_prior is True
+    assert claims[0].provider == claims[1].provider == "Dr. Patel"
 
 
 def test_extractor_ignores_correction_phrasing_without_a_time() -> None:

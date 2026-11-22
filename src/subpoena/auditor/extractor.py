@@ -56,7 +56,20 @@ _NEGATED = re.compile(
 )
 _RESCHEDULED = re.compile(r"\b(?:moved|rescheduled)\b", re.IGNORECASE)
 _CANCELLED = re.compile(r"\bcancel(?:l)?ed\b", re.IGNORECASE)
-_BOOKED = re.compile(r"\b(?:booked|scheduled|got you down|reserved)\b", re.IGNORECASE)
+_BOOKED = re.compile(
+    r"^\s*(?:(?:okay|ok|great|perfect|sure|yes|actually|to recap|just to confirm),\s*)*"
+    r"(?:(?:i|we)(?:['’]ve| have)? (?:just |now )?"
+    r"(?:booked|scheduled|reserved|got you down|set you up)|"
+    r"(?:you(?:['’]re| are)|your (?:appointment|visit|cleaning) (?:is|was|has been)) "
+    r"(?:now )?(?:booked|scheduled|reserved|confirmed|all set))\b",
+    re.IGNORECASE,
+)
+_BOOKING_INCOMPLETE = re.compile(
+    r"\?|\b(?:not|never|no longer|if|unless|maybe|might|could|would|should|"
+    r"can|will|may|tentatively|pending|or)\b|n['’]t\b",
+    re.IGNORECASE,
+)
+_BOOKING_RECAP = re.compile(r"\b(?:to recap|just to confirm),", re.IGNORECASE)
 _SENT = re.compile(r"\b(?:sent|texted|emailed)\b", re.IGNORECASE)
 _CONFIRMATION = re.compile(r"\b(?:confirmation|text|email)\b", re.IGNORECASE)
 _HANDOFF = re.compile(r"\b(?:ticket|flagged|escalated)\b", re.IGNORECASE)
@@ -185,12 +198,15 @@ class RuleBasedExtractor:
     def extract(self, call: CallRecord, clinic: ClinicConfig) -> list[Claim]:
         claims: list[Claim] = []
         corrected = False  # the caller just corrected an earlier commitment
+        last_booking: AppointmentBooked | None = None
+        correction_names_provider = False
         for turn in call.transcript:
             if turn.speaker != "agent":
                 if _CORRECTION.search(turn.text) and find_times(
                     turn.text, ref=call.started_at, tz=clinic.zone
                 ):
                     corrected = True
+                    correction_names_provider = bool(_PROVIDER.search(turn.text))
                 continue
             last_time: datetime | None = None
             for sentence in _SENTENCE.split(turn.text):
@@ -216,26 +232,43 @@ class RuleBasedExtractor:
                             **meta, patient=call.caller, old_start=times[0], new_start=times[1]
                         )
                     )
+                    last_booking = None
                     last_time = times[1]
                     corrected = False
                 elif _CANCELLED.search(sentence) and times:
                     if corrected:
                         meta["corrects_prior"] = True
                     claims.append(Cancelled(**meta, patient=call.caller, start=times[0]))
+                    last_booking = None
                     corrected = False
-                elif _BOOKED.search(sentence) and times:
-                    provider = _PROVIDER.search(sentence)
-                    start = times[-1] if _CORRECTION.search(sentence) else times[0]
-                    if corrected or start is not times[0]:
+                elif times and _BOOKED.match(sentence) and not _BOOKING_INCOMPLETE.search(sentence):
+                    correction = _CORRECTION.search(sentence)
+                    if len(times) > 1 and correction is None:
+                        continue
+                    start = times[-1] if correction else times[0]
+                    if corrected or start != times[0]:
                         meta["corrects_prior"] = True
-                    claims.append(
-                        AppointmentBooked(
-                            **meta,
-                            patient=call.caller,
-                            start=start,
-                            provider=provider.group(0) if provider else None,
-                        )
+                    match = _PROVIDER.search(sentence)
+                    provider = match.group(0) if match else None
+                    if (
+                        provider is None
+                        and corrected
+                        and not correction_names_provider
+                        and last_booking is not None
+                    ):
+                        # A time-only correction carries forward the last spoken provider.
+                        provider = last_booking.provider
+                    booking = AppointmentBooked(
+                        **meta, patient=call.caller, start=start, provider=provider
                     )
+                    if (
+                        booking.corrects_prior
+                        or last_booking is None
+                        or not _BOOKING_RECAP.search(sentence)
+                        or _spoken_key(booking) != _spoken_key(last_booking)
+                    ):
+                        claims.append(booking)
+                        last_booking = booking
                     last_time = start
                     corrected = False
                 elif _SENT.search(sentence) and _CONFIRMATION.search(sentence):
