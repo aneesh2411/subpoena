@@ -207,7 +207,10 @@
 
   function renderSparkline(svg, runs, metric, color) {
     const width = svg.clientWidth;
-    if (!width) return;
+    if (!width || width === svg.viewBox.baseVal.width) return;
+    const focusedHref = svg.contains(document.activeElement)
+      ? document.activeElement.getAttribute("href")
+      : null;
     svg.setAttribute("viewBox", `0 0 ${width} 100`);
     svg.replaceChildren();
     const values = runs.map(run => run[metric]).filter(value => value !== null);
@@ -234,6 +237,7 @@
       draw("title", {}, label, link);
       draw("circle", {cx: point.x, cy: point.y, r: 10, fill: "transparent"}, null, link);
       draw("circle", {cx: point.x, cy: point.y, r: 3.5, fill: color}, null, link);
+      if (point.run.href === focusedHref) link.focus({preventScroll: true});
     }
   }
 
