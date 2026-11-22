@@ -88,6 +88,86 @@ echo "Exit code: $?"</code></pre>
 VERDICT FAIL (whole-report verification, 0/1 reports passed)
 Exit code: 1</code></pre>
   </section>
+
+  <section class="panel">
+    <h2>4. Verify the revisions journal</h2>
+    <p>Your browser checks the <a href="data-revisions/revisions.json">published revisions
+      export</a> from GENESIS and checks each signature with the public demo key
+      <code>subpoena-revisions-demo</code>. Anyone with this key can sign a revision.</p>
+    <div role="status">
+      <p id="revision-chain">Revision hash chain: checking…</p>
+      <p id="revision-signature">HMAC-SHA256 signatures: checking…</p>
+      <p id="revision-error" hidden></p>
+    </div>
+    <noscript>Enable JavaScript to verify the revisions journal.</noscript>
+  </section>
 </main>
+<script>
+  const genesisHash = "0".repeat(64);
+  const revisionDemoKey = "subpoena-revisions-demo"; // scripts/export_revisions_demo.py
+  const encoder = new TextEncoder();
+  const hex = buffer => Array.from(new Uint8Array(buffer),
+    byte => byte.toString(16).padStart(2, "0")).join("");
+
+  function canonicalRevision(body) {
+    // Match the Python journal's sorted, compact JSON with ensure_ascii=True.
+    // Revision fields are scalars.
+    const fields = Object.keys(body).sort().map(key =>
+      JSON.stringify(key) + ":" + JSON.stringify(body[key]));
+    return ("{" + fields.join(",") + "}").replace(/[\u007f-\uffff]/g,
+      char => "\\u" + char.charCodeAt(0).toString(16).padStart(4, "0"));
+  }
+
+  function showCheck(id, label, passed) {
+    const result = document.getElementById(id);
+    result.textContent = label + ": " + (passed ? "PASS" : "FAIL");
+    result.className = passed ? "verified" : "mismatch";
+  }
+
+  async function verifyRevisions() {
+    let chainPassed = false;
+    let signaturesPassed = false;
+    try {
+      const response = await fetch("data-revisions/revisions.json");
+      if (!response.ok) throw new Error("Could not load the revisions export.");
+      const {genesis, journal} = await response.json();
+      const {revisions, journal_head: journalHead} = journal;
+      if (!Array.isArray(revisions) || !revisions.length) {
+        throw new Error("The export has no revision receipts.");
+      }
+      if (!globalThis.crypto?.subtle) throw new Error("Web Crypto requires HTTPS or localhost.");
+
+      const keyBytes = encoder.encode(revisionDemoKey);
+      const keyId = hex(await crypto.subtle.digest("SHA-256", keyBytes)).slice(0, 12);
+      const key = await crypto.subtle.importKey("raw", keyBytes,
+        {name: "HMAC", hash: "SHA-256"}, false, ["sign"]);
+      let previous = genesisHash;
+      let chainMatches = genesis === genesisHash;
+      let signaturesMatch = true;
+      for (const [index, {hash, signature, ...body}] of revisions.entries()) {
+        const digest = hex(await crypto.subtle.digest("SHA-256",
+          encoder.encode("subpoena.revision.v1:" + canonicalRevision(body))));
+        chainMatches = chainMatches && body.sequence === index + 1
+          && body.previous_hash === previous && hash === digest;
+        previous = digest;
+
+        // The signature covers the recorded hash. The chain check binds it to the receipt.
+        const expected = hex(await crypto.subtle.sign("HMAC", key,
+          encoder.encode("subpoena.revision.signature.v1:" + hash)));
+        signaturesMatch = signaturesMatch && body.key_id === keyId && signature === expected;
+      }
+      chainPassed = chainMatches && journalHead === previous;
+      signaturesPassed = signaturesMatch;
+    } catch (error) {
+      const detail = document.getElementById("revision-error");
+      detail.textContent = "Could not verify the revisions journal. " + error.message;
+      detail.hidden = false;
+    }
+    showCheck("revision-chain", "Revision hash chain", chainPassed);
+    showCheck("revision-signature", "HMAC-SHA256 signatures", signaturesPassed);
+  }
+
+  verifyRevisions();
+</script>
 </body>
 </html>
