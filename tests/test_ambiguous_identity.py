@@ -44,12 +44,10 @@ def test_ambiguous_name_yields_unverifiable_not_verified():
     assert "no phone number disambiguates" in booked.summary
 
 
-def test_unmatched_phone_is_reported_as_matching_neither():
-    # A claim that names a phone no record has: the detail must say the phone
-    # matched none of the name matches. (End to end the suspect would create a
-    # new record for that phone, so this checks the auditor's wording directly.)
+def test_unmatched_phone_is_reported_as_ambiguous():
+    # The suspect would create a record for this phone, so supply the claim directly.
     from subpoena.auditor.context import AuditContext
-    from subpoena.models import CallRecord
+    from subpoena.models import AppointmentBooked, CallRecord
     from subpoena.scenarios.world import CALL_START, CLINIC, build_world
 
     world = build_world(BOOKING_SCENARIO)
@@ -66,9 +64,15 @@ def test_unmatched_phone_is_reported_as_matching_neither():
         clinic=CLINIC,
         window=(CALL_START, CALL_START),
     )
-    detail = ctx.ambiguous_identity(PatientRef(name="Maya Chen", phone="+15550101313"))
+    claim = AppointmentBooked(
+        claim_id="test-claim",
+        turn_index=0,
+        patient=PatientRef(name="Maya Chen", phone="+15550101313"),
+        start=at(1, 14, 30),
+    )
+    detail = ctx.identity_issue(claim)
     assert detail is not None
-    assert "matches none of them" in detail
+    assert "phone number given does not identify a unique record" in detail
 
 
 def test_disambiguated_caller_still_verifies():

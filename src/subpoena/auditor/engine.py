@@ -49,7 +49,6 @@ from subpoena.models import (
     Fulfillment,
     HandoffCreated,
     Outcome,
-    RecordsUpdated,
     Severity,
     Ticket,
     Verdict,
@@ -309,6 +308,12 @@ class Auditor:
             down = [SOURCE[e] for e in handler.needs if ctx.delta.get(e) is None]
             if down:
                 blocked[claim.claim_id] = _Block(f"{', '.join(down)} could not be read")
+                continue
+            try:
+                if (reason := ctx.identity_issue(claim)) is not None:
+                    blocked[claim.claim_id] = _Block(reason)
+            except AdapterUnavailable as exc:
+                blocked[claim.claim_id] = _Block(str(exc))
         pools: dict[Entity, list[Claim]] = {}
         for claim in by_specificity:
             if claim.claim_id not in blocked:
@@ -380,9 +385,7 @@ class Auditor:
         A write lands on the caller-request tick between the request and the
         agent's answer, so the claim's moment spans both turns.
         """
-        turns = ctx.call.transcript
-        lo = max(0, claim.turn_index - 1)
-        moments = [t.at for t in turns[lo : claim.turn_index + 1]] or [ctx.call.ended_at]
+        moments = ctx.claim_moments(claim) or [ctx.call.ended_at]
         return min(abs((write_at - at).total_seconds()) for at in moments)
 
     def _match_pool(
@@ -547,21 +550,6 @@ class Auditor:
         if (block := blocked.get(claim.claim_id)) is not None:
             verdict = unverifiable(claim, block.reason).model_copy(
                 update={"alternatives": block.alternatives}
-            )
-        elif (
-            ambiguous := ctx.ambiguous_identity(
-                getattr(claim, "patient", None), at_call_start=isinstance(claim, RecordsUpdated)
-            )
-        ) is not None:
-            verdict = Verdict(
-                claim=claim,
-                status=VerdictStatus.UNVERIFIABLE,
-                severity=Severity.HIGH,
-                summary=f"Could not be checked: {ambiguous}. A guess here could clear a "
-                "booking made for the wrong person.",
-                checks=(Check(name=CheckName.EXISTENCE, passed=None, detail=ambiguous),),
-                remediation="Disambiguate the patient (confirm the phone number on file) "
-                "and re-run the audit.",
             )
         else:
             try:
@@ -819,7 +807,12 @@ def _correction_checks(verdict: Verdict, superseded: Sequence[Claim], ctx: Audit
     for prior in superseded:
         if not isinstance(prior, AppointmentBooked):
             continue
-        hits = ctx.booked_at(ctx.patient_ids(prior.patient), prior.start)
+        try:
+            if ctx.identity_issue(prior):
+                continue
+            hits = ctx.booked_at(ctx.patient_ids(prior), prior.start)
+        except AdapterUnavailable:
+            continue
         if hits:
             note = (
                 f" The calendar holds {ctx.show(hits[0].start)}, the exact value the "

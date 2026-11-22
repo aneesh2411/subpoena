@@ -53,7 +53,7 @@ def _new_booking(nc: NetChange) -> Appointment | None:
 def candidates_booked(
     claim: AppointmentBooked, ctx: AuditContext, strict: bool
 ) -> list[tuple[int, Match]]:
-    ids = ctx.patient_ids(claim.patient)
+    ids = ctx.patient_ids(claim)
     out: list[tuple[int, Match]] = []
     for nc in ctx.free(Entity.APPOINTMENT):
         appt = _new_booking(nc)
@@ -86,7 +86,7 @@ def judge_booked(claim: AppointmentBooked, match: Match | None, ctx: AuditContex
 
     appt = _appt(match.primary.after)
     assert appt is not None
-    ids = ctx.patient_ids(claim.patient)
+    ids = ctx.patient_ids(claim)
     diffs = [
         FieldDiff(
             field="patient",
@@ -133,7 +133,7 @@ def judge_booked(claim: AppointmentBooked, match: Match | None, ctx: AuditContex
 
 
 def _booking_not_found(claim: AppointmentBooked, ctx: AuditContext, what: str) -> Verdict:
-    ids = ctx.patient_ids(claim.patient)
+    ids = ctx.patient_ids(claim)
     evidence = [ctx.journal_evidence(Entity.APPOINTMENT, "None creates this booking.")]
     existing = ctx.booked_at(ids, claim.start)
     rolled_back = [
@@ -182,7 +182,7 @@ def _booking_not_found(claim: AppointmentBooked, ctx: AuditContext, what: str) -
 def candidates_rescheduled(
     claim: Rescheduled, ctx: AuditContext, strict: bool
 ) -> list[tuple[int, Match]]:
-    ids = ctx.patient_ids(claim.patient)
+    ids = ctx.patient_ids(claim)
     free = ctx.free(Entity.APPOINTMENT)
     candidates: list[tuple[int, Match]] = []
 
@@ -242,7 +242,7 @@ def match_rescheduled(claim: Rescheduled, ctx: AuditContext, strict: bool) -> Ma
 
 
 def judge_rescheduled(claim: Rescheduled, match: Match | None, ctx: AuditContext) -> Verdict:
-    ids = ctx.patient_ids(claim.patient)
+    ids = ctx.patient_ids(claim)
     move = f"{claim.patient.name} from {ctx.show(claim.old_start)} to {ctx.show(claim.new_start)}"
     if match is None:
         untouched = ctx.booked_at(ids, claim.old_start)
@@ -388,7 +388,7 @@ def judge_rescheduled(claim: Rescheduled, match: Match | None, ctx: AuditContext
 def candidates_cancelled(
     claim: Cancelled, ctx: AuditContext, strict: bool
 ) -> list[tuple[int, Match]]:
-    ids = ctx.patient_ids(claim.patient)
+    ids = ctx.patient_ids(claim)
     out: list[tuple[int, Match]] = []
     for nc in ctx.free(Entity.APPOINTMENT):
         before = _appt(nc.before)
@@ -409,7 +409,7 @@ def match_cancelled(claim: Cancelled, ctx: AuditContext, strict: bool) -> Match 
 def judge_cancelled(claim: Cancelled, match: Match | None, ctx: AuditContext) -> Verdict:
     what = f"{claim.patient.name} on {ctx.show(claim.start)}"
     if match is None or match.primary is None:
-        still = ctx.booked_at(ctx.patient_ids(claim.patient), claim.start)
+        still = ctx.booked_at(ctx.patient_ids(claim), claim.start)
         evidence = [ctx.journal_evidence(Entity.APPOINTMENT, "None cancels this appointment.")]
         evidence += [_state_evidence(a, "Still booked") for a in still]
         if still:

@@ -1,7 +1,13 @@
 """Multi-intent fuzzing: composed truth must match what the auditor reports."""
 
+from dataclasses import replace
+
+import pytest
+
 from subpoena.evals.fuzz import WHOLE_CALL_FAULTS, generate
 from subpoena.evals.run import evaluate, run_all
+from subpoena.models import AppointmentBooked, VerdictStatus
+from subpoena.scenarios.world import audit_call, build_world, run_suspect
 from subpoena.suspect import Book
 
 
@@ -77,3 +83,37 @@ def test_fuzz_v2_scores_like_positional():
     assert result.fuzz_v2 is not None
     assert result.fuzz_v2.calls == 40
     assert round(result.fuzz_v2.strict_accuracy, 4) == round(result.fuzz.strict_accuracy, 4)
+
+
+@pytest.mark.parametrize(
+    ("seed", "case_ids"),
+    [(3, {209}), (7, {0, 146, 158, 235, 253})],
+)
+def test_claims_follow_the_caller_record_through_silent_edits(seed, case_ids):
+    scenarios = [s for i, s in enumerate(generate(500, seed)) if i in case_ids]
+    report = evaluate(scenarios, label="caller identity")
+    assert not report.failures
+
+
+def test_same_name_records_block_only_the_ambiguous_exchange():
+    scenario = generate(1, 7)[0]  # two bookings, with a silent edit after each write
+    world = build_world(scenario)
+    try:
+        result = run_suspect(scenario, world)
+        call = result.call
+        # For the second booking, a name alone matches both historical records.
+        claims = tuple(
+            claim.model_copy(update={"patient": claim.patient.model_copy(update={"phone": None})})
+            if isinstance(claim, AppointmentBooked) and claim.turn_index == 4
+            else claim
+            for claim in call.claims
+        )
+        result = replace(result, call=call.model_copy(update={"claims": claims}))
+        report = audit_call(scenario, world, result, options={"use_transcript": False})
+        assert [
+            verdict.status
+            for verdict in report.verdicts
+            if isinstance(verdict.claim, AppointmentBooked)
+        ] == [VerdictStatus.VERIFIED, VerdictStatus.UNVERIFIABLE]
+    finally:
+        world.store.close()

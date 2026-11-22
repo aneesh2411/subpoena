@@ -20,6 +20,7 @@ from subpoena.models import (
     Appointment,
     CallRecord,
     Change,
+    Claim,
     Entity,
     Evidence,
     Patient,
@@ -69,7 +70,9 @@ class AuditContext:
     attribution: dict[tuple[Entity, str], Attribution] = field(default_factory=dict)
     coverage: dict[Entity, Coverage] = field(default_factory=dict)
     _consumed: set[MatchKey] = field(default_factory=set)
-    _patient_cache: dict[tuple[str, str | None], frozenset[str]] = field(default_factory=dict)
+    _patient_cache: dict[tuple[str, str | None, datetime, datetime], frozenset[str]] = field(
+        default_factory=dict
+    )
 
     _patient_changes: tuple[Change, ...] = ()
 
@@ -110,7 +113,7 @@ class AuditContext:
                 continue
             pulled[entity] = rows
             if entity is Entity.PATIENT:
-                ctx._patient_changes = tuple(sorted(rows, key=lambda row: row.seq))
+                ctx._patient_changes = tuple(sorted(rows, key=lambda row: (row.at, row.seq)))
             cov_fn = getattr(feed, "coverage", None)
             try:
                 cov = cov_fn(*ctx.window) if callable(cov_fn) else COMPLETE
@@ -230,55 +233,78 @@ class AuditContext:
             if sig is not None
         }
 
-    # -- lookups against current state ------------------------------------- #
+    # -- identity and state lookups ----------------------------------------- #
 
-    def patient_ids(self, ref: PatientRef | None) -> frozenset[str]:
-        """Resolve how the call named a person to CRM ids: phone first, then name."""
+    def claim_moments(self, claim: Claim) -> list[datetime]:
+        """Times of the request and answer in the exchange backing this claim."""
+        turns = self.call.transcript
+        i = claim.turn_index
+        if i >= len(turns):
+            return []
+        return [turn.at for turn in turns[max(0, i - 1) : i + 1]]
+
+    def patient_ids(self, claim: Claim) -> frozenset[str]:
+        """Resolve the patient across the claim's exchange, preferring phone evidence."""
+        ref = getattr(claim, "patient", None)
         if ref is None:
             return frozenset()
-        key = (norm_text(ref.name), norm_phone(ref.phone) if ref.phone else None)
+        moments = self.claim_moments(claim)
+        lo, hi = (min(moments), max(moments)) if moments else self.window
+        name, phone = norm_text(ref.name), norm_phone(ref.phone) if ref.phone else None
+        key = (name, phone, lo, hi)
         if key not in self._patient_cache:
-            found = self.sor.crm.find_patients(phone=ref.phone) if ref.phone else []
-            if not found:
-                found = self.sor.crm.find_patients(name=ref.name)
-            self._patient_cache[key] = frozenset(p.id for p in found)
+            self._patient_cache[key] = self._historical_patient_ids(ref, lo, hi)
         return self._patient_cache[key]
 
-    def patient_ids_at_start(self, ref: PatientRef) -> frozenset[str]:
-        """Match against the identity before edits in this call window."""
-        first: dict[str, Change] = {}
+    def _historical_patient_ids(
+        self, ref: PatientRef, lo: datetime, hi: datetime
+    ) -> frozenset[str]:
+        # Unchanged records can be read directly. For a changed record, its
+        # last version before the window and all versions inside it come from
+        # the journal, including updates at the same tick as the request.
+        name, phone = norm_text(ref.name), norm_phone(ref.phone) if ref.phone else None
+        versions: dict[str, Patient | None] = {}
+        within: list[Patient] = []
         for row in self._patient_changes:
-            first.setdefault(row.entity_id, row)
-        patients = [p for p in self.sor.crm.list_patients() if p.id not in first]
-        patients.extend(
-            Patient.model_validate(row.before) for row in first.values() if row.before is not None
-        )
-        if ref.phone:
-            ids = frozenset(p.id for p in patients if norm_phone(p.phone) == norm_phone(ref.phone))
-            if ids:
-                return ids
-        return frozenset(p.id for p in patients if norm_text(p.name) == norm_text(ref.name))
+            if row.at < lo:
+                versions[row.entity_id] = Patient.model_validate(row.after) if row.after else None
+            else:
+                if row.entity_id not in versions:
+                    versions[row.entity_id] = (
+                        Patient.model_validate(row.before) if row.before else None
+                    )
+                if row.at <= hi and row.after:
+                    within.append(Patient.model_validate(row.after))
 
-    def ambiguous_identity(
-        self, ref: PatientRef | None, *, at_call_start: bool = False
-    ) -> str | None:
-        """Why this person reference cannot anchor a verdict, or None if it can.
+        phone_ids = {
+            p.id
+            for p in (self.sor.crm.find_patients(phone=ref.phone) if ref.phone else [])
+            if p.id not in versions
+        }
+        historical = [p for p in versions.values() if p is not None] + within
+        if phone is not None:
+            phone_ids.update(p.id for p in historical if norm_phone(p.phone) == phone)
+        if phone_ids:
+            return frozenset(phone_ids)
 
-        A name that matches several records with nothing to tell them apart must
-        never produce a VERIFIED: it could clear a booking made for the wrong
-        person.
-        """
+        name_ids = {p.id for p in self.sor.crm.find_patients(name=ref.name) if p.id not in versions}
+        name_ids.update(p.id for p in historical if norm_text(p.name) == name)
+        return frozenset(name_ids)
+
+    def identity_issue(self, claim: Claim) -> str | None:
+        ref = getattr(claim, "patient", None)
         if ref is None:
             return None
-        ids = self.patient_ids_at_start(ref) if at_call_start else self.patient_ids(ref)
+        coverage = self.coverage.get(Entity.PATIENT, COMPLETE)
+        if not coverage.complete:
+            return f"the CRM history could not establish patient identity ({coverage.detail})"
+        ids = self.patient_ids(claim)
         if len(ids) <= 1:
             return None
-        detail = f"{ref.name!r} matches {len(ids)} patient records"
+        detail = f"{ref.name!r} matches {len(ids)} patient records during the claim's exchange"
         if ref.phone:
-            detail += " and the phone number given matches none of them"
-        else:
-            detail += " and no phone number disambiguates them"
-        return detail
+            return f"{detail} and the phone number given does not identify a unique record"
+        return f"{detail} and no phone number disambiguates them"
 
     def patient_label(self, patient_id: str | None) -> str:
         if patient_id is None:

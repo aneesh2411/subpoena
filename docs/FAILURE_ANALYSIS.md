@@ -231,26 +231,26 @@ start with earlier decoy appointments, so the expected victim does not depend on
 time drawn for another intent. The labels account for later requests that the agent
 declines because it can no longer look up the caller after an edit.
 
-Strict fuzz accuracy moved from 100.0% to 98.8% under both positional and semantic
-scoring. The six failures still flag the calls for review.
+The 500-call seed 7 run now reaches 99.8% strict accuracy. The auditor uses CRM
+before- and after-images to resolve the patient over each claim's request and
+answer. Phone matches take precedence over name matches within that exchange.
+If multiple records match at the strongest available level, the auditor returns
+`UNVERIFIABLE` before assigning a write to the claim.
 
 - **A later booking recreates the caller record** (`fuzz-7-0146`, `0158`, `0235`, `0253`).
-  An earlier booking correctly references the original patient record. After the agent
-  changes that record's phone and a later booking creates a new record with the caller's
-  original phone, the audit uses the new record for both claims and marks the earlier
-  booking `MISMATCH`.
-- **Two silent CRM edits in one call** (`fuzz-7-0000`). Both bookings were written to
-  records for the same caller. At audit time the original phone is missing and both
-  records match by name. Both bookings are `UNVERIFIABLE`.
+  The earlier booking verifies against the original record and the later booking
+  verifies against the replacement. The pre-edit handoff in `fuzz-3-0209` also
+  verifies against the original record.
+- **Two silent CRM edits in one call** (`fuzz-7-0000`). Both records match by name
+  when the audit runs. The journal shows which record held the caller's phone
+  during each exchange, so both bookings verify.
 - **A wrong-target cancel and a phantom cancel share one release** (`fuzz-7-0227`).
   The oracle knows which step released the decoy appointment. Both claims only
   partially match that release by content, so reconcile returns `UNVERIFIABLE` for
   both. The expected statuses are `MISMATCH` for the wrong-target cancel and
-  `NOT_FOUND` for the phantom cancel.
-
-Seed 3 also exposes the patient-resolution problem on a handoff made before the edit
-(`fuzz-3-0209`). The ticket is linked to the original record, but the audit checks it
-against the replacement record and reports `MISMATCH`.
+  `NOT_FOUND` for the phantom cancel. Four cases of this ambiguity remain in the
+  500-call seed 3 run (`0014`, `0157`, `0179`, `0250`), which reaches 99.2% strict
+  accuracy.
 
 The golden set measures the two known transcript gaps separately.
 

@@ -132,7 +132,7 @@ def judge_confirmation(claim: ConfirmationSent, match: Match | None, ctx: AuditC
 def candidates_handoff(
     claim: HandoffCreated, ctx: AuditContext, strict: bool
 ) -> list[tuple[int, Match]]:
-    ids = ctx.patient_ids(claim.patient)
+    ids = ctx.patient_ids(claim)
     out: list[tuple[int, Match]] = []
     for nc in ctx.free(Entity.TICKET):
         if not _created(nc):
@@ -175,7 +175,7 @@ def judge_handoff(claim: HandoffCreated, match: Match | None, ctx: AuditContext)
                 field="patient",
                 claimed=ref_label(claim.patient),
                 actual=ctx.patient_label(ticket.patient_id),
-                match=ticket.patient_id in ctx.patient_ids(claim.patient),
+                match=ticket.patient_id in ctx.patient_ids(claim),
             )
         )
     if claim.priority is not None:
@@ -220,7 +220,7 @@ def judge_handoff(claim: HandoffCreated, match: Match | None, ctx: AuditContext)
 def candidates_payment(
     claim: PaymentCollected, ctx: AuditContext, strict: bool
 ) -> list[tuple[int, Match]]:
-    ids = ctx.patient_ids(claim.patient)
+    ids = ctx.patient_ids(claim)
     out: list[tuple[int, Match]] = []
     for nc in ctx.free(Entity.PAYMENT):
         if not _created(nc):
@@ -256,7 +256,7 @@ def judge_payment(claim: PaymentCollected, match: Match | None, ctx: AuditContex
             field="patient",
             claimed=ref_label(claim.patient),
             actual=ctx.patient_label(payment.patient_id),
-            match=payment.patient_id in ctx.patient_ids(claim.patient),
+            match=payment.patient_id in ctx.patient_ids(claim),
         )
     ]
     for field in ("amount_cents", "method"):
@@ -291,7 +291,7 @@ def _medication_matches(claim: PrescriptionRefilled, prescription: Prescription)
 def candidates_prescription(
     claim: PrescriptionRefilled, ctx: AuditContext, strict: bool
 ) -> list[tuple[int, Match]]:
-    ids = ctx.patient_ids(claim.patient)
+    ids = ctx.patient_ids(claim)
     out: list[tuple[int, Match]] = []
     for change in ctx.free(Entity.PRESCRIPTION):
         if not _created(change):
@@ -329,7 +329,7 @@ def judge_prescription(
             field="patient",
             claimed=ref_label(claim.patient),
             actual=ctx.patient_label(prescription.patient_id),
-            match=prescription.patient_id in ctx.patient_ids(claim.patient),
+            match=prescription.patient_id in ctx.patient_ids(claim),
         ),
     ]
     if claim.medication is not None:
@@ -397,7 +397,7 @@ def _record_diffs(
 def candidates_records(
     claim: RecordsUpdated, ctx: AuditContext, strict: bool
 ) -> list[tuple[int, Match]]:
-    ids = ctx.patient_ids_at_start(claim.patient)
+    ids = ctx.patient_ids(claim)
     out: list[tuple[int, Match]] = []
     for change in ctx.free(Entity.PATIENT):
         fields = change.changed_patient_fields
@@ -431,7 +431,7 @@ def judge_records(claim: RecordsUpdated, match: Match | None, ctx: AuditContext)
     change = match.primary
     return conclude(
         claim,
-        _record_diffs(claim, change, ctx.patient_ids_at_start(claim.patient), ctx),
+        _record_diffs(claim, change, ctx.patient_ids(claim), ctx),
         [change.evidence("Patient record edit during the call")],
         field_severity={"patient": Severity.HIGH, "field": Severity.HIGH},
         verified=f"The patient's {claim.field} was updated as claimed.",
