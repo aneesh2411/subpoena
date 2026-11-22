@@ -2127,8 +2127,18 @@
       "scenarios": 67
     },
     {
-      "commit": "8f8e3bdc5d161db27a200b5d6bf658c86927b892",
-      "commit_time": 1795363896,
+      "commit": "e49b8fbebd826ea83c5b20229d63e3f930e0816b",
+      "commit_time": 1795363533,
+      "series": "results",
+      "paths": [
+        "evals/results/latest.json"
+      ],
+      "strict_accuracy": 0.9701,
+      "scenarios": 67
+    },
+    {
+      "commit": "af52c4bbf7285675d7abd43e91cd8179a0fc144e",
+      "commit_time": 1795367074,
       "series": "results",
       "paths": [
         "evals/results/latest.json"
