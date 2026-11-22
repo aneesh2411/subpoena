@@ -59,7 +59,16 @@ PAGE = """<!doctype html>
   .meta {{ font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }}
   .panel {{ background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
     padding: 16px; margin: 16px 0; }}
-  .table-scroll {{ overflow-x: auto; }}
+  .table-scroll {{
+    overflow-x: auto;
+    /* The covers scroll with the table and hide the shadows at each end. */
+    background:
+      linear-gradient(to right, var(--panel) 40%, transparent) left / 32px 100% local,
+      linear-gradient(to left, var(--panel) 40%, transparent) right / 32px 100% local,
+      linear-gradient(to right, rgb(0 0 0 / .65), transparent) left / 12px 100% scroll,
+      linear-gradient(to left, rgb(0 0 0 / .65), transparent) right / 12px 100% scroll;
+    background-repeat: no-repeat;
+  }}
   table {{ width: 100%; border-collapse: collapse; }}
   th, td {{ padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--line); }}
   td {{ font-family: var(--mono); white-space: nowrap; }}
