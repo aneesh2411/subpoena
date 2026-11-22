@@ -15,10 +15,11 @@ from subpoena.api import review_store
 from subpoena.api.review import ReviewError, ReviewState, TransitionRequest, audit_items
 from subpoena.api.store import AuditStore
 from subpoena.api.webhook import CriticalWebhook
-from subpoena.auditor import Auditor, Sealer
+from subpoena.auditor import Auditor, RuleBasedExtractor, Sealer
 from subpoena.ingest.twilio import load_call_record
 from subpoena.models import AuditReport
-from subpoena.scenarios.world import CLINIC
+from subpoena.scenarios.golden import BY_ID
+from subpoena.scenarios.world import CLINIC, run_scenario
 from subpoena.sor import SqliteStore
 
 DEMO = Path(__file__).resolve().parents[1] / "docs" / "demo"
@@ -231,6 +232,10 @@ def export(out: Path = DEFAULT_OUT) -> None:
     out.mkdir(parents=True, exist_ok=True)
     with TemporaryDirectory(dir=out) as scratch:
         review, delivery = run_demo(Path(scratch) / "ops.sqlite")
+    outage = run_scenario(
+        BY_ID["edge-calendar-outage"], extractor=RuleBasedExtractor(), sealer=Sealer(KEY)
+    )
+    review["outage_audit"] = outage.report.model_dump(mode="json")
     for filename, artifact in (("review.json", review), ("delivery.json", delivery)):
         (out / filename).write_text(
             json.dumps(artifact, indent=2, sort_keys=True) + "\n", encoding="utf-8"

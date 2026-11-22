@@ -334,6 +334,298 @@
     }
   ],
   "journal_head": "679c954a7ad92f1e943f06871dd07c5d1d01094132cedf86153862aab2a94fdc",
+  "outage_audit": {
+    "audit_id": "aud-edge-calendar-outage",
+    "auditor": "subpoena/0.1.0",
+    "call": {
+      "agent_id": "agent:receptionist",
+      "call_id": "call-edge-calendar-outage",
+      "caller": {
+        "name": "Maya Chen",
+        "phone": "+15550101001"
+      },
+      "claims": [
+        {
+          "claim_id": "call-edge-calendar-outage-c1",
+          "corrects_prior": false,
+          "duration_min": 30,
+          "patient": {
+            "name": "Maya Chen",
+            "phone": "+15550101001"
+          },
+          "provider": "Dr. Patel",
+          "reason": "cleaning",
+          "source": "structured",
+          "start": "2026-03-03T14:30:00-05:00",
+          "turn_index": 2,
+          "type": "AppointmentBooked",
+          "utterance": "Okay, I've got you down with Dr. Patel on Tuesday, March 3 at 2:30 PM. I've sent a confirmation text to the number on file."
+        },
+        {
+          "about_start": "2026-03-03T14:30:00-05:00",
+          "channel": "sms",
+          "claim_id": "call-edge-calendar-outage-c2",
+          "corrects_prior": false,
+          "source": "structured",
+          "to": "+15550101001",
+          "turn_index": 2,
+          "type": "ConfirmationSent",
+          "utterance": "Okay, I've got you down with Dr. Patel on Tuesday, March 3 at 2:30 PM. I've sent a confirmation text to the number on file."
+        }
+      ],
+      "ended_at": "2026-03-02T09:05:16-05:00",
+      "provenance": {
+        "agent_version": "receptionist-sim/0.1.0",
+        "completion_callback_at": null,
+        "from_address": null,
+        "human_handoffs": [],
+        "model": null,
+        "platform": null,
+        "prompt_version": "narrator:standard",
+        "to_address": null
+      },
+      "raw_transcript": null,
+      "started_at": "2026-03-02T09:05:00-05:00",
+      "transcript": [
+        {
+          "at": "2026-03-02T09:05:04-05:00",
+          "index": 0,
+          "speaker": "agent",
+          "text": "Thank you for calling Brightside Dental. How can I help?"
+        },
+        {
+          "at": "2026-03-02T09:05:08-05:00",
+          "index": 1,
+          "speaker": "caller",
+          "text": "Hi, I'd like to book a cleaning with Dr. Patel on Tuesday, March 3 at 2:30 PM."
+        },
+        {
+          "at": "2026-03-02T09:05:12-05:00",
+          "index": 2,
+          "speaker": "agent",
+          "text": "Okay, I've got you down with Dr. Patel on Tuesday, March 3 at 2:30 PM. I've sent a confirmation text to the number on file."
+        },
+        {
+          "at": "2026-03-02T09:05:16-05:00",
+          "index": 3,
+          "speaker": "agent",
+          "text": "Is there anything else? Have a great day."
+        }
+      ]
+    },
+    "coverage_gaps": [
+      {
+        "claim_ids": [
+          "call-edge-calendar-outage-c1"
+        ],
+        "detail": "calendar adapter is unavailable",
+        "kind": "unavailable",
+        "source": "calendar"
+      }
+    ],
+    "created_at": "2026-03-02T09:06:16-05:00",
+    "extraction": {
+      "degraded": false,
+      "detail": null,
+      "extractor": "rules"
+    },
+    "findings": [],
+    "fulfillments": [],
+    "outcome": "INCONCLUSIVE",
+    "seal": {
+      "algorithm": "sha256",
+      "chain_hash": "cc66948be036873e8f5039cc623cbe8d972ae20fbe3b1b699cdfb159de724e59",
+      "content_hash": "98d21795d295f6a58e7bb03c51e48e1fed1d956cdd203a9a8542c31e7e3f8a66",
+      "key_id": "6508b98a7ace",
+      "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "signature": "d2da60de195906b940e16cbec6e9c904e1e1e356fd21c315082db2b85fa120e0"
+    },
+    "stats": {
+      "claims": 2,
+      "findings": 0,
+      "max_severity": "MEDIUM",
+      "mismatch": 0,
+      "not_found": 0,
+      "trust_score": 1.0,
+      "unverifiable": 1,
+      "verified": 1
+    },
+    "trail": [
+      {
+        "message": "calendar: UNAVAILABLE (calendar adapter is unavailable). Will not guess.",
+        "seq": 1,
+        "stage": "evidence"
+      },
+      {
+        "message": "crm: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window",
+        "seq": 2,
+        "stage": "evidence"
+      },
+      {
+        "message": "messages: 1 write(s) stamped to this call, 0 under the shared agent identity in the call window",
+        "seq": 3,
+        "stage": "evidence"
+      },
+      {
+        "message": "tickets: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window",
+        "seq": 4,
+        "stage": "evidence"
+      },
+      {
+        "message": "2 structured claim(s); 2 recovered from the transcript, 0 of them never logged by the agent",
+        "seq": 5,
+        "stage": "claims"
+      },
+      {
+        "message": "call-edge-calendar-outage-c2 (ConfirmationSent): exact match -> msg_0001",
+        "seq": 6,
+        "stage": "reconcile"
+      },
+      {
+        "message": "call-edge-calendar-outage-c1 (AppointmentBooked): UNVERIFIABLE",
+        "seq": 7,
+        "stage": "verdict"
+      },
+      {
+        "message": "call-edge-calendar-outage-c2 (ConfirmationSent): VERIFIED",
+        "seq": 8,
+        "stage": "verdict"
+      },
+      {
+        "message": "calendar: unclaimed-write check skipped, a claim that may own these writes could not be verified",
+        "seq": 9,
+        "stage": "reconcile"
+      },
+      {
+        "message": "calendar unavailable: 1 claim(s) capped at UNVERIFIABLE",
+        "seq": 10,
+        "stage": "coverage"
+      },
+      {
+        "message": "Outcome: INCONCLUSIVE",
+        "seq": 11,
+        "stage": "verdict"
+      }
+    ],
+    "verdicts": [
+      {
+        "checks": [
+          {
+            "detail": "calendar could not be read",
+            "name": "existence",
+            "passed": null
+          }
+        ],
+        "claim": {
+          "claim_id": "call-edge-calendar-outage-c1",
+          "corrects_prior": false,
+          "duration_min": 30,
+          "patient": {
+            "name": "Maya Chen",
+            "phone": "+15550101001"
+          },
+          "provider": "Dr. Patel",
+          "reason": "cleaning",
+          "source": "structured",
+          "start": "2026-03-03T14:30:00-05:00",
+          "turn_index": 2,
+          "type": "AppointmentBooked",
+          "utterance": "Okay, I've got you down with Dr. Patel on Tuesday, March 3 at 2:30 PM. I've sent a confirmation text to the number on file."
+        },
+        "diffs": [],
+        "evidence": [],
+        "remediation": "Re-run the audit when the system of record is reachable.",
+        "severity": "MEDIUM",
+        "status": "UNVERIFIABLE",
+        "summary": "Could not be checked: calendar could not be read. No verdict is better than a guessed one."
+      },
+      {
+        "checks": [
+          {
+            "detail": "A write by the agent during the call corresponds to this claim.",
+            "name": "existence",
+            "passed": true
+          },
+          {
+            "detail": "All fields match.",
+            "name": "exactness",
+            "passed": true
+          },
+          {
+            "detail": "Not applicable.",
+            "name": "side_effects",
+            "passed": null
+          },
+          {
+            "detail": "Every backing write carries this call's own stamp.",
+            "name": "attribution",
+            "passed": true
+          },
+          {
+            "detail": "The messages change history for the call window was fully observed.",
+            "name": "coverage",
+            "passed": true
+          }
+        ],
+        "claim": {
+          "about_start": "2026-03-03T14:30:00-05:00",
+          "channel": "sms",
+          "claim_id": "call-edge-calendar-outage-c2",
+          "corrects_prior": false,
+          "source": "structured",
+          "to": "+15550101001",
+          "turn_index": 2,
+          "type": "ConfirmationSent",
+          "utterance": "Okay, I've got you down with Dr. Patel on Tuesday, March 3 at 2:30 PM. I've sent a confirmation text to the number on file."
+        },
+        "diffs": [
+          {
+            "actual": "+15550101001",
+            "claimed": "+15550101001",
+            "field": "recipient",
+            "match": true
+          },
+          {
+            "actual": "sms",
+            "claimed": "sms",
+            "field": "channel",
+            "match": true
+          },
+          {
+            "actual": "sent",
+            "claimed": "sent",
+            "field": "delivery",
+            "match": true
+          },
+          {
+            "actual": "Tue Mar 3 2026, 2:30 PM EST",
+            "claimed": "Tue Mar 3 2026, 2:30 PM EST",
+            "field": "stated_time",
+            "match": true
+          }
+        ],
+        "evidence": [
+          {
+            "note": "Message logged during the call (journal #7; net: created)",
+            "record": {
+              "body": "Brightside Dental: your appointment with Dr. Patel is confirmed for Tuesday, March 3 at 2:30 PM.",
+              "channel": "sms",
+              "id": "msg_0001",
+              "recipient": "+15550101001",
+              "sent_at": "2026-03-02T14:05:08+00:00",
+              "status": "sent"
+            },
+            "ref": "msg_0001",
+            "source": "messages"
+          }
+        ],
+        "remediation": null,
+        "severity": "INFO",
+        "status": "VERIFIED",
+        "summary": "Confirmation was sent to +15550101001 as claimed (msg_0001)."
+      }
+    ]
+  },
   "rejection": {
     "after_sequence": 2,
     "from_state": "resolved",

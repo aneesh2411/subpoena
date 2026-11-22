@@ -97,3 +97,24 @@ def test_ops_delivery_rows_come_from_the_webhook_journal(tmp_path):
         assert attempts[1]["outbox"]["terminal"] == 0
         assert attempts[3]["entry"]["http_status"] == 204
         assert attempts[3]["outbox"]["terminal"] == 1
+
+
+def test_ops_coverage_gap_comes_from_separate_sealed_audit(tmp_path):
+    export(tmp_path)
+    data = json.loads((tmp_path / "review.json").read_bytes())
+    original = AuditReport.model_validate(data["audit"])
+    outage = AuditReport.model_validate(data["outage_audit"])
+    assert outage.call.call_id == "call-edge-calendar-outage"
+    assert outage.call.call_id != original.call.call_id
+    assert not original.coverage_gaps
+    assert Sealer(KEY).verify(outage).ok
+
+    booking, confirmation = outage.verdicts
+    assert (booking.claim.type, booking.status) == ("AppointmentBooked", VerdictStatus.UNVERIFIABLE)
+    assert (confirmation.claim.type, confirmation.status) == (
+        "ConfirmationSent", VerdictStatus.VERIFIED
+    )
+    (gap,) = outage.coverage_gaps
+    assert (gap.source, gap.kind) == ("calendar", "unavailable")
+    assert gap.detail
+    assert gap.claim_ids == (booking.claim.claim_id,)

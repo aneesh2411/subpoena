@@ -104,22 +104,6 @@
     const audit = document.getElementById("audit");
     audit.textContent =
       "Sealed audit · " + review.audit.audit_id + " · " + review.audit.seal.chain_hash;
-    const gaps = review.audit.coverage_gaps;
-    if (gaps?.length) {
-      const panel = add(audit.parentElement, "section", null, "panel coverage-gaps");
-      panel.setAttribute("aria-labelledby", "coverage-gaps-heading");
-      add(panel, "h3", "Coverage gaps").id = "coverage-gaps-heading";
-      const list = add(panel, "ul", null, "timeline");
-      for (const gap of gaps) {
-        const entry = add(list, "li");
-        add(entry, "strong", `${gap.source} (${gap.kind})`);
-        add(entry, "div", gap.detail);
-        if (gap.claim_ids.length) {
-          field(entry, "Affected claims", gap.claim_ids.join(", "));
-        }
-      }
-      audit.after(panel);
-    }
     const root = document.getElementById("reviews");
     for (const item of review.items) {
       const [, collection, index] = item.result_pointer.split("/");
@@ -156,6 +140,26 @@
           add(rejection, "div", "ReviewError " + error.status + " · " + error.message);
         }
       });
+    }
+  }
+
+  function renderCoverageGaps(outageAudit) {
+    const gaps = outageAudit?.coverage_gaps;
+    if (gaps?.length) {
+      const panel = add(document.getElementById("reviews").parentElement, "section", null, "panel coverage-gaps");
+      panel.setAttribute("aria-labelledby", "coverage-gaps-heading");
+      add(panel, "h3", "Coverage gaps").id = "coverage-gaps-heading";
+      add(panel, "p", "In a separate simulated call, the calendar is unavailable during the audit. "
+        + "The booking is unverifiable, while the confirmation is verified.");
+      const list = add(panel, "ul", null, "timeline");
+      for (const gap of gaps) {
+        const entry = add(list, "li");
+        add(entry, "strong", `${gap.source} (${gap.kind})`);
+        add(entry, "div", gap.detail);
+        if (gap.claim_ids.length) {
+          field(entry, "Affected claims", gap.claim_ids.join(", "));
+        }
+      }
     }
   }
 
@@ -220,6 +224,7 @@
   Promise.all([load("data-ops/review.json"), load("data-ops/delivery.json")])
     .then(([review, delivery]) => {
       renderReview(review);
+      renderCoverageGaps(review.outage_audit);
       renderDelivery(delivery);
       document.getElementById("status").hidden = true;
     })
