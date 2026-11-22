@@ -128,7 +128,10 @@ def test_remediation_export_reads_approvals_and_preserves_links(ledger, tmp_path
         )
         return (out / "remediation.html").read_bytes()
 
-    assert export() == (DEMO / "remediation.html").read_bytes()
+    empty_page = export().decode()
+    assert "Other open tasks" in empty_page
+    assert "<strong>Resolved</strong>" not in empty_page
+    assert "<strong>Acknowledged</strong>" not in empty_page
     for audit_id, collection, field, _ in cases:
         path = f"/audit/{audit_id}"
         target = client.get(f"{path}/report").json()["data"][collection][0]

@@ -58,7 +58,7 @@
 <main>
   <a href="hub.html#operations">Back to demo hub</a>
   <h1 id="queue-title">Remediation queue</h1>
-  <p>A task closes only when the re-check passes. In this offline replay, the simulated booking
+  <p>A task can be resolved by human approval or closed by a passing re-check. In this offline replay, the simulated booking
     system retries the write in its calendar. The auditor reads the result and re-audits the
     original call with an evidence window long enough to include the retry.</p>
   <section class="rechecks" aria-labelledby="rechecks-title">
@@ -86,7 +86,8 @@
       <a href="index.html#fault-phantom-booking">Original call</a>
     </article>
   </section>
-  <h2 id="queue-items">Other open tasks</h2>
+  <h2 id="queue-items">Remediation tasks</h2>
+  <p>Approvals show simulated human decisions in this replay.</p>
   <table role="table" aria-labelledby="queue-items">
     <thead role="rowgroup">
       <tr role="row">
@@ -202,7 +203,7 @@
         </td>
       </tr>
       <tr role="row">
-        <td role="cell"><span class="label" aria-hidden="true">Suggested fix</span>Fix the ticket&#x27;s patient and priority so the right person is called back with the right urgency.</td>
+        <td role="cell"><span class="label" aria-hidden="true">Suggested fix</span>Fix the ticket&#x27;s patient and priority so the right person is called back with the right urgency.<br /><strong>Acknowledged</strong><br />Riley Chen, triage lead · I’ll check the patient and priority before assigning the callback.</td>
         <td role="cell"><span class="label" aria-hidden="true">Claim type</span>HandoffCreated</td>
         <td role="cell"><span class="label" aria-hidden="true">Severity</span>HIGH</td>
         <td role="cell">
@@ -370,7 +371,7 @@
         </td>
       </tr>
       <tr role="row">
-        <td role="cell"><span class="label" aria-hidden="true">Suggested fix</span>Send the confirmation the caller was promised.</td>
+        <td role="cell"><span class="label" aria-hidden="true">Suggested fix</span>Send the confirmation the caller was promised.<br /><strong>Resolved</strong><br />Jordan Lee, front desk · I resent the confirmation and checked that the message log recorded it.<details><summary>Approval history</summary><ol><li>Acknowledged · Jordan Lee, front desk · I’ll check the message log and resend the missing confirmation. · 2026-03-02T09:08:00-05:00</li><li>Resolved · Jordan Lee, front desk · I resent the confirmation and checked that the message log recorded it. · 2026-03-02T09:12:00-05:00</li></ol></details></td>
         <td role="cell"><span class="label" aria-hidden="true">Claim type</span>ConfirmationSent</td>
         <td role="cell"><span class="label" aria-hidden="true">Severity</span>MEDIUM</td>
         <td role="cell">

@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import sqlite3
+from collections import defaultdict
 from contextlib import closing, nullcontext
 from dataclasses import dataclass
 from datetime import timedelta
@@ -14,8 +15,9 @@ from pathlib import Path
 from urllib.parse import quote
 
 from export_demo import SEALING_KEY
+from pydantic import TypeAdapter
 
-from subpoena.api.approvals import ApprovalAction, list_approvals
+from subpoena.api.approvals import Approval, list_approvals
 from subpoena.api.review import audit_items
 from subpoena.auditor import Auditor, RuleBasedExtractor, Sealer
 from subpoena.auditor.render import render_markdown
@@ -26,6 +28,12 @@ from subpoena.suspect import Book
 
 DEFAULT_OUT = Path(__file__).resolve().parents[1] / "docs" / "demo"
 DATA = DEFAULT_OUT / "data"
+DEFAULT_APPROVALS = DATA / "approvals.json"
+APPROVAL_LABELS = {
+    "acknowledge": "Acknowledged",
+    "resolve": "Resolved",
+    "dismiss": "Dismissed",
+}
 RECHECKS = {
     "fault-phantom-booking-bare": timedelta(),
     "fault-phantom-booking": timedelta(hours=1),
@@ -135,19 +143,25 @@ class Remediation:
     status: str | None
     scenario_id: str
     scenario_title: str
-    approval_action: ApprovalAction | None = None
+    approval: Approval | None = None
+    simulated_history: tuple[Approval, ...] = ()
 
     def html(self) -> str:
         # Match the viewer's encodeURIComponent hash routing.
         fragment = quote(self.scenario_id, safe="-_.!~*'()")
         fix = escape(self.fix)
-        if self.approval_action is not None:
-            label = {
-                "acknowledge": "Acknowledged",
-                "resolve": "Resolved",
-                "dismiss": "Dismissed",
-            }[self.approval_action]
-            fix += f"<br><strong>{label}</strong>"
+        if self.approval is not None:
+            label = APPROVAL_LABELS[self.approval.action]
+            fix += f"<br /><strong>{label}</strong>"
+            if self.simulated_history:
+                fix += f"<br />{escape(self.approval.actor)} · {escape(self.approval.note)}"
+            if len(self.simulated_history) > 1:
+                entries = "".join(
+                    f"<li>{APPROVAL_LABELS[entry.action]} · {escape(entry.actor)}"
+                    f" · {escape(entry.note)} · {entry.created_at.isoformat()}</li>"
+                    for entry in self.simulated_history
+                )
+                fix += f"<details><summary>Approval history</summary><ol>{entries}</ol></details>"
         return ROW.format(
             fix=fix,
             claim_type=escape(self.claim_type),
@@ -157,33 +171,47 @@ class Remediation:
         )
 
 
-def remediation_rows(data: Path, conn: sqlite3.Connection | None = None) -> list[Remediation]:
+def remediation_rows(
+    data: Path,
+    conn: sqlite3.Connection | None = None,
+    *,
+    simulated_approvals: tuple[Approval, ...] = (),
+) -> list[Remediation]:
     scenarios = {}
     for scenario in json.loads((data / "scenarios.json").read_bytes()):
         run = json.loads((data / f"run-{scenario['id']}.json").read_bytes())
         scenarios[run["audit_id"]] = scenario["id"], scenario["title"]
 
+    by_audit: dict[str, list[Approval]] = defaultdict(list)
+    for approval in simulated_approvals:
+        by_audit[approval.audit_id].append(approval)
+
     rows = []
     for audit_id, (scenario_id, title) in sorted(scenarios.items()):
         report = AuditReport.model_validate_json((data / f"audit-{audit_id}.json").read_bytes())
-        actions: dict[tuple[str, str], ApprovalAction] = {}
-        if conn is not None:
-            for approval in list_approvals(conn, audit_id):
-                current = actions.get(approval.target)
-                # Acknowledgement adds context without reopening a closed task.
-                if current != "resolve" and (current is None or approval.action != "acknowledge"):
-                    actions[approval.target] = approval.action
+        approvals = list_approvals(conn, audit_id) if conn is not None else by_audit[audit_id]
+        decisions: dict[tuple[str, str], Approval] = {}
+        history: dict[tuple[str, str], list[Approval]] = defaultdict(list)
+        for approval in approvals:
+            current = decisions.get(approval.target)
+            # Acknowledgement adds context without reopening a closed task.
+            if current is None or (
+                current.action != "resolve" and approval.action != "acknowledge"
+            ):
+                decisions[approval.target] = approval
+            if conn is None:
+                history[approval.target].append(approval)
         for item in audit_items(report):
             _, collection, index = item.result_pointer.split("/")
             if collection == "findings":
                 result = report.findings[int(index)]
                 claim_type, status = f"Finding · {result.kind}", None
-                action = actions.get(("finding", result.finding_id))
+                target = ("finding", result.finding_id)
             else:
                 result = report.verdicts[int(index)]
-                action = actions.get(("claim", result.claim.claim_id))
+                target = ("claim", result.claim.claim_id)
                 if (
-                    action is None
+                    target not in decisions
                     and scenario_id in RECHECKS
                     and isinstance(result.claim, AppointmentBooked)
                 ):
@@ -197,7 +225,8 @@ def remediation_rows(data: Path, conn: sqlite3.Connection | None = None) -> list
                     status,
                     scenario_id,
                     title,
-                    action,
+                    decisions.get(target),
+                    tuple(history.get(target, ())),
                 )
             )
 
@@ -274,7 +303,18 @@ def recheck_html(scenario_id: str, original: AuditReport, report: AuditReport) -
     </article>"""
 
 
-def export(out: Path = DEFAULT_OUT, *, approvals_db: Path | None = None) -> None:
+def export(
+    out: Path = DEFAULT_OUT,
+    *,
+    approvals_db: Path | None = None,
+    approvals_json: Path | None = None,
+) -> None:
+    if approvals_db is not None and approvals_json is not None:
+        raise ValueError("provide only one approval source")
+    simulated_approvals = ()
+    if approvals_db is None:
+        fixture = approvals_json if approvals_json is not None else DEFAULT_APPROVALS
+        simulated_approvals = TypeAdapter(tuple[Approval, ...]).validate_json(fixture.read_bytes())
     output_data = out / "data"
     output_data.mkdir(parents=True, exist_ok=True)
     examples = []
@@ -301,12 +341,18 @@ def export(out: Path = DEFAULT_OUT, *, approvals_db: Path | None = None) -> None
             ).fetchone()
         ):
             conn = None  # Ledgers created before approvals have no approval history.
-        remediations = remediation_rows(DATA, conn)
+        remediations = remediation_rows(DATA, conn, simulated_approvals=simulated_approvals)
     page = PAGE
-    if any(row.approval_action is not None for row in remediations):
+    if any(row.approval is not None for row in remediations):
         page = page.replace("Other open tasks", "Remediation tasks").replace(
             "A task closes only when the re-check passes.",
             "A task can be resolved by human approval or closed by a passing re-check.",
+        )
+    if any(row.simulated_history for row in remediations):
+        page = page.replace(
+            '  <h2 id="queue-items">Remediation tasks</h2>',
+            '  <h2 id="queue-items">Remediation tasks</h2>\n'
+            "  <p>Approvals show simulated human decisions in this replay.</p>",
         )
     rows = "\n".join(row.html() for row in remediations)
     (out / "remediation.html").write_text(
@@ -319,8 +365,10 @@ def export(out: Path = DEFAULT_OUT, *, approvals_db: Path | None = None) -> None
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT, help="Demo output directory")
-    parser.add_argument(
+    approvals = parser.add_mutually_exclusive_group()
+    approvals.add_argument(
         "--approvals-db", type=Path, help="Read approval history from this audit ledger"
     )
+    approvals.add_argument("--approvals-json", type=Path, help="Read simulated approval history")
     args = parser.parse_args()
-    export(args.out, approvals_db=args.approvals_db)
+    export(args.out, approvals_db=args.approvals_db, approvals_json=args.approvals_json)

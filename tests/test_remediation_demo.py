@@ -28,9 +28,17 @@ def test_remediation_export_is_reproducible(tmp_path: Path) -> None:
     for scenario_id in rechecks:
         audit_id = f"aud-{scenario_id}-recheck"
         expected_files.update((f"data/audit-{audit_id}.json", f"data/report-{audit_id}.md"))
-    for out in (tmp_path / "first", tmp_path / "second"):
+    fixture = data / "approvals.json"
+    for name, source in (("first", []), ("second", ["--approvals-json", str(fixture)])):
+        out = tmp_path / name
         subprocess.run(
-            [sys.executable, str(ROOT / "scripts/export_remediation_demo.py"), "--out", str(out)],
+            [
+                sys.executable,
+                str(ROOT / "scripts/export_remediation_demo.py"),
+                "--out",
+                str(out),
+                *source,
+            ],
             cwd=ROOT,
             check=True,
         )
@@ -107,12 +115,47 @@ def test_remediation_export_is_reproducible(tmp_path: Path) -> None:
 
     body = committed.decode().split('<tbody role="rowgroup">', 1)[1].split("</tbody>", 1)[0]
     actual = []
+    approved_rows = {}
     for cells in ElementTree.fromstring(f"<tbody>{body}</tbody>"):
         fix, claim_type, severity, scenario = cells
         link = scenario.find("a")
         assert link is not None
+        label = fix.find("strong")
+        if label is not None:
+            assert label.text not in approved_rows
+            approved_rows[label.text] = (fix, link.get("href"))
         actual.append(
             (fix[0].tail, claim_type[0].tail, severity[0].tail, link.get("href"), link.text)
         )
 
     assert actual == [row for _, row in sorted(expected, key=lambda entry: entry[0])]
+
+    assert "simulated human decisions in this replay" in committed.decode()
+    assert approved_rows.keys() == {"Resolved", "Acknowledged"}
+    labels = {"resolve": "Resolved", "acknowledge": "Acknowledged"}
+    histories = {}
+    for record in json.loads(fixture.read_bytes()):
+        audit_id = record["audit_id"]
+        claim_id = record["claim_id"]
+        scenario = scenarios[audit_id]
+        report = AuditReport.model_validate_json((data / f"audit-{audit_id}.json").read_bytes())
+        assert report.audit_id == audit_id
+        assert report.seal is not None
+        assert Sealer(SEALING_KEY).verify(report, report.seal.prev_hash, strict=True).ok
+        (verdict,) = [v for v in report.verdicts if v.claim.claim_id == claim_id]
+        assert verdict.status in statuses[:3]
+        histories.setdefault((scenario["id"], claim_id), []).append(record)
+
+    assert len(histories) == 2
+    for (scenario_id, _), history in histories.items():
+        latest = history[-1]
+        fix, href = approved_rows[labels[latest["action"]]]
+        assert href == "index.html#" + quote(scenario_id, safe="-_.!~*'()")
+        assert f"{latest['actor']} · {latest['note']}" == fix.findall("br")[-1].tail
+        if latest["action"] == "resolve":
+            assert [entry["action"] for entry in history] == ["acknowledge", "resolve"]
+            assert [node.text for node in fix.findall("details/ol/li")] == [
+                f"{labels[entry['action']]} · {entry['actor']} · {entry['note']}"
+                f" · {entry['created_at']}"
+                for entry in history
+            ]
