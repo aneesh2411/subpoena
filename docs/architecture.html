@@ -35,6 +35,18 @@ ul.points { color:var(--dim); padding-left:20px; margin:14px 0 0; }
 ul.points li { margin:7px 0; }
 ul.points b { color:var(--ink); font-weight:600; }
 footer { border-top:1px solid var(--line); padding:30px 24px; text-align:center; color:var(--dim); font-size:14px; }
+
+@media (max-width:600px) {
+  nav { flex-wrap:wrap; gap:4px 8px; padding:8px 12px; }
+  nav .home { font-size:15px; }
+  a { display:inline-flex; align-items:center; justify-content:center;
+    min-width:44px; min-height:44px; padding:0 6px; }
+  main { padding:32px 16px 56px; font-size:16px; overflow-wrap:anywhere; }
+  h1 { font-size:28px; }
+  h2 { margin-top:36px; }
+  .figure { padding:12px; }
+  .cap { font-size:inherit; }
+}
 </style>
 </head>
 <body>

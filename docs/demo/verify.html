@@ -33,6 +33,16 @@
   #audit-source { overflow-wrap: anywhere; }
   .verified { color: var(--ok); }
   .mismatch { color: var(--bad); }
+
+  @media (max-width: 600px) {
+    .bar { flex-wrap: wrap; gap: 4px 12px; }
+    main { font-size: 16px; overflow-wrap: anywhere; }
+    a { display: inline-flex; align-items: center; min-width: 44px; min-height: 44px;
+      max-width: 100%; }
+    button, input::file-selector-button { min-width: 44px; min-height: 44px; }
+    .audit-controls input { min-height: 44px; }
+    pre { max-width: 100%; overflow-x: auto; white-space: pre; overflow-wrap: normal; }
+  }
 </style>
 </head>
 <body>
