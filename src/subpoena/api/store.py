@@ -139,15 +139,20 @@ class AuditStore:
         return AuditReport.model_validate_json(row[0]) if row else None
 
     def audits(self, limit: int | None = None, newest_first: bool = False) -> Iterator[AuditReport]:
+        for _, _, body in self.audit_rows(limit=limit, newest_first=newest_first):
+            yield AuditReport.model_validate_json(body)
+
+    def audit_rows(
+        self, limit: int | None = None, newest_first: bool = False
+    ) -> list[tuple[str, str, str]]:
+        """Read a snapshot with ledger metadata, even if a report body cannot be decoded."""
         order = "DESC" if newest_first else "ASC"
-        sql = f"SELECT body FROM audits ORDER BY seq {order}"  # order is one of two literals
+        sql = f"SELECT audit_id, chain_hash, body FROM audits ORDER BY seq {order}"
         params: tuple[int, ...] = ()
         if limit is not None:
             sql, params = sql + " LIMIT ?", (limit,)
         with self._lock:
-            rows = self._conn.execute(sql, params).fetchall()
-        for (body,) in rows:
-            yield AuditReport.model_validate_json(body)
+            return self._conn.execute(sql, params).fetchall()
 
     def list_revisions(self, key: bytes | None) -> dict:
         with self._lock:

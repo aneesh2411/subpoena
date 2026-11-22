@@ -9,6 +9,7 @@ Core:
 
 Supporting:
     GET  /audits                 recent audits
+    GET  /alerts                 paging feed from sealed audits
     GET  /reviews                review items and sealed transition history
     POST /reviews/{id}/transition   transition one review item
     GET  /scorecard              per-agent honesty numbers
@@ -39,6 +40,7 @@ from pydantic import BaseModel, ConfigDict, ValidationError, model_validator
 from starlette.concurrency import run_in_threadpool
 
 from subpoena import __version__
+from subpoena.api.alerts import build_alert_feed
 from subpoena.api.ingest import parse_delivery
 from subpoena.api.repair_queue import build_repair_queue
 from subpoena.api.review import Hash, ReviewError, TransitionRequest
@@ -340,6 +342,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/audits", dependencies=guarded)
     def list_audits(limit: Annotated[int, Query(ge=1, le=200)] = 50) -> JSONResponse:
         return _ok([_summary(r) for r in store().audits(limit=limit, newest_first=True)])
+
+    @app.get("/alerts", dependencies=guarded)
+    def list_alerts() -> JSONResponse:
+        return _ok(build_alert_feed(store(), app.state.sealer))
 
     @app.get("/ledger/verify", dependencies=guarded)
     def verify_ledger(strict: bool = False) -> JSONResponse:

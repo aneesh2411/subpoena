@@ -1,5 +1,6 @@
 """Deterministic paging decisions for sealed audit reports."""
 
+from collections.abc import Set
 from dataclasses import dataclass
 from typing import Literal
 
@@ -31,7 +32,7 @@ def alert_order(alert: Alert) -> tuple[int, AlertKey]:
 
 
 def alerts_for_audit(
-    audit: AuditReport, *, already_alerted: frozenset[AlertKey] = frozenset()
+    audit: AuditReport, *, already_alerted: Set[AlertKey] = frozenset()
 ) -> tuple[Alert, ...]:
     """Return new page candidates given the caller's previously accepted keys.
 
