@@ -203,27 +203,46 @@
     renderFields(claim, title);
   }
 
+  const encoder = new TextEncoder();
+  const toHex = buffer => Array.from(new Uint8Array(buffer),
+    byte => byte.toString(16).padStart(2, "0")).join("");
+
   async function verifyJournal(journal) {
     let previous = "0".repeat(64);
     if (journal.authentication !== "authenticated") return false;
     for (const [index, receipt] of journal.revisions.entries()) {
       const { hash, signature, ...body } = receipt;
       if (body.version !== 1 || body.sequence !== index + 1 || body.previous_hash !== previous
-          || !/^[0-9a-f]{64}$/.test(signature ?? "")
           || !body.key_id || body.key_id !== journal.revisions[0].key_id) return false;
 
       // Revision v1 has flat fields. Match Python's sorted keys, compact JSON and ensure_ascii.
       const sorted = Object.fromEntries(Object.keys(body).sort().map(key => [key, body[key]]));
       const canonical = JSON.stringify(sorted).replace(/[^ -~]/g, unit =>
         "\\u" + unit.charCodeAt(0).toString(16).padStart(4, "0"));
-      const bytes = new TextEncoder().encode("subpoena.revision.v1:" + canonical);
-      const digest = await crypto.subtle.digest("SHA-256", bytes);
-      const hex = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0"))
-        .join("");
-      if (hex !== hash) return false;
+      const bytes = encoder.encode("subpoena.revision.v1:" + canonical);
+      const digest = toHex(await crypto.subtle.digest("SHA-256", bytes));
+      if (digest !== hash) return false;
       previous = hash;
     }
     return previous === journal.journal_head;
+  }
+
+  async function signatureError({ hash, signature, key_id }) {
+    if (!globalThis.crypto?.subtle) {
+      return "Signature verification unavailable (requires Web Crypto)";
+    }
+    try {
+      const keyBytes = encoder.encode("subpoena-revisions-demo");
+      const keyId = toHex(await crypto.subtle.digest("SHA-256", keyBytes)).slice(0, 12);
+      const key = await crypto.subtle.importKey("raw", keyBytes,
+        { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+      // The chain check binds the signed hash to the receipt body.
+      const expected = toHex(await crypto.subtle.sign("HMAC", key,
+        encoder.encode("subpoena.revision.signature.v1:" + hash)));
+      return key_id === keyId && signature === expected ? "" : "Signature verification failed";
+    } catch {
+      return "Signature verification could not run";
+    }
   }
 
   async function renderReceipts({ runs: { before, after }, claims, journal }) {
@@ -233,22 +252,25 @@
     // The revision API names the old audit directly and the new audit in the evidence.
     const target = `Re-audit ${after.audit_id} (chain ${after.chain_hash.slice(0, 16)}...)`;
     const receipts = journal.revisions.filter(receipt =>
-      receipt.signature && receipt.source === "reaudit" && receipt.audit_id === before.audit_id
+      receipt.source === "reaudit" && receipt.audit_id === before.audit_id
       && receipt.evidence.startsWith(target + " of the same call ")
       && claims.some(claim => claim.claim_id === receipt.claim_id
         && claim.before === receipt.from_status && claim.after === receipt.to_status));
     if (!receipts.length) return;
 
-    const verified = await verifyJournal(journal).catch(() => false);
+    const chainError = await verifyJournal(journal)
+      .then(passed => passed ? "" : "Chain verification failed")
+      .catch(() => "Chain verification could not run");
     for (const receipt of receipts) {
+      const errors = [chainError, await signatureError(receipt)].filter(Boolean);
       const card = node("article", undefined, "card");
       const change = node("h3", `${receipt.from_status} → ${receipt.to_status}`);
-      const status = node("p", verified ? "Chain verified"
-        : "Chain verification failed", "seal");
-      status.dataset.state = verified ? "VERIFIED" : "MISMATCH";
+      const status = node("p", errors.length ? errors.join(" · ")
+        : "Chain and signature verified", "seal");
+      status.dataset.state = errors.length ? "MISMATCH" : "VERIFIED";
       const details = node("dl");
       details.append(node("dt", "Evidence"), node("dd", receipt.evidence),
-                     node("dt", "Signature"), node("dd", receipt.signature, "seal"));
+                     node("dt", "Signature"), node("dd", receipt.signature || "Missing", "seal"));
       card.append(change, status, details);
       byId("receipt-list").append(card);
     }
