@@ -11,6 +11,7 @@ from datetime import UTC, datetime
 from html import escape
 from pathlib import Path
 
+from subpoena.evals.overrides import score_overrides
 from subpoena.scenarios import GOLDEN
 from subpoena.scenarios.golden import GOLDEN_BY_AGENT_VERSION
 from subpoena.scenarios.world import BASELINE_AGENT, Scenario
@@ -18,6 +19,7 @@ from subpoena.scenarios.world import BASELINE_AGENT, Scenario
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "evals" / "results" / "latest.json"
 DEMO = ROOT / "docs" / "demo"
+OVERRIDES = ROOT / "evals" / "fixtures" / "overrides.json"
 
 # The results JSON has no timestamp. Record the check-in date for the exact
 # checked-in snapshots without depending on Git history at export time.
@@ -263,7 +265,9 @@ def failures(suites: tuple[tuple[str, dict], ...]) -> str:
     return "\n".join(lines)
 
 
-def render(results: dict, check_in_date: str | None, fingerprint: str) -> str:
+def render(
+    results: dict, check_in_date: str | None, fingerprint: str, overrides: dict[str, int]
+) -> str:
     golden = results["golden"]
     semantic = results["golden_v2_semantic"]
     baseline = results["baseline_naive_existence_check"]
@@ -315,6 +319,20 @@ def render(results: dict, check_in_date: str | None, fingerprint: str) -> str:
                 (mode, str(run["calls"]), str(run["seed"]), percent(run["call_strict_accuracy"]))
                 for mode, run in (("Fuzz", fuzz), ("Fuzz v2-semantic", fuzz_semantic))
             ],
+        ),
+        table(
+            "human-overrides",
+            "Overrides from simulated human decisions",
+            ("Disposition", "Claims"),
+            [
+                ("Confirmed", str(overrides["confirmed"])),
+                ("Overturned", str(overrides["overturned"])),
+                ("Still open", str(overrides["still_open"])),
+            ],
+            description=(
+                "These counts come from simulated demo approvals and review decisions. "
+                "Golden accuracy uses its own set of labels."
+            ),
         ),
         failures(
             (
@@ -384,7 +402,8 @@ def export(source: Path = SOURCE, demo: Path = DEMO) -> None:
     if check_in_date is None:
         # New results (eval re-run): date them from this export.
         check_in_date = datetime.now(UTC).date().isoformat()
-    page = render(results, check_in_date, fingerprint)
+    overrides = score_overrides(OVERRIDES)
+    page = render(results, check_in_date, fingerprint, overrides)
     scorecard = {
         "provenance": {
             "source": "evals/results/latest.json",
@@ -392,6 +411,7 @@ def export(source: Path = SOURCE, demo: Path = DEMO) -> None:
             "sha256": fingerprint,
         },
         "results": results,
+        "simulated_human_overrides": overrides,
         "claim_accuracy": {
             "columns": CLAIM_ACCURACY_COLUMNS,
             "by_agent_version": claim_accuracy_by_version(results),

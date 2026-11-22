@@ -21,12 +21,20 @@ def test_export_is_deterministic_and_matches_pages(tmp_path):
     raw = SOURCE.read_bytes()
     scorecard = json.loads((first / "data-evals/scorecard.json").read_bytes())
     assert scorecard["results"] == json.loads(raw)
+    assert scorecard["simulated_human_overrides"] == {
+        "confirmed": 1,
+        "overturned": 1,
+        "still_open": 2,
+    }
     provenance = scorecard["provenance"]
     assert provenance["source"] == "evals/results/latest.json"
     assert provenance["sha256"] == sha256(raw).hexdigest()
     assert re.fullmatch(r"\d{4}-\d{2}-\d{2}", provenance["check_in_date"])
 
     page = (first / "evals.html").read_text(encoding="utf-8")
+    assert "Overrides from simulated human decisions" in page
+    for disposition, count in (("Confirmed", 1), ("Overturned", 1), ("Still open", 2)):
+        assert f'<th scope="row">{disposition}</th><td>{count}</td>' in page
     assert provenance["sha256"] in page
     assert provenance["check_in_date"] in page
     assert 'href="data-evals/scorecard.json"' in page

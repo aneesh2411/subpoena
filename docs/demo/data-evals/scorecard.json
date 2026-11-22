@@ -1514,5 +1514,10 @@
         ]
       }
     }
+  },
+  "simulated_human_overrides": {
+    "confirmed": 1,
+    "overturned": 1,
+    "still_open": 2
   }
 }

@@ -59,6 +59,15 @@ subpoena demo --list
 subpoena eval
 ```
 
+The [evals demo](docs/demo/evals.html) also counts simulated human decisions
+against the original sealed claim verdicts. Regenerate the override fixture and
+check it while rebuilding the page with:
+
+```bash
+python scripts/export_overrides.py
+python scripts/export_evals_demo.py
+```
+
 ```bash
 subpoena certify
 ```
