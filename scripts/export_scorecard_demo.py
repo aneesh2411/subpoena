@@ -87,7 +87,8 @@ PAGE = """<!doctype html>
   .evaluation { margin-block: 2rem; }
   .evaluation h2 { margin-top: 1.5rem; }
   .evaluation p { margin-block: .5rem; color: var(--dim); }
-  select { background: var(--panel); color: var(--ink); font: inherit; min-height: 44px; }
+  select { background: var(--panel); color: var(--ink); font: inherit; min-height: 44px;
+    max-width: 100%; }
   .trend-chart[hidden] { display: none; }
   .trend-chart { display: block; width: 100%; height: 10rem; color: var(--verified); }
   .trend-dates { display: flex; justify-content: space-between; color: var(--dim); }
@@ -121,6 +122,7 @@ PAGE = """<!doctype html>
     <p>Runs without claim counts for the selected type and agent version are excluded.</p>
     <label for="claim-type">Claim type</label>
     <select id="claim-type" disabled></select>
+    <p id="claim-trend-inbox" hidden><a>View matching calls in the triage inbox</a></p>
     <p id="claim-trend-summary" role="status">Loading committed scorecards…</p>
     <svg class="trend-chart" id="claim-trend-chart" role="group"
       aria-label="Ground-truth honesty rate for the selected claim type by commit time"
@@ -159,6 +161,10 @@ PAGE = """<!doctype html>
     parent.append(element);
   }
 
+  function inboxURL(claimType) {
+    return "inbox.html?claim_type=" + encodeURIComponent(claimType);
+  }
+
   function render(data) {
     const cards = document.createDocumentFragment();
     let total = 0;
@@ -190,6 +196,8 @@ PAGE = """<!doctype html>
   const historyStatus = document.querySelector("#honesty-summary");
   const claimPicker = document.querySelector("#claim-type");
   const claimChart = document.querySelector("#claim-trend-chart");
+  const claimInbox = document.querySelector("#claim-trend-inbox");
+  const claimInboxLink = claimInbox.querySelector("a");
   const claimStatus = document.querySelector("#claim-trend-summary");
   const accuracyStatus = document.querySelector("#accuracy-status");
   const accuracyTable = document.querySelector("#claim-accuracy");
@@ -267,8 +275,13 @@ PAGE = """<!doctype html>
     }
     for (const [claim, ...values] of rows) {
       const row = body.insertRow();
-      addText(row, "th", claim);
-      row.firstElementChild.scope = "row";
+      const heading = document.createElement("th");
+      heading.scope = "row";
+      const link = document.createElement("a");
+      link.href = inboxURL(claim);
+      link.textContent = claim;
+      heading.append(link);
+      row.append(heading);
       for (const value of values) addText(row, "td", value);
     }
   }
@@ -294,6 +307,8 @@ PAGE = """<!doctype html>
       ? point.claim_levels_by_type : point.variant_claim_levels_by_type?.[versionPicker.value];
     const updateClaimTrend = () => {
       const claimType = claimPicker.value;
+      claimInbox.hidden = !claimType;
+      if (claimType) claimInboxLink.href = inboxURL(claimType);
       const points = trendPoints(snapshots, point => typesFor(point)?.[claimType]);
       showTrend(points, claimType || versionPicker.value, claimChart, claimStatus,
         document.querySelector("#claim-trend-dates"));
