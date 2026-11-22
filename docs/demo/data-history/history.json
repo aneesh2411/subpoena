@@ -679,8 +679,8 @@
       }
     },
     {
-      "commit": "a1ed60b08cedde1fa99582a597d535463cd93951",
-      "commit_time": 1795330814,
+      "commit": "3b83c1c95e20e03fd0774f0e3e973f29f99e03c0",
+      "commit_time": 1795332846,
       "series": "results",
       "paths": [
         "evals/results/latest.json"
@@ -689,8 +689,8 @@
       "scenarios": 63
     },
     {
-      "commit": "a1ed60b08cedde1fa99582a597d535463cd93951",
-      "commit_time": 1795330814,
+      "commit": "3b83c1c95e20e03fd0774f0e3e973f29f99e03c0",
+      "commit_time": 1795332846,
       "series": "scorecards",
       "paths": [
         "evals/scorecards/20261122-d7b2c9e937da.json",
@@ -704,13 +704,40 @@
         "fn": 2,
         "tn": 63
       }
+    },
+    {
+      "commit": "0ddf2347e59f11e5400140de3c6f978662385305",
+      "commit_time": 1795333892,
+      "series": "results",
+      "paths": [
+        "evals/results/latest.json"
+      ],
+      "strict_accuracy": 0.9692,
+      "scenarios": 65
+    },
+    {
+      "commit": "0ddf2347e59f11e5400140de3c6f978662385305",
+      "commit_time": 1795333892,
+      "series": "scorecards",
+      "paths": [
+        "evals/scorecards/20261122-13cb65309062.json",
+        "evals/scorecards/latest.json"
+      ],
+      "strict_accuracy": 0.9692,
+      "scenarios": 65,
+      "claim_level": {
+        "tp": 37,
+        "fp": 0,
+        "fn": 2,
+        "tn": 64
+      }
     }
   ],
   "latest_scorecard_diff": {
-    "previous": "2026-11-22T03:23:27.471165+00:00",
+    "previous": "2026-11-22T06:57:18.660517+00:00",
     "strict_accuracy": {
-      "was": 0.9672,
-      "now": 0.9683
+      "was": 0.9683,
+      "now": 0.9692
     },
     "newly_failing": [],
     "newly_passing": []
