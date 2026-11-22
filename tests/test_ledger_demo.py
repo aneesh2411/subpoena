@@ -1,11 +1,14 @@
 """Pair the journal ledger's offline export with its committed Pages artifacts."""
 
 import json
+from dataclasses import replace
 
-from scripts.export_ledger_demo import DATA_FILE, DEFAULT_OUT, export
+from scripts.export_ledger_demo import DATA_FILE, DEFAULT_OUT, SCENARIO_ID, export
+from subpoena.scenarios.golden import BY_ID
+from subpoena.suspect.agent import CollectPayment
 
 
-def test_ledger_export_matches_pages(tmp_path):
+def test_ledger_export_matches_pages(tmp_path, monkeypatch):
     first, second = tmp_path / "first", tmp_path / "second"
     export(first)
     export(second)
@@ -33,3 +36,16 @@ def test_ledger_export_matches_pages(tmp_path):
     }
     assert inserted["after"] == removed["before"] == evidence[inserted["entity_id"]]
     assert confirmation["after"] == evidence[confirmation["entity_id"]]
+
+    scenario = BY_ID[SCENARIO_ID]
+    monkeypatch.setitem(
+        BY_ID, SCENARIO_ID, replace(scenario, steps=(*scenario.steps, CollectPayment(4000)))
+    )
+    with_payment = tmp_path / "with-payment"
+    export(with_payment)
+
+    entries = json.loads((with_payment / DATA_FILE).read_bytes())
+    assert entries[:-1] == [inserted, removed, confirmation]
+    payment = entries[-1]
+    assert (payment["seq"], payment["entity"], payment["op"]) == (9, "payment", "insert")
+    assert payment["after"]["amount_cents"] == 4000
