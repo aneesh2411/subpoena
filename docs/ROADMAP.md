@@ -10,14 +10,17 @@ Working today:
 - Simulated receptionist with 26 fault modes.
 - SQLite system of record with a trigger-written, append-only change journal.
 - Auditor: claim verdicts with evidence, unclaimed writes, policy checks, sealed reports.
-  Caller corrections bind into supersedes chains: the agent is held to the final
-  settled value, the superseded utterance is withdrawn from judgment, and a write
-  that still holds the corrected-away value is named as the evidence.
-- 59 golden scenarios, 500-call fuzzing, naive baseline, ablations. Identity-labelled
-  (v2 semantic) scoring runs over both the golden set and the fuzzer, beside the
-  positional headline.
-- FastAPI service, CLI demo, single-page replay view.
-- 891 tests, lint clean.
+  Caller corrections bind into supersedes chains ([#55](https://github.com/aneesh2411/subpoena/issues/55)):
+  the final settled value is judged, the superseded utterance is withdrawn, and a write
+  that still holds the corrected-away value is named as evidence.
+- Verdict revision journal: re-audits chain verdict changes into HMAC-signed receipts
+  ([#129](https://github.com/aneesh2411/subpoena/issues/129)).
+- 61 golden scenarios at 96.7% strict accuracy, 500-call fuzzing, naive baseline,
+  ablations. Identity-labelled (v2 semantic) scoring runs over both the golden set
+  and the fuzzer, beside the positional headline.
+- Claim accuracy by claim type on the evals page ([#193](https://github.com/aneesh2411/subpoena/issues/193)).
+- FastAPI service, CLI demo, single-page replay view with 62 sealed demo audits.
+- 905 tests, lint clean.
 
 Not done:
 
@@ -66,14 +69,16 @@ fail to reproduce, and the eval still passes.
 
 ## Later: make it a product (v0.4+)
 
-1. **Remediation queue.** Each discrepancy becomes a task with an owner and a one-step fix.
-2. **Agent scorecards over time.** Honesty rate per agent version, per claim type. Catch a
-   regression the day a prompt changes.
+1. **Remediation queue.** **Done** for the ops demo ([#191](https://github.com/aneesh2411/subpoena/issues/191)):
+   ranked repair tasks with suggested fixes and resolution state.
+2. **Agent scorecards over time.** **Done** for trends from committed eval history
+   ([#192](https://github.com/aneesh2411/subpoena/issues/192)). Per-agent-version honesty
+   trends are open ([#218](https://github.com/aneesh2411/subpoena/issues/218)).
 3. **Alerting.** Critical findings to the on-call human within a minute.
 4. **Multi-tenant auth, roles, retention policy** for transcripts and patient data.
 5. **More claim types**: payments taken, prescriptions refilled, records updated.
-6. **Structured topics for handoffs**, to compare ticket content without a model on the
-   verdict path.
+6. **Structured topics for handoffs.** **Done** ([#181](https://github.com/aneesh2411/subpoena/issues/181)):
+   compare ticket content without a model on the verdict path.
 
 ## Web console plan
 
