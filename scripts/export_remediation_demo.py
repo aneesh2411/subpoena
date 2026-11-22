@@ -240,7 +240,7 @@ def recheck_html(scenario_id: str, original: AuditReport, report: AuditReport) -
       <h3>{escape(BY_ID[scenario_id].title)}</h3>
       <p>Initially open · {escape(before.status)}</p>
       <p>{escape(before.remediation or "")}</p>
-      <p><strong class="{'closed' if state == 'Closed' else 'open'}">{state}</strong>
+      <p><strong class="{"closed" if state == "Closed" else "open"}">{state}</strong>
         · <strong>{escape(after.status)}</strong></p>
       <p>{escape(after.summary)}</p>
       <p>Re-check evidence · {escape(evidence)}</p>
