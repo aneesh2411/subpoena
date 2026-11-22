@@ -190,6 +190,31 @@ footer { border-top:1px solid var(--line); padding:30px 24px; text-align:center;
     <li>Anything that can answer <b>"what changed between t0 and t1, and who changed it?"</b>
       can sit behind the same reader protocols.</li>
   </ul>
+
+  <h2>The human review queue</h2>
+  <p class="cap">The queue starts with one open item per standalone finding and per
+    <b>MISMATCH</b>, <b>NOT_FOUND</b>, or <b>UNVERIFIABLE</b> verdict in a sealed audit.
+    An auditor can see what still needs follow-up and trace each change in review state
+    back to the original result through hash-chained receipts that record the actor label,
+    reason, and time. <code>src/subpoena/api/review.py</code> defines the items and transitions,
+    and <code>src/subpoena/api/review_store.py</code> stores the receipts in SQLite and
+    replays them to derive the current state.</p>
+
+  <h2>Coverage gaps</h2>
+  <p class="cap">The audit report lists systems that could not be read or whose change history
+    was incomplete for the call window, with the reason and any affected claim IDs.
+    Those claims are <b>UNVERIFIABLE</b>. The list shows an auditor where the evidence
+    was insufficient for a verdict about what happened. <code>src/subpoena/auditor/engine.py</code>
+    collects the gaps and applies the verdict rules, and <code>src/subpoena/auditor/render.py</code>
+    gives the gaps their own section in the Markdown report.</p>
+
+  <h2>The revision journal</h2>
+  <p class="cap">When a repeat audit of the same call changes a claim's verdict status,
+    the journal appends a hash-chained receipt with the claim ID, old and new statuses,
+    a reference to the later audit, and the time. An auditor can trace the change back
+    to the original sealed result and see which audit reached a different verdict.
+    <code>src/subpoena/api/revisions.py</code> defines and verifies the receipts, and
+    <code>src/subpoena/api/store.py</code> records them when it saves the new audit.</p>
 </main>
 
 <footer>
