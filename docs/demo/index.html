@@ -145,10 +145,13 @@ const $ = (id) => document.getElementById(id);
 const STAMP = { VERIFIED: "RECEIPT FOUND", MISMATCH: "RECEIPT DOES NOT MATCH",
   NOT_FOUND: "NO RECEIPT", UNVERIFIABLE: "COULD NOT CHECK" };
 const GROUPS = ["Honest calls", "Dishonest claims", "Edge cases",
-  "System outages", "Multi-intent", "Corrections/sequence"];
+  "System outages", "Multi-intent", "Corrections/sequence",
+  "Known gaps (auditor misses these)", "Arrived via Twilio ingest"];
 let queue = [], timer = null, playing = false, apiKey = null;
 
-function scenarioGroup({ id, title }) {
+function scenarioGroup({ id, title, group }) {
+  if (group === "gap") return "Known gaps (auditor misses these)";
+  if (group === "twilio") return "Arrived via Twilio ingest";
   const keywords = id.replace(/-/g, " ") + " " + title;
   // Specific scenario types take precedence over the broad ID prefixes.
   if (/\b(?:outage|unreachable)\b/i.test(keywords)) return "System outages";
