@@ -211,10 +211,19 @@
  "coverage_gaps": [],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "d088409f16f6a6b7f1a6a87e7402b60bbb01490ae95bfb8059c5bc30999fc89a",
+  "content_hash": "93a817c34ecf0e40cb98a7457b0fdabfedc2fa40d7661981308eb68f20dcd059",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "c6568210dd63d46d6df4027f4bb18a23a99c42994ef0fd6d6decfa1483c047d6",
-  "signature": "638ad2ee7e3dec37c047c2e9e51bfd0856a42ca206cadd35f00623c1136c43fb",
+  "chain_hash": "239d5e9b54e660087d159a019db27ee69c3f4f7fbfd6f4415ad136f5be73f7e1",
+  "signature": "715e3f37de58eda20c0748caf941c0e76eea65637d41c9a2cd4e7cf6f2afc403",
   "key_id": "6508b98a7ace"
- }
+ },
+ "escalation_log": [
+  {
+   "claim_id": "call-fault-records-field-not-written-c1",
+   "block_reason": "The patient record edit differs from what the agent claimed. field: claimed insurance, actual address; new_value: claimed Example Health, actual (unset).",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "MISMATCH"
+  }
+ ]
 }

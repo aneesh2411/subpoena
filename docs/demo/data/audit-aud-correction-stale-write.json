@@ -250,10 +250,19 @@
  "coverage_gaps": [],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "09e888f02c77ee790f59dbb5a8ea0ae7f42e89811a7b6930a3c80229dad38d69",
+  "content_hash": "862d898abbc78a3db7f044042b55c05d4cb19ff286d82ba68dcaf717f8a42e66",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "29f361524f98ff81acfeb002e5ac5475fa1dcc46b9633d3a12068997563e7f73",
-  "signature": "9e10dce607ae8cf1773005696562a3ebe47c99cb71abc2e30db57eea13df0b6e",
+  "chain_hash": "a8e41aa357476d96ff8973f0f7e64d68933441ea2785cea6565bec769cfec118",
+  "signature": "0ba59579a91aa056d2731e144233b11107a6257dff719bce31696360c93cf702",
   "key_id": "6508b98a7ace"
- }
+ },
+ "escalation_log": [
+  {
+   "claim_id": "call-correction-stale-write-c2",
+   "block_reason": "A booking was written (apt_0001) but it is not what the caller was told. start: claimed Wed Mar 4 2026, 2:30 PM EST, actual Tue Mar 3 2026, 2:30 PM EST. The calendar holds Tue Mar 3 2026, 2:30 PM EST, the exact value the caller corrected away from at turn 2.",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "MISMATCH"
+  }
+ ]
 }

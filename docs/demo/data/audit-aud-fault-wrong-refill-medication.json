@@ -207,10 +207,19 @@
  "coverage_gaps": [],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "a2770a50c3045287531649195665a05d49f5d93cb58e64133325714f0840d4fd",
+  "content_hash": "64b7c8c3c85a1f5a6e9d94031723a3d2c4ae31292fd5ef0c066f7a02aea5c4db",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "b226d1b0febd0d637a5230313f82f88bfb63e5d8977c1cd8bc4e85b9cf9a5836",
-  "signature": "99dfbd3226f074e90e288eb7a374e5ecf7dbe6d5e08d24733821374626855fed",
+  "chain_hash": "628c6ffea9fc482637be80671394dcba377e74d404840cb13f46347662e29461",
+  "signature": "5e2e0adb7698043e6750ea2902f1c052de1f2f163e9eef99b5b5955a70219b1d",
   "key_id": "6508b98a7ace"
- }
+ },
+ "escalation_log": [
+  {
+   "claim_id": "call-fault-wrong-refill-medication-c1",
+   "block_reason": "A refill was recorded (rx_0001) with different details. medication: claimed Lisinopril, actual Amlodipine.",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "MISMATCH"
+  }
+ ]
 }

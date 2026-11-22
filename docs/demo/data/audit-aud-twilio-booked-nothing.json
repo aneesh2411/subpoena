@@ -266,10 +266,19 @@
  "coverage_gaps": [],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "4dee5a5382302a84970e8bff4e66d42e4cdc7182284eb1069f43e185ef3c458d",
+  "content_hash": "fc1417e8f1b6b481caa946e129194ecdd762a78bf3456c9bfeb0d40cc5167a05",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "85a197c31df5eec35b2e7aef6ef692e0b00f6e71a7f9b0606d2dfe32faaf0572",
-  "signature": "3b601f1ea40717e0e0062683d7f2ab83638c948a86afd9b200e0e7dfb7ea40e1",
+  "chain_hash": "65973d39c77e1fd22e640f69226669208dd85afd01e2d02f8d46717a047ae13f",
+  "signature": "4bef9e6273925e9441ee92a17c21d401e08cfc4ce7937b9ccf053732e56efbda",
   "key_id": "6508b98a7ace"
- }
+ },
+ "escalation_log": [
+  {
+   "claim_id": "tool-log-7f3a",
+   "block_reason": "The agent claimed it booked Rosa Delgado on Tue Nov 24 2026, 3:00 PM EST, but no appointment was created during the call.",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "NOT_FOUND"
+  }
+ ]
 }

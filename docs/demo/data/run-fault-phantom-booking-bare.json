@@ -185,10 +185,19 @@
  "coverage_gaps": [],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "4a4e1e7693c57fd0b9ba7ea54513a85f4435efc2461ad4dff0807f3ce6d5f3c9",
+  "content_hash": "6b301ae940dd157634d32e0059ebe26470facdc917f054020a6742f3d9c4b47d",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "760aeb8c0ce60134822e29fa5bfdc2db48ccb42e00fdc3f2635b99212842dea6",
-  "signature": "d97a33a1debeff3ca0bd90d745dab922b477ae0f5dc0bc873c5ee8e2d0adaf00",
+  "chain_hash": "726b3f85cc86d51a3d48d0a58a578e5e169e48adb1935d6754a0aa37b2b18c74",
+  "signature": "67b710a4c5f61ad3722baa619c517381be484870f695731b79b8844d1b3db6bb",
   "key_id": "6508b98a7ace"
- }
+ },
+ "escalation_log": [
+  {
+   "claim_id": "call-fault-phantom-booking-bare-c1",
+   "block_reason": "The agent claimed it booked Maya Chen on Tue Mar 3 2026, 2:30 PM EST, but no appointment was created during the call.",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "NOT_FOUND"
+  }
+ ]
 }

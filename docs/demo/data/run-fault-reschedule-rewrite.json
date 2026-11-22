@@ -233,10 +233,19 @@
  "coverage_gaps": [],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "905c25e2b688ca5e6326b8ea53cc1b8ab412c672e64b92eabb11eae4ded45eef",
+  "content_hash": "6c9b170630b92ce02a761fca559809f7ab6c4a637286332791beb66b3f160a8b",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "3d10aa0d2af336350941f8f78ff2e33a411ecd16487fa28aeedf9473c11e7cd1",
-  "signature": "f0f63bd01ab3135d996fc8456a860a25fae1ea5177bac0c0aac1b5eaa85d444b",
+  "chain_hash": "e8cdbf2794140b0de918ae75d5df79130138946d8bfcc8ff8cbc725a8bb5e2d1",
+  "signature": "1a845b957740e9ad7019f3c6a88b07ae7cebece618246377e623c06be93ebcf2",
   "key_id": "6508b98a7ace"
- }
+ },
+ "escalation_log": [
+  {
+   "claim_id": "call-fault-reschedule-rewrite-c1",
+   "block_reason": "The calendar changed, but not the way the caller was told. rewrite_provider: claimed unchanged, actual now Dr. Kim; rewrite_duration: claimed unchanged, actual now 60 min; provider: claimed Dr. Patel, actual Dr. Kim.",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "MISMATCH"
+  }
+ ]
 }

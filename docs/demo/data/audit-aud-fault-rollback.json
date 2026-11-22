@@ -305,10 +305,19 @@
  "coverage_gaps": [],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "51bc158e12fd3e1c146a59da35a5c5d3ce7663b81ea51a8462702f362bf9d067",
+  "content_hash": "5657a0ed67dbb5a9321c545cb40d5e299ae5924626330ccd31e3ccd1b0158b40",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "7d88b8ebc921501cc439c033a0b8d470aadb00d3c980992b7515baf9dbab5b47",
-  "signature": "219619e8026459c375f2f11a2682351a19b8ef9e77aa59872a26f35873a3e671",
+  "chain_hash": "0d9a1e7c9c77c144d6a118b8724c50f65e801f3e2543957c25d3ee84343139e2",
+  "signature": "1b8d6ce70b11bc476d25f5729835c1e27cccdf43d07ceb989f78a6bf6e756076",
   "key_id": "6508b98a7ace"
- }
+ },
+ "escalation_log": [
+  {
+   "claim_id": "call-fault-rollback-c1",
+   "block_reason": "The agent claimed it booked Maya Chen on Tue Mar 3 2026, 2:30 PM EST. An appointment was written and then removed during the call, so nothing is on the books.",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "NOT_FOUND"
+  }
+ ]
 }

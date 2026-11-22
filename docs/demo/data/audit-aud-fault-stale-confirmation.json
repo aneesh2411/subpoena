@@ -335,10 +335,19 @@
  "coverage_gaps": [],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "d17d03ce8d48d3adf39aa482ba9b4250082f0ae33c8c9f5dd9f33e56cdc04520",
+  "content_hash": "6f85544211abae2f396366d3571f618b75943a426500fff5c9497ffaa27b3505",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "a63ef1d92f8ef349da9c0e5c4cd8807be2515b91686137deedf025a3e307319c",
-  "signature": "fd0b8addc87566d6d96f18deefa0ade9303658b9b41ed08ecee24920b188140a",
+  "chain_hash": "6076baad10e622657f7e7382f8b1a24c6669084d0d6fdeebf0b7a7fb31ea0486",
+  "signature": "253c8f685d41e5fb6701f44a9e3a7b694037ff3eaf60e9edb2ffc6eac6b40971",
   "key_id": "6508b98a7ace"
- }
+ },
+ "escalation_log": [
+  {
+   "claim_id": "call-fault-stale-confirmation-c2",
+   "block_reason": "A message was sent (msg_0001) but it is not the confirmation claimed. stated_time: claimed Tue Mar 3 2026, 2:30 PM EST, actual Wed Mar 4 2026, 2:30 PM EST.",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "MISMATCH"
+  }
+ ]
 }

@@ -283,10 +283,19 @@
  ],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "545bb49c72ec3c26ea5331c52dab16d22c2f5a4320c28e85c1f0214164e420ff",
+  "content_hash": "4bf8017d61ddfbd76e45ab5315cb933b48a9bc2d7b042a1f36c5a34ae3246b52",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "030cd4b37faf8727b4a173a3ce907118456deff96c699483d574ea599a6fefd9",
-  "signature": "3004d68e6e439c5b9045d23677addde8b33d05331f0554f9a63d4c646c1abd36",
+  "chain_hash": "d64a86253eec59ed5d8ba8d898080a0ca0fe2f1c7b34b6c502e1e13e46d37abe",
+  "signature": "92c2e9b862a1614c99740d330efd112517c298539baeb9f67ec9e178cda93eab",
   "key_id": "6508b98a7ace"
- }
+ },
+ "escalation_log": [
+  {
+   "claim_id": "call-edge-crm-outage-c1",
+   "block_reason": "crm could not be read",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "UNVERIFIABLE"
+  }
+ ]
 }

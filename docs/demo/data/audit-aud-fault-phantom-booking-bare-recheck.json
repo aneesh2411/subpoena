@@ -230,9 +230,9 @@
  "seal": {
   "algorithm": "sha256",
   "content_hash": "b192ec2fe797c835d2c4a216c7d3a356f9706d0d41a561eb70970b6e6f954768",
-  "prev_hash": "760aeb8c0ce60134822e29fa5bfdc2db48ccb42e00fdc3f2635b99212842dea6",
-  "chain_hash": "99f0a43412cb6e479f135acd7713905ed564c58df7cf6f01daa6b752ca10b9ee",
-  "signature": "f3ee5417b3f142484abbe1dc905435161df6dddd0207ca64d1d9f3fa8d20ca60",
+  "prev_hash": "726b3f85cc86d51a3d48d0a58a578e5e169e48adb1935d6754a0aa37b2b18c74",
+  "chain_hash": "af9397c30fc7bab3fa4eefc7e858adb17eb9566144442f7aed369e0eaa6a520b",
+  "signature": "63d7d58fba63143c77a8151988197236972bde465bd3cb01da57ba09c32858e7",
   "key_id": "6508b98a7ace"
  }
 }

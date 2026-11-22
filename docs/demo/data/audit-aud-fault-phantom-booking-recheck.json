@@ -336,9 +336,9 @@
  "seal": {
   "algorithm": "sha256",
   "content_hash": "802643f5f1e777ef9665ba7966cbf7999cb4179802b551a92ef09319764f4dba",
-  "prev_hash": "9331161c26a3ea53e7d7f43eeb9aadd6d138d578a1bf5990bb51a4a048d626a0",
-  "chain_hash": "9a2fa4109cbb2c2665ee8320c0171d1abd097d0e544d1689250d0ce97dd5a71f",
-  "signature": "693c116263d015005172a02aa8703701983fe9c37bacd3e9a7af3df35ddaf9c7",
+  "prev_hash": "3f4b3c229f47cb6fd8721863a7aa27d11abd700a39f76d1fa6719f538624cffe",
+  "chain_hash": "964ecec21f9af137e3bbeb2dddababeed285f3ebb5cf09c233fcd7f12579c06c",
+  "signature": "ea826c941ca3d43ad5e64cf969ae877de26acfb17ab0bc0cb815c189c3a32a1d",
   "key_id": "6508b98a7ace"
  },
  "escalation_log": [

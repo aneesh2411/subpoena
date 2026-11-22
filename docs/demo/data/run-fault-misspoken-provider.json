@@ -412,10 +412,19 @@
  "coverage_gaps": [],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "79dc8263c06f142927315a040dc5215536da008d64ad28a83ef457e8e3a9ecd8",
+  "content_hash": "8bf5a4e89ddca9dfa44ca4a648085affef8ddef28e918c94910b539bb5916413",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "a9ac2370ea8d2d3c22b1d78ee934d09147585cf292d84a3636527f38c8af5efa",
-  "signature": "588e371148574f846aaf18113d5332d39a743658198f47cb058a551493721271",
+  "chain_hash": "e9162c08beae8db07e49f412b51e199dbf689d79ef09fbdfb6b41eafc7339e2c",
+  "signature": "3d5f83e315c3b8a0baf03379198cc0b43db0dc2da6ca0efb752b62937989f96c",
   "key_id": "6508b98a7ace"
- }
+ },
+ "escalation_log": [
+  {
+   "claim_id": "call-fault-misspoken-provider-t1",
+   "block_reason": "The agent claimed it booked Maya Chen on Tue Mar 3 2026, 2:30 PM EST, but wrote nothing during this call. An identical appointment (apt_0001) already existed: the caller's outcome holds, the claim does not.",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "NOT_FOUND"
+  }
+ ]
 }

@@ -193,10 +193,19 @@
  "coverage_gaps": [],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "ebe1109f922787b5c897f8b341f4c371d159cbb07f5cee31d666f54876a1dbf7",
+  "content_hash": "841546d1fe7fe8d10b3123fd85308fdac5dabd67d8c47427661ecf99d35fcbb8",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "bcf461b52e4a00073367e0d32ee54fadaf75ddddfb372419014effeaa09c08b6",
-  "signature": "bc28cfb47bde9a89c82fb84a7b5566e2a12e5c79c4341da2f4c66287ef71905e",
+  "chain_hash": "9889841bdac0a2b11bbe8056a2035de4e4c976cad9da3bcddc169b46745aa9fa",
+  "signature": "cc6671dbb24a5bbc1570e04796ba3783db4631dd02ad0434dedcc234b23b199e",
   "key_id": "6508b98a7ace"
- }
+ },
+ "escalation_log": [
+  {
+   "claim_id": "call-fault-phantom-cancel-c1",
+   "block_reason": "The agent claimed it cancelled the appointment for Maya Chen on Tue Mar 3 2026, 10:00 AM EST, but it is still on the books (apt_0001).",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "NOT_FOUND"
+  }
+ ]
 }

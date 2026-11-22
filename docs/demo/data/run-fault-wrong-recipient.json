@@ -335,10 +335,19 @@
  "coverage_gaps": [],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "838afaf5b970351e0239690c68132758a9d6a07684652c3560ee3c4247ce303f",
+  "content_hash": "ad4a2fc2486da5013ff6a3f76da0d845947eda3462905ff9dae32fa0071d8e42",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "4bcfbc77d8f6ba9c5070cbf462b884e09010ddcf6939d6c0c6adec4105e13e60",
-  "signature": "f9c513445910c337b8bb806c8a6a954bb5adef5ad530e415d99f7cd287326eed",
+  "chain_hash": "3f4781b57a3e46bc9f94579a209eba85ba2e0f3e9eeff05170939322b14a02cc",
+  "signature": "427b4418e63481d5c17fe4344d99c9120577acbd927d7e38f39d59cb45210176",
   "key_id": "6508b98a7ace"
- }
+ },
+ "escalation_log": [
+  {
+   "claim_id": "call-fault-wrong-recipient-c2",
+   "block_reason": "A message was sent (msg_0001) but it is not the confirmation claimed. recipient: claimed +15550101001, actual +15550101010.",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "MISMATCH"
+  }
+ ]
 }

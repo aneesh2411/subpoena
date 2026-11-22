@@ -294,7 +294,7 @@
   {
    "seq": 5,
    "stage": "claims",
-   "message": "2 structured claim(s); 3 recovered from the transcript, 0 of them never logged by the agent"
+   "message": "2 structured claim(s); 2 recovered from the transcript, 0 of them never logged by the agent"
   },
   {
    "seq": 6,
@@ -341,10 +341,10 @@
  "coverage_gaps": [],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "e5c7c20ce09f85950e31e9ee35264f90b77090cf32b239ecd56155597a20979e",
+  "content_hash": "d02db0bf3496a6764f2a3619b9e2e36678851d0d20572ea7e727bdee88af2bca",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "4bde3afc4f33aef5ea4309485097b8d08d9c6bea64cbda9ed49784e2e5964db0",
-  "signature": "3f377c2425e555355559d9a0db89b0cfe1ff11f87ba558e9c3669e2299b37258",
+  "chain_hash": "990e68565c6c344fb10d018348a23ac1bcb1fd414761e7357eeb3aa45de88d4d",
+  "signature": "d256732c784b51e906679386964d2b449656654feecb1954b66a1a1f03fe7a37",
   "key_id": "6508b98a7ace"
  }
 }

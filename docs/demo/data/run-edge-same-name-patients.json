@@ -168,10 +168,19 @@
  "coverage_gaps": [],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "0b63522d4aba52953847544835d1c6775f61feafb1e562f072365882f8be554d",
+  "content_hash": "9f795f805ac5a14184d867f1a86ffcf76911566431af807776b1a3b4a382d0ff",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "700a7a669bd648562687e9f88c7a68213c10252e8a857711bf283c8ea39f5076",
-  "signature": "8c6901ac8e2bac50e7194c1ce67c1eac5b030bb9bf6c17771b972ef86bac0d55",
+  "chain_hash": "3904b1fee11167ce73713099f86a1b66b1e6742a6ce0f8e207ab2c105d14047e",
+  "signature": "6876281a597ab02b2bc39d589ee1aca58ecbf692661aca1386be0566db9e12a4",
   "key_id": "6508b98a7ace"
- }
+ },
+ "escalation_log": [
+  {
+   "claim_id": "call-edge-same-name-patients-c1",
+   "block_reason": "Could not be checked: 'Maya Chen' matches 2 patient records and no phone number disambiguates them. A guess here could clear a booking made for the wrong person.",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "UNVERIFIABLE"
+  }
+ ]
 }

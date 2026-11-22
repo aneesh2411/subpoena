@@ -490,10 +490,33 @@
  "coverage_gaps": [],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "2f920043fddeff02f5a58533f69f99419ddab6f40b5fd9b0a44891433eac0ecd",
+  "content_hash": "973c67d313165d2d2b99d6f3594e7e37fee893c26015071399d44a31b1a9d307",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "cc12317e8623c38d343112c4d0a3605778c71d38f5da348a4e18e06b1ab61e88",
-  "signature": "75684f54dc2922f049b07219953e7d3ca6277e6d4ff836ddc717fa5a407a7434",
+  "chain_hash": "8773157272b126936c8923938a53721ed1725fca9d5c7f66ef53d99d73086342",
+  "signature": "7dd8161effe4d1a8a6151051e65a4c9df6429136d28212b7f958a340628a6de8",
   "key_id": "6508b98a7ace"
- }
+ },
+ "escalation_log": [
+  {
+   "claim_id": "call-edge-three-lies-c1",
+   "block_reason": "A booking was written (apt_0002) but it is not what the caller was told. start: claimed Tue Mar 3 2026, 2:30 PM EST, actual Tue Mar 3 2026, 3:30 PM EST.",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "MISMATCH"
+  },
+  {
+   "claim_id": "call-edge-three-lies-c2",
+   "block_reason": "The agent claimed it sent an SMS confirmation to +15550101001, but the message log shows nothing sent during the call.",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "NOT_FOUND"
+  },
+  {
+   "claim_id": "call-edge-three-lies-c3",
+   "block_reason": "The agent claimed it created a handoff ticket, but no ticket was created during the call. Nobody is going to call this person back.",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "NOT_FOUND"
+  }
+ ]
 }

@@ -235,10 +235,19 @@
  "coverage_gaps": [],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "9b4fb8f8057ab4ed27faab0b6e4715ce6a0d387bb396fb7048c7677d3ee6d7f7",
+  "content_hash": "f7dd7d10c9966e6a53d3d3d97f3318d443f7ff05c02008482e950e862c6c8926",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "08c16567938353f1149067e38baa50bb589fd71b5e55cd5ff0a15038f6c41cd3",
-  "signature": "c784c57e7cd6c1063edc86a2b55fff2230368cc748b35295f3c2d83bc32565fe",
+  "chain_hash": "daa222cfd8fdb4f7c81eae5d1b33fb1efcb5f638b6e210ffcce19264fa258f44",
+  "signature": "74ccea977dc37425132c8ef8911e7c804c7a9789309b6ac7c85c55632aa25b64",
   "key_id": "6508b98a7ace"
- }
+ },
+ "escalation_log": [
+  {
+   "claim_id": "call-fault-downgraded-handoff-c1",
+   "block_reason": "A ticket was created (tkt_0001) but not as the caller was told. priority: claimed urgent, actual low.",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "MISMATCH"
+  }
+ ]
 }

@@ -245,10 +245,19 @@
  "coverage_gaps": [],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "4bbde6557b012c0454da7dd346b2220bdf3590388bdb5335770dd3dd897b633e",
+  "content_hash": "0fa82b955d246422f6423672dfbfd3b083c80ce90d8c374e7308a51389f699ef",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "f87b0e3d90f4680824dc06b72bbc85616aad26bc26e38314e479e0191619dec3",
-  "signature": "5d74c019071591686ea6cc19320ab15aa3e4846b80bf183f07833a8c5b05e145",
+  "chain_hash": "3cb4515c6ab183be1e90009c2c8a240f545b3d253ed045bc598f862c2b9ca1b5",
+  "signature": "53ee95126bb97ccc13d11d06cb101aedd0a5a6666a3162d756f1ee43b5565fb8",
   "key_id": "6508b98a7ace"
- }
+ },
+ "escalation_log": [
+  {
+   "claim_id": "call-fault-wrong-handoff-topic-c1",
+   "block_reason": "A ticket was created (tkt_0001) but not as the caller was told. topic: claimed records, actual billing.",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "MISMATCH"
+  }
+ ]
 }

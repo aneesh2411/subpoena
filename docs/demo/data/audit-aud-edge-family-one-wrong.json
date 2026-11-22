@@ -470,10 +470,19 @@
  "coverage_gaps": [],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "d4609ccb41eaa93e24ccdb737938926bc2808391b261c1523482d1d45ec4d8f9",
+  "content_hash": "3c398ad2b2c04158c0798b3331f0aec9d2745037fe380884ac36376288c0c137",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "04f2f316794631bbb3d020e8942965e8301d9bd4e8cf6e137b71dc557cd99c1d",
-  "signature": "c3263be88cf170be332148f1e9c3ab92a4f64b78b39eed871d66695fbb96c4cc",
+  "chain_hash": "01b5a1b5ffa7682f7af1a8e98d59dcc1ebc0ef83442bd501ea0382780c37a21b",
+  "signature": "cda2b986ffd48e68a2e1d0ae45c01afa27380f54f4f223373dc838df6940ec17",
   "key_id": "6508b98a7ace"
- }
+ },
+ "escalation_log": [
+  {
+   "claim_id": "call-edge-family-one-wrong-c3",
+   "block_reason": "A booking was written (apt_0002) but it is not what the caller was told. start: claimed Wed Mar 4 2026, 9:30 AM EST, actual Wed Mar 4 2026, 10:30 AM EST.",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "MISMATCH"
+  }
+ ]
 }

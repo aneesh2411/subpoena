@@ -8,7 +8,7 @@
 - Findings beyond claims: 0 | Claim trust score: 100% | Highest severity: `MEDIUM`
 - Audited by `subpoena/0.1.0` at 2026-03-02T09:06:16-05:00
 - Extraction: `rules`
-- Seal: sha256 chain `cc66948be036873e8f5039cc...`, signed (key `6508b98a7ace`)
+- Seal: sha256 chain `d5574912e7dce00bb3a36433...`, signed (key `6508b98a7ace`)
 - Provenance (platform-supplied, unverified): agent `receptionist-sim/0.1.0` | prompt `narrator:standard` | human handoffs: 0
 
 ## Claims
@@ -72,6 +72,6 @@ Some evidence could not be fully observed for this call. Every claim a gap touch
 
 ## Seal
 
-- content `98d21795d295f6a58e7bb03c51e48e1fed1d956cdd203a9a8542c31e7e3f8a66`
-- chain `cc66948be036873e8f5039cc623cbe8d972ae20fbe3b1b699cdfb159de724e59` (prev `0000000000000000...`)
+- content `592007d28f68ff6bb00ba4e72bb090ce6c52c27e02e9994b2c6c591772d9c084`
+- chain `d5574912e7dce00bb3a364331ae0437de0f9cbbf43f0b329e8f966af75ab2b43` (prev `0000000000000000...`)
 - signed (key `6508b98a7ace`)

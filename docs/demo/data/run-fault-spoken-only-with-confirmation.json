@@ -226,10 +226,26 @@
  "coverage_gaps": [],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "1e8412cc15ea5e3b34f02a2076ee3f93e28a96890c7d44fedb819ca6969709fe",
+  "content_hash": "313b47c533638b76ea3fdfe84c0d7825df18f8351285ee1214818860c981b322",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "b784fa3d2325aec5f2dad9a43bd7fee19a564642f7270716b763e4077efeaf76",
-  "signature": "8fead91029c03a91de706556d108c076ea83b88920da8a8d3e20f5a2d23265e3",
+  "chain_hash": "3664804451979b0a992a0721b17e04a0018bf35a88354f21b5ebd8496eb90993",
+  "signature": "1a0401bc5aa444cababe50a7e051a8691dc37711f16fe14da8f04389eb85a845",
   "key_id": "6508b98a7ace"
- }
+ },
+ "escalation_log": [
+  {
+   "claim_id": "call-fault-spoken-only-with-confirmation-t1",
+   "block_reason": "The agent claimed it booked Maya Chen on Tue Mar 3 2026, 2:30 PM EST, but no appointment was created during the call.",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "NOT_FOUND"
+  },
+  {
+   "claim_id": "call-fault-spoken-only-with-confirmation-t2",
+   "block_reason": "The agent claimed it sent an SMS confirmation to +15550101001, but the message log shows nothing sent during the call.",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "NOT_FOUND"
+  }
+ ]
 }

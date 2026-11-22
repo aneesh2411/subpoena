@@ -197,10 +197,19 @@
  "coverage_gaps": [],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "3b7fe3ffdaf3a37c1951ca2c57157f6cc002c31c82651006fc38268c317cb318",
+  "content_hash": "406fbf994efb6416d98924aea8f0176d6d3b25a039256a9fc1cacda6f997fa4f",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "72608bdf7c3663471234e502e1cb8585c60f8f5c92a6d5388cb04f811608add6",
-  "signature": "fccfce3a51bb79d8d240c255006edf4789c2145407213bc380d5d50a3848d467",
+  "chain_hash": "c9fd33c1f49d9ba276f925ea28a1f594c5884aa84b3045a7f096dec19189812b",
+  "signature": "66d72b89f97765c73e2c539e9574ce0bf5faf88c7fe0f4d09b8d06141ac8c3c2",
   "key_id": "6508b98a7ace"
- }
+ },
+ "escalation_log": [
+  {
+   "claim_id": "call-fault-phantom-reschedule-c1",
+   "block_reason": "The agent claimed it moved Maya Chen from Tue Mar 3 2026, 10:00 AM EST to Thu Mar 5 2026, 11:00 AM EST, but nothing was changed during the call.",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "NOT_FOUND"
+  }
+ ]
 }

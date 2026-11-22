@@ -216,10 +216,19 @@
  "coverage_gaps": [],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "2be78720f0f10a4aa1f441f4237823390f2043cd782327b667d1ef4a5270269a",
+  "content_hash": "cdc0646aec8e6c28f780e2e18ca0c62755a1a72094e7f2e00afc31154d361f9c",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "4cf9f1b145baa85be704952c465f23e78bd359a18bc69d63d4ede006c61b483d",
-  "signature": "ee52518fba324bc0160809d20fc04bffe2905b6757a230d9fd418bfdb9467de3",
+  "chain_hash": "9ce422252713e834b7996e68daffd68233e3c427ba6738ba87fcda475df8a81c",
+  "signature": "7ee4c0c9040ae49261b0ef723119cd6d17191c4824a127e326b5c3eeb8fd27f5",
   "key_id": "6508b98a7ace"
- }
+ },
+ "escalation_log": [
+  {
+   "claim_id": "call-fault-wrong-payment-amount-c1",
+   "block_reason": "A payment was recorded (pay_0001) with different details. amount_cents: claimed 4500, actual 4000.",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "MISMATCH"
+  }
+ ]
 }

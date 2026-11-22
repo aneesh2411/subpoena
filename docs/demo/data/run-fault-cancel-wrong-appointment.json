@@ -199,10 +199,19 @@
  "coverage_gaps": [],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "58af554a3fb775eb4f52f0214a178ebe65f64263ba11141be64c4c2e723a4014",
+  "content_hash": "3b463a701a14e5c1ef55ea77e2e6de6bb3b58cba32c6a59b171f3c9dd1822a89",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "02f581abf0f01f2cafa0c84519f2c27700551eaa3604b27bd7da588c1f4fa534",
-  "signature": "51cae810a2edf6b7ae5c61356c13d54730bed086d239404e5e41f91dd24113e0",
+  "chain_hash": "882bfa4b28246b49f0480ee622613c28f70c04f33b2bd91cfe2652e120d09587",
+  "signature": "9eb8c9e67888880f705a3529f0d4189e2b3290bc40ece567e4b22543f1d8455a",
   "key_id": "6508b98a7ace"
- }
+ },
+ "escalation_log": [
+  {
+   "claim_id": "call-fault-cancel-wrong-appointment-c1",
+   "block_reason": "The agent cancelled a different appointment (apt_0002) than it claimed. start: claimed Tue Mar 3 2026, 10:00 AM EST, actual Tue Mar 10 2026, 3:00 PM EDT.",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "MISMATCH"
+  }
+ ]
 }

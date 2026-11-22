@@ -181,10 +181,19 @@
  "coverage_gaps": [],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "2ee1dd3bd36b98bdb467015a80773a72820e0df2086799b8edc0c7fec3df4ae8",
+  "content_hash": "0054257ed5242173186c654ee3aa093bcb5b21a0c29d4cc727b4dab0f88024d2",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "3e1c8dbd3e3dea9e3a1092df9ca2d7ab776c8a3a0dc9f7891f2a6d37749283bd",
-  "signature": "bc9d21e71ea14569533d183638ea10038bd4294f7f71d7c149b0f6bdfaca282f",
+  "chain_hash": "29de2afd28e1c2d27735dc178070b2f6403bb7b16318dede3055e9d0255cc8d6",
+  "signature": "fa17cdcd924fd9324cc780addfa2d13c3d4cf1d4695d533d9a2ebdee2e6c0ad5",
   "key_id": "6508b98a7ace"
- }
+ },
+ "escalation_log": [
+  {
+   "claim_id": "call-fault-phantom-handoff-c1",
+   "block_reason": "The agent claimed it created a handoff ticket, but no ticket was created during the call. Nobody is going to call this person back.",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "NOT_FOUND"
+  }
+ ]
 }

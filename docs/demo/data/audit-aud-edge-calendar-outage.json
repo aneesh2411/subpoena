@@ -283,10 +283,19 @@
  ],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "98d21795d295f6a58e7bb03c51e48e1fed1d956cdd203a9a8542c31e7e3f8a66",
+  "content_hash": "592007d28f68ff6bb00ba4e72bb090ce6c52c27e02e9994b2c6c591772d9c084",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "cc66948be036873e8f5039cc623cbe8d972ae20fbe3b1b699cdfb159de724e59",
-  "signature": "d2da60de195906b940e16cbec6e9c904e1e1e356fd21c315082db2b85fa120e0",
+  "chain_hash": "d5574912e7dce00bb3a364331ae0437de0f9cbbf43f0b329e8f966af75ab2b43",
+  "signature": "ba3b0d9de545ed697a3ac69120d5c7577a52f9590f0a682a6d4f7a6979d0e987",
   "key_id": "6508b98a7ace"
- }
+ },
+ "escalation_log": [
+  {
+   "claim_id": "call-edge-calendar-outage-c1",
+   "block_reason": "calendar could not be read",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "UNVERIFIABLE"
+  }
+ ]
 }

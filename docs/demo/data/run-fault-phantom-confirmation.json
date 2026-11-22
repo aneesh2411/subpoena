@@ -298,10 +298,19 @@
  "coverage_gaps": [],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "e02767db333f87d75b8bfec1fc59d700d981bd3dd3c969edfdadc0b7e74df942",
+  "content_hash": "2bd3c2cc26c8afda952c8c96f4a833f02253bea4ccdbc44bdc78febab97dc577",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "94b150f4c812f3f5ae3ccbece926f61319202a248199abc6099bdc210ea2e85b",
-  "signature": "2c783c0d6cc22e97a165c1839d920619c6d564a1402c51a93e928b5ed6595c5d",
+  "chain_hash": "045d93792e2ee25bab063773e078cfaa84fb26de4be1ba1ae27405f1619d8cc2",
+  "signature": "6bf67471ca1079672a0a8ed8f0b801c12985e079599917ccb021b399839838ee",
   "key_id": "6508b98a7ace"
- }
+ },
+ "escalation_log": [
+  {
+   "claim_id": "call-fault-phantom-confirmation-c2",
+   "block_reason": "The agent claimed it sent an SMS confirmation to +15550101001, but the message log shows nothing sent during the call.",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "NOT_FOUND"
+  }
+ ]
 }

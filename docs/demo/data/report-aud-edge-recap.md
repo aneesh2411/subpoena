@@ -8,7 +8,7 @@
 - Findings beyond claims: 0 | Claim trust score: 100% | Highest severity: `INFO`
 - Audited by `subpoena/0.1.0` at 2026-03-02T09:06:20-05:00
 - Extraction: `rules`
-- Seal: sha256 chain `4bde3afc4f33aef5ea430948...`, signed (key `6508b98a7ace`)
+- Seal: sha256 chain `990e68565c6c344fb10d0183...`, signed (key `6508b98a7ace`)
 - Provenance (platform-supplied, unverified): agent `receptionist-sim/0.1.0` | prompt `narrator:standard` | human handoffs: 0
 
 ## Claims
@@ -70,7 +70,7 @@ None. Every write the agent made is accounted for by a claim.
 2. `evidence` crm: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window
 3. `evidence` messages: 1 write(s) stamped to this call, 0 under the shared agent identity in the call window
 4. `evidence` tickets: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window
-5. `claims` 2 structured claim(s); 3 recovered from the transcript, 0 of them never logged by the agent
+5. `claims` 2 structured claim(s); 2 recovered from the transcript, 0 of them never logged by the agent
 6. `reconcile` call-edge-recap-c1 (AppointmentBooked): exact match -> apt_0001
 7. `reconcile` call-edge-recap-c2 (ConfirmationSent): exact match -> msg_0001
 8. `verdict` call-edge-recap-c1 (AppointmentBooked): VERIFIED
@@ -79,6 +79,6 @@ None. Every write the agent made is accounted for by a claim.
 
 ## Seal
 
-- content `e5c7c20ce09f85950e31e9ee35264f90b77090cf32b239ecd56155597a20979e`
-- chain `4bde3afc4f33aef5ea4309485097b8d08d9c6bea64cbda9ed49784e2e5964db0` (prev `0000000000000000...`)
+- content `d02db0bf3496a6764f2a3619b9e2e36678851d0d20572ea7e727bdee88af2bca`
+- chain `990e68565c6c344fb10d018348a23ac1bcb1fd414761e7357eeb3aa45de88d4d` (prev `0000000000000000...`)
 - signed (key `6508b98a7ace`)

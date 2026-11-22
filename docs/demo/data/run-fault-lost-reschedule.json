@@ -209,10 +209,19 @@
  "coverage_gaps": [],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "f09bb25b5b9157149d7e0315321e506c4115974f46b1441ae1c34a920ee9ffd8",
+  "content_hash": "3f44f713e626f11a4105bd69fd92efd31b642c4bf13c957920b5697cb98dde47",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "3744811b9c5312926ce129e9150231b86399ac0bcb3ea21fbf721a3e4d16f784",
-  "signature": "9fd7e2630358fafa8f875e28517e766c12a4fc1e4b329042dc6718586490f42c",
+  "chain_hash": "2da7874a9edf141557738054275faca170d8621d34c1f477cf8ec5b9a1a2ae00",
+  "signature": "51667fcab672aaa337c4f83a740414d96d51830d5617077a5764f54aceb6cbaf",
   "key_id": "6508b98a7ace"
- }
+ },
+ "escalation_log": [
+  {
+   "claim_id": "call-fault-lost-reschedule-c1",
+   "block_reason": "The calendar changed, but not the way the caller was told. new_appointment: claimed Thu Mar 5 2026, 11:00 AM EST, actual none created.",
+   "candidate_count": 0,
+   "score_spread": null,
+   "disposition": "MISMATCH"
+  }
+ ]
 }
