@@ -12,8 +12,9 @@ BASE = BY_ID["clean-urgent-handoff"]
 
 
 def _with(followups, audit_delay_min=60):
-    return replace(BASE, id=f"{BASE.id}-followup", followups=followups,
-                   audit_delay_min=audit_delay_min)
+    return replace(
+        BASE, id=f"{BASE.id}-followup", followups=followups, audit_delay_min=audit_delay_min
+    )
 
 
 def test_no_followups_leaves_the_promise_recorded() -> None:

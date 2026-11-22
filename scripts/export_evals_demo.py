@@ -147,9 +147,9 @@ def table(title: str, columns: tuple[str, ...], rows: list[tuple[str, ...]]) -> 
         '  <section class="panel">\n'
         f"    <h2>{title}</h2>\n"
         f'    <div class="table-scroll" tabindex="0" role="region" aria-label="{title}">\n'
-        "      <table role=\"table\">\n"
-        f"        <thead role=\"rowgroup\"><tr role=\"row\">{heading}</tr></thead>\n"
-        "        <tbody role=\"rowgroup\">\n" + "\n".join(body) + "\n"
+        '      <table role="table">\n'
+        f'        <thead role="rowgroup"><tr role="row">{heading}</tr></thead>\n'
+        '        <tbody role="rowgroup">\n' + "\n".join(body) + "\n"
         "        </tbody>\n"
         "      </table>\n"
         "    </div>\n"

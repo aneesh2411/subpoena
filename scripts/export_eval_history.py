@@ -22,9 +22,16 @@ def git(*args: str) -> str:
 
 def snapshots() -> Iterator[dict]:
     history = git(
-        "log", "--full-history", "--diff-merges=dense-combined",
-        "--format=%x1e%H %ct", "--name-only", "--no-renames", "--diff-filter=AMT",
-        "--", "evals/results/*.json", "evals/scorecards/*.json",
+        "log",
+        "--full-history",
+        "--diff-merges=dense-combined",
+        "--format=%x1e%H %ct",
+        "--name-only",
+        "--no-renames",
+        "--diff-filter=AMT",
+        "--",
+        "evals/results/*.json",
+        "evals/scorecards/*.json",
     )
     commits = []
     for record in history.split("\x1e")[1:]:

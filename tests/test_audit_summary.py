@@ -33,8 +33,7 @@ def reports(tmp_path):
 def assert_counts(output):
     assert b"Total reports: 3\n" in output
     assert (
-        b"## Verdict statuses\n\n"
-        b"- VERIFIED: 6\n- MISMATCH: 1\n- NOT_FOUND: 0\n- UNVERIFIABLE: 0\n"
+        b"## Verdict statuses\n\n- VERIFIED: 6\n- MISMATCH: 1\n- NOT_FOUND: 0\n- UNVERIFIABLE: 0\n"
     ) in output
     assert (
         b"## Finding codes\n\n- outside_business_hours: 1\n- unclaimed_appointment_created: 1\n"
