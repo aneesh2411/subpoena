@@ -5,19 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Eval history · Subpoena</title>
   <style>
-    :root { color-scheme: light; font: 1rem/1.55 system-ui, sans-serif; color: #182731; }
-    body { margin: 0; background: #f3f6f8; }
+    :root {
+      --desk: #14161a; --panel: #1c1f26; --line: #2c313c; --ink: #e8e6df; --dim: #8b919e;
+      --accent: #4f8cff; --scorecards: #f59b70; --grid: #444b59;
+      color-scheme: dark; font: 1rem/1.55 system-ui, sans-serif; color: var(--ink);
+    }
+    body { margin: 0; background: var(--desk); }
     main { max-width: 60rem; margin: 0 auto; padding: clamp(1rem, 5vw, 3rem); }
     h1 { margin: 0 0 .35rem; font-size: clamp(2rem, 5vw, 3.25rem); line-height: 1.1; }
     p { max-width: 64ch; }
-    a { color: #0b5d83; }
-    figure { margin: 1.75rem 0; padding: 1rem; background: white; border: 1px solid #cddae1;
+    a { color: var(--accent); }
+    figure { margin: 1.75rem 0; padding: 1rem; background: var(--panel); border: 1px solid var(--line);
       border-radius: .7rem; }
     .plot { overflow-x: auto; }
     svg { display: block; width: 100%; min-width: 35rem; height: auto; }
-    svg text { font: 14px system-ui, sans-serif; fill: #344754; }
-    circle:focus { stroke: #182731; stroke-width: 3; }
-    figcaption { padding: .4rem .5rem; color: #344754; }
+    svg text { font: 14px system-ui, sans-serif; fill: var(--dim); }
+    circle:focus { stroke: var(--ink); stroke-width: 3; }
+    figcaption { padding: .4rem .5rem; color: var(--dim); }
     #detail { min-height: 1.6em; margin: .25rem .5rem; }
     .key { display: inline-block; margin-right: 1rem; }
     .snapshot-picker { display: none; }
@@ -45,8 +49,8 @@
     the strict scorer. The golden set changed over time, so the scenario counts can differ.</p>
   <figure>
     <figcaption>
-      <span class="key" style="--color: #125d91">Eval results</span>
-      <span class="key" style="--color: #a04122">Certification scorecards</span>
+      <span class="key" style="--color: var(--accent)">Eval results</span>
+      <span class="key" style="--color: var(--scorecards)">Certification scorecards</span>
     </figcaption>
     <div class="plot">
       <svg id="chart" viewBox="0 0 860 380" role="group" aria-labelledby="chart-title">
@@ -82,7 +86,7 @@
       date(point.commit_time), point.commit.slice(0, 12)
     ].join(" · ");
   }
-  const colors = {results: "#125d91", scorecards: "#a04122"};
+  const colors = {results: "var(--accent)", scorecards: "var(--scorecards)"};
   const labels = {results: "Eval results", scorecards: "Certification scorecards"};
 
   function draw(tag, attrs, label, parent = chart) {
@@ -108,21 +112,21 @@
 
     for (let tick = 0; tick <= 100; tick += 25) {
       const row = y(tick / 100);
-      draw("line", {x1: left, x2: right, y1: row, y2: row, stroke: "#ccd8de"});
+      draw("line", {x1: left, x2: right, y1: row, y2: row, stroke: "var(--grid)"});
       draw("text", {x: left - 10, y: row + 5, "text-anchor": "end"}, tick + "%");
     }
     if (!compact) {
       draw("text", {x: 22, y: 155, transform: "rotate(-90 22 155)", "text-anchor": "middle"},
         "Strict accuracy (%)");
     }
-    draw("line", {x1: left, x2: left, y1: top, y2: bottom, stroke: "#657781"});
-    draw("line", {x1: left, x2: right, y1: bottom, y2: bottom, stroke: "#657781"});
+    draw("line", {x1: left, x2: left, y1: top, y2: bottom, stroke: "var(--dim)"});
+    draw("line", {x1: left, x2: right, y1: bottom, y2: bottom, stroke: "var(--dim)"});
 
     const ticks = start === end ? [start] : compact ? [start, end] : [start, (start + end) / 2, end];
     for (const time of ticks) {
       const col = x(time);
       const iso = date(time);
-      draw("line", {x1: col, x2: col, y1: bottom, y2: bottom + 6, stroke: "#657781"});
+      draw("line", {x1: col, x2: col, y1: bottom, y2: bottom + 6, stroke: "var(--dim)"});
       let anchor = "middle";
       if (compact && start !== end) anchor = time === start ? "start" : "end";
       draw("text", {x: col, y: bottom + 24, "text-anchor": anchor}, iso.slice(0, 10));
