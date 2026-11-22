@@ -1,6 +1,7 @@
 """HTTP API.
 
 Core:
+    POST /ingest/calls           receive a signed end-of-call webhook
     POST /calls                  ingest a call (transcript + claims)
     POST /audit                  audit a stored or inline call against the system of record
     POST /audit/{id}/claims/{claim_id}/recheck   re-check a sealed claim
@@ -34,9 +35,11 @@ from typing import Annotated, Any
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, ValidationError, model_validator
+from starlette.concurrency import run_in_threadpool
 
 from subpoena import __version__
+from subpoena.api.ingest import parse_delivery
 from subpoena.api.repair_queue import build_repair_queue
 from subpoena.api.review import Hash, ReviewError, TransitionRequest
 from subpoena.api.scorecard import build_scorecards
@@ -69,14 +72,18 @@ class Settings:
     demo: bool = True
     critical_webhook_url: str | None = field(default=None, repr=False)
 
+    ingest_secret: bytes | None = field(default=None, repr=False)
+
     @classmethod
     def from_env(cls) -> Settings:
         key = os.environ.get("SUBPOENA_SIGNING_KEY")
+        ingest_secret = os.environ.get("SUBPOENA_INGEST_SECRET")
         return cls(
             db_path=os.environ.get("SUBPOENA_DB", ":memory:"),
             sor_path=os.environ.get("SUBPOENA_SOR_DB", ":memory:"),
             api_key=os.environ.get("SUBPOENA_API_KEY") or None,
             signing_key=key.encode() if key else None,
+            ingest_secret=ingest_secret.encode() if ingest_secret else None,
             demo=os.environ.get("SUBPOENA_DEMO", "1") != "0",
             critical_webhook_url=os.environ.get("SUBPOENA_CRITICAL_WEBHOOK_URL") or None,
         )
@@ -200,6 +207,62 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if not store().save_call(call):
             raise HTTPException(409, f"call {call.call_id} already exists")
         return _ok({"call_id": call.call_id, "claims": len(call.claims)}, 201)
+
+    @app.post("/ingest/calls", status_code=201, responses={200: {"description": "Repeat delivery"}})
+    async def ingest_delivery(
+        request: Request, x_subpoena_signature: Annotated[str | None, Header()] = None
+    ) -> JSONResponse:
+        """Receive an end-of-call webhook as UTF-8 JSON.
+
+        Set SUBPOENA_INGEST_SECRET to the shared secret. Send the lowercase hexadecimal
+        HMAC-SHA256 of the exact request body in X-Subpoena-Signature.
+
+        All top-level fields shown below are required. Timestamps use RFC 3339 with
+        a timezone. Transcript turns use zero-based indices and the speaker is
+        "caller" or "agent". Turns are ordered by time within the call window.
+        An empty transcript and an empty metadata object are valid.
+
+        ```json
+        {
+          "platform": "voice-platform",
+          "call_id": "external-42",
+          "agent_id": "scheduling",
+          "started_at": "2026-11-22T15:00:00Z",
+          "ended_at": "2026-11-22T15:01:00Z",
+          "transcript": [
+            {"index": 0, "speaker": "caller", "text": "Hello", "at": "2026-11-22T15:00:05Z"}
+          ],
+          "metadata": {"caller": {"name": "Example Caller"}, "agent_version": "1"}
+        }
+        ```
+
+        Optional metadata fields include caller (name and optional phone), agent_version,
+        model and prompt_version. Other metadata is retained in the audit payload.
+        The response contains the internal call_id for use with GET /calls/{call_id} or
+        POST /audit. The first delivery receives 201. Valid repeats for the same platform
+        and external call ID receive 200 with the original internal ID.
+        """
+        secret = settings.ingest_secret
+        if not secret or not x_subpoena_signature:
+            raise HTTPException(401, "missing or invalid X-Subpoena-Signature")
+        body = await request.body()
+        expected = hmac.digest(secret, body, "sha256").hex().encode("ascii")
+        if not hmac.compare_digest(x_subpoena_signature.encode("latin-1"), expected):
+            raise HTTPException(401, "missing or invalid X-Subpoena-Signature")
+        try:
+            delivery, call = parse_delivery(body)
+        except ValidationError as exc:
+            problems = "; ".join(
+                f"{'.'.join(str(p) for p in error['loc']) or 'body'}: {error['msg']}"
+                for error in exc.errors(include_input=False, include_context=False)
+            )
+            return _fail(f"invalid call delivery: {problems}", 422)
+        except (ValueError, RecursionError):
+            return _fail("invalid call delivery: expected valid UTF-8 JSON", 400)
+        call_id, created = await run_in_threadpool(
+            store().save_call_delivery, delivery.platform, delivery.call_id, call, body
+        )
+        return _ok({"call_id": call_id}, 201 if created else 200)
 
     @app.get("/calls/{call_id}", dependencies=guarded)
     def get_call(call_id: str) -> JSONResponse:

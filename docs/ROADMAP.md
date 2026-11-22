@@ -58,8 +58,9 @@ fail to reproduce, and the eval still passes.
    alone is correlation, never attribution. Attribution strength is explicit
    (direct / sole / ambiguous / foreign), ambiguous matches cannot verify, and one
    mutation cannot independently verify two calls.
-4. **Ingest from voice platforms.** Webhook receivers that turn a platform's end-of-call
-   payload into a `CallRecord`.
+4. **Ingest from voice platforms.** **Done** ([#242](https://github.com/aneesh2411/subpoena/issues/242)).
+   The signed `POST /ingest/calls` webhook turns a generic end-of-call payload into a
+   `CallRecord` and retains the original request for audit.
 5. **Fuzz multi-intent and multi-fault calls.** **Done**
    ([#38](https://github.com/aneesh2411/subpoena/issues/38)): about 30% of fuzzed calls
    chain two or three distinct intents with a fault drawn per step, so honest and

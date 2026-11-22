@@ -15,6 +15,10 @@ from subpoena.models import AuditReport, CallRecord
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS calls(call_id TEXT PRIMARY KEY, body TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS call_deliveries(
+    platform TEXT NOT NULL, external_call_id TEXT NOT NULL,
+    call_id TEXT NOT NULL UNIQUE REFERENCES calls(call_id), raw_body BLOB NOT NULL,
+    PRIMARY KEY(platform, external_call_id));
 CREATE TABLE IF NOT EXISTS audits(
     seq INTEGER PRIMARY KEY AUTOINCREMENT, audit_id TEXT NOT NULL UNIQUE,
     call_id TEXT NOT NULL, chain_hash TEXT NOT NULL, body TEXT NOT NULL);
@@ -48,6 +52,28 @@ class AuditStore:
                 (call.call_id, call.model_dump_json()),
             )
             return cur.rowcount == 1
+
+    def save_call_delivery(
+        self, platform: str, external_call_id: str, call: CallRecord, body: bytes
+    ) -> tuple[str, bool]:
+        """Store the first delivery and its call atomically, returning (call_id, created)."""
+        with self._lock, write_transaction(self._conn):
+            existing = self._conn.execute(
+                "SELECT call_id FROM call_deliveries WHERE platform = ? AND external_call_id = ?",
+                (platform, external_call_id),
+            ).fetchone()
+            if existing is not None:
+                return existing[0], False
+            self._conn.execute(
+                "INSERT INTO calls(call_id, body) VALUES (?, ?)",
+                (call.call_id, call.model_dump_json()),
+            )
+            self._conn.execute(
+                "INSERT INTO call_deliveries(platform, external_call_id, call_id, raw_body) "
+                "VALUES (?, ?, ?, ?)",
+                (platform, external_call_id, call.call_id, body),
+            )
+        return call.call_id, True
 
     def get_call(self, call_id: str) -> CallRecord | None:
         with self._lock:
