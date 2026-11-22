@@ -29,7 +29,10 @@ def landing_stats() -> list[tuple[str, str]]:
     )
     if block is None:
         raise ValueError("Missing landing stats block in docs/index.html")
-    rows = re.findall(r'<div class="stat"><b>([^<]+)</b><span>([^<]+)</span></div>', block[1])
+    rows = re.findall(
+        r'<div class="stat"><b>([^<]+)</b><span>(?:<a href="[^"]+">)?([^<]+)(?:</a>)?</span></div>',
+        block[1],
+    )
     if len(rows) != 6:
         raise ValueError(f"Expected six landing stats in docs/index.html, found {len(rows)}")
     return [(unescape(value), unescape(label)) for value, label in rows]
@@ -59,7 +62,11 @@ def render_png() -> bytes:
         y = 302 + row * 136
         draw.rounded_rectangle((x, y, x + 340, y + 118), radius=12, fill="#eae4d7")
         draw.text((x + 16, y + 9), value, font=value_font, fill="#2457a4")
-        draw.text((x + 16, y + 81), label, font=label_font, fill=INK)
+        first_line, separator, rest = label.partition(" · ")
+        caption = f"{first_line}\n{rest}" if separator else label
+        draw.multiline_text(
+            (x + 16, y + (70 if separator else 81)), caption, font=label_font, fill=INK, spacing=2
+        )
 
     buffer = io.BytesIO()
     image.save(buffer, format="PNG", compress_level=9)

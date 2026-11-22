@@ -111,6 +111,7 @@ h2 { font:700 30px var(--mono); letter-spacing:.06em; margin:0 0 8px; }
 .stat { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:24px; text-align:center; }
 .stat b { display:block; font:700 34px var(--mono); color:var(--accent); }
 .stat span { color:var(--dim); font-size:13px; }
+.stat span a { text-decoration:underline; }
 
 .arch { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:26px;
   overflow-x:auto; }
@@ -242,10 +243,10 @@ footer a { margin:0 10px; }
     proves the auditor finds it - deterministically.</p>
   <div class="stats">
     <!-- metrics:landing-stats:start -->
-    <div class="stat"><b>67</b><span>golden scenarios</span></div>
+    <div class="stat"><b>97.0%</b><span>sealed strict accuracy · 67 golden scenarios</span></div>
+    <div class="stat"><b>99.8%</b><span><a href="https://github.com/aneesh2411/subpoena/blob/main/docs/FAILURE_ANALYSIS.md">fuzz strict accuracy · 500 generated calls · seed 7</a></span></div>
     <div class="stat"><b>26</b><span>fault modes</span></div>
-    <div class="stat"><b>1024</b><span>tests green</span></div>
-    <div class="stat"><b>97.0%</b><span>strict accuracy, sealed in a scorecard</span></div>
+    <div class="stat"><b>1025</b><span>tests green</span></div>
     <div class="stat"><b>70</b><span>sealed demo audits</span></div>
     <div class="stat"><b>Nov 22</b><span>eval run</span></div>
 <!-- metrics:landing-stats:end -->

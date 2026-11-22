@@ -197,6 +197,7 @@ def fa_ablations_block(results: dict) -> str:
 
 def landing_stats_block(results: dict, scorecard: dict) -> str:
     golden = results["golden"]
+    fuzz = results["fuzz"]
     strict = scorecard["golden"]["call_strict_accuracy"]
     if strict != golden["call_strict_accuracy"]:
         raise RuntimeError(
@@ -208,10 +209,14 @@ def landing_stats_block(results: dict, scorecard: dict) -> str:
     certified_at = datetime.fromisoformat(scorecard["certified_at"])
     month = MONTH_ABBREVIATIONS[certified_at.month - 1]
     stats = [
-        (str(golden["calls"]), "golden scenarios"),
+        (pct(strict), f"sealed strict accuracy · {golden['calls']} golden scenarios"),
+        (
+            pct(fuzz["call_strict_accuracy"]),
+            '<a href="https://github.com/aneesh2411/subpoena/blob/main/docs/FAILURE_ANALYSIS.md">'
+            f"fuzz strict accuracy · {fuzz['calls']} generated calls · seed {fuzz['seed']}</a>",
+        ),
         (str(fault_mode_count()), "fault modes"),
         (str(test_count()), "tests green"),
-        (pct(strict), "strict accuracy, sealed in a scorecard"),
         (str(sealed_demo_audits), "sealed demo audits"),
         (f"{month} {certified_at.day}", "eval run"),
     ]

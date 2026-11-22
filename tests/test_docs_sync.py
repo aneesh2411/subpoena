@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -29,3 +30,21 @@ def test_landing_stats_include_sealed_demo_audit_count():
     )[0]
     count = sum(path.is_file() for path in (ROOT / "docs/demo/data").glob("audit-*.json"))
     assert f'<div class="stat"><b>{count}</b><span>sealed demo audits</span></div>' in stats
+
+
+def test_landing_stats_include_linked_fuzz_strict_accuracy():
+    fuzz = json.loads((ROOT / "evals/results/latest.json").read_text())["fuzz"]
+    landing = (ROOT / "docs/index.html").read_text()
+    stats = landing.split("<!-- metrics:landing-stats:start -->", 1)[1].split(
+        "<!-- metrics:landing-stats:end -->", 1
+    )[0]
+    accuracy = f"{fuzz['call_strict_accuracy']:.1%}"
+    if fuzz["call_strict_accuracy"] in (0, 1):
+        accuracy = accuracy.replace(".0%", "%")
+    assert stats.count('<div class="stat">') == 6
+    assert (
+        f'<div class="stat"><b>{accuracy}</b><span>'
+        '<a href="https://github.com/aneesh2411/subpoena/blob/main/docs/FAILURE_ANALYSIS.md">'
+        f"fuzz strict accuracy · {fuzz['calls']} generated calls · seed {fuzz['seed']}</a>"
+        "</span></div>"
+    ) in stats
