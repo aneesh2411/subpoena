@@ -14,6 +14,8 @@ from dataclasses import replace
 
 from subpoena.models import PatientRef, VerdictStatus
 from subpoena.scenarios.world import (
+    BASELINE_AGENT,
+    CHATTY_AGENT,
     DANIEL,
     KIM,
     LEO,
@@ -1283,6 +1285,50 @@ GOLDEN: tuple[Scenario, ...] = tuple(
 )
 BY_ID: dict[str, Scenario] = {s.id: s for s in GOLDEN}
 HERO = "edge-three-lies"
+
+# The chatty version keeps each caller script and starting world. These two
+# writes now land at the requested time. The spoken-only booking promises
+# still have no backing write, but omit the exact time in this version.
+_CHATTY_OVERRIDES = {
+    "fault-wrong-time": {
+        "faults": {},
+        "expected_claims": ((B, V), (C, V)),
+    },
+    "fault-reschedule-wrong-time": {
+        "faults": {},
+        "expected_claims": ((R, V),),
+    },
+    **{
+        scenario_id: {
+            "hard_phrasing": True,
+            "known_gap": "The booking promise omits the exact time the rules need.",
+        }
+        for scenario_id in ("fault-spoken-only", "fault-spoken-only-with-confirmation")
+    },
+}
+
+
+def _chatty(scenario: Scenario) -> Scenario:
+    variant = replace(
+        scenario, agent_version=CHATTY_AGENT, **_CHATTY_OVERRIDES.get(scenario.id, {})
+    )
+    # The version changes the backing writes and the phrasing, while the claims
+    # still refer to the same appointments and messages.
+    return replace(
+        variant,
+        expected_claims_v2=tuple(
+            (claim_type, status, identity)
+            for (claim_type, status), (_, _, identity) in zip(
+                variant.expected_claims, scenario.expected_claims_v2, strict=True
+            )
+        ),
+    )
+
+
+GOLDEN_BY_AGENT_VERSION = {
+    BASELINE_AGENT: GOLDEN,
+    CHATTY_AGENT: tuple(_chatty(scenario) for scenario in GOLDEN),
+}
 
 if len(BY_ID) != len(GOLDEN):  # pragma: no cover - guards against a copy-paste id clash
     raise RuntimeError("duplicate scenario id in the golden dataset")

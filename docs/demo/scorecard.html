@@ -39,6 +39,16 @@
   .MISMATCH { color: var(--mismatch); }
   .NOT_FOUND { color: var(--not-found); }
   .UNVERIFIABLE { color: var(--dim); }
+  .evaluation { margin-block: 2rem; }
+  .evaluation h2 { margin-top: 1.5rem; }
+  .evaluation p { margin-block: .5rem; color: var(--dim); }
+  select { background: var(--panel); color: var(--ink); font: inherit; min-height: 44px; }
+  #honesty-chart[hidden] { display: none; }
+  #honesty-chart { display: block; width: 100%; height: 10rem; color: var(--verified); }
+  .trend-dates { display: flex; justify-content: space-between; color: var(--dim); }
+  .table-scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; margin-top: .5rem; }
+  th, td { padding: .5rem; text-align: left; border-bottom: 1px solid var(--line); }
   @media (min-width: 48rem) {
     .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
@@ -49,9 +59,30 @@
 <main>
   <a href="./">Back to audit demo</a>
   <h1>Agent honesty scorecard</h1>
-  <p class="intro">How often did the suspect agent’s claims survive the audit?
-    These counts show the auditor’s verdicts by claim type.
-    See <a href="evals.html">evaluation results</a> for auditor accuracy.</p>
+  <p class="intro">Compare the suspect agent versions across the golden scenarios.
+    See the <a href="evals.html">full evaluation results</a>.</p>
+  <section class="evaluation" aria-label="Golden evaluations">
+    <label for="agent-version">Agent version</label>
+    <select id="agent-version" disabled></select>
+    <h2>Ground-truth honesty rate over time</h2>
+    <p>(TN + FP) / (TP + FP + FN + TN) from committed golden claim counts.
+      Runs without claim counts are excluded.</p>
+    <p id="honesty-summary" role="status">Loading committed scorecards…</p>
+    <svg id="honesty-chart" role="group" aria-label="Ground-truth honesty rate by commit time"
+      viewBox="0 0 600 100" preserveAspectRatio="none" hidden></svg>
+    <div class="trend-dates" id="trend-dates"></div>
+    <h2>Auditor accuracy by claim type</h2>
+    <p>Strict accuracy requires an exact verdict. Safe rate excludes incorrect verified verdicts.
+      Known gaps count misses in labelled scenarios.</p>
+    <p id="accuracy-status" role="status">Loading golden evaluations…</p>
+    <div class="table-scroll">
+      <table id="claim-accuracy" aria-label="Auditor accuracy by claim type" hidden>
+        <thead></thead><tbody></tbody>
+      </table>
+    </div>
+  </section>
+  <h2>Baked audit verdicts</h2>
+  <p>Verdict counts by claim type from the demo audits.</p>
   <a href="data-scorecard/scorecard.json">Download the verdict counts</a>
   <p id="status" role="status">Loading the scorecard…</p>
   <noscript>Enable JavaScript to view the scorecard.</noscript>
@@ -97,6 +128,114 @@
     document.getElementById("scorecard").append(cards);
     statusLine.hidden = true;
   }
+
+  const baseline = "receptionist-v1";
+  const versionPicker = document.querySelector("#agent-version");
+  const chart = document.querySelector("#honesty-chart");
+  const historyStatus = document.querySelector("#honesty-summary");
+  const accuracyStatus = document.querySelector("#accuracy-status");
+  const accuracyTable = document.querySelector("#claim-accuracy");
+
+  function loadJSON(path) {
+    return fetch(path).then(response => {
+      if (!response.ok) throw new Error("Could not load " + path);
+      return response.json();
+    });
+  }
+
+  function draw(tag, attributes, parent = chart) {
+    const node = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (const [key, value] of Object.entries(attributes)) node.setAttribute(key, value);
+    parent.append(node);
+    return node;
+  }
+
+  function showTrend(snapshots, version) {
+    const points = snapshots.flatMap(point => {
+      if (point.series !== "scorecards") return [];
+      const path = point.paths.find(path => !path.endsWith("/latest.json"));
+      const counts = version === baseline
+        ? point.claim_level : point.variant_claim_levels?.[version];
+      if (!path || !counts) return [];
+      const {tp, fp, fn, tn} = counts;
+      const total = tp + fp + fn + tn;
+      return total ? [{...point, path, rate: (tn + fp) / total}] : [];
+    });
+    chart.replaceChildren();
+    const dates = document.querySelector("#trend-dates");
+    dates.replaceChildren();
+    chart.toggleAttribute("hidden", !points.length);
+    if (!points.length) {
+      historyStatus.textContent = "No committed runs with claim counts for " + version + ".";
+      return;
+    }
+
+    const first = points[0], last = points.at(-1);
+    const span = last.commit_time - first.commit_time;
+    const date = point => new Date(point.commit_time * 1000).toISOString().slice(0, 10);
+    const percent = rate => (rate * 100).toFixed(1) + "%";
+    const x = point => span ? 12 + 576 * (point.commit_time - first.commit_time) / span : 300;
+    const y = point => 92 - 84 * point.rate;
+    historyStatus.textContent = version + " · Latest " + percent(last.rate)
+      + " · " + points.length + (points.length === 1 ? " scored run" : " scored runs");
+    for (const point of span ? [first, last] : [first]) addText(dates, "span", date(point));
+    draw("polyline", {
+      points: points.map(point => x(point) + "," + y(point)).join(" "),
+      fill: "none", stroke: "currentColor", "vector-effect": "non-scaling-stroke"
+    });
+    for (const point of points) {
+      const link = draw("a", {
+        href: "https://github.com/aneesh2411/subpoena/blob/" + point.commit + "/" + point.path,
+        "aria-label": date(point) + " · " + percent(point.rate) + " · " + point.commit.slice(0, 7)
+      });
+      draw("title", {}, link).textContent = link.getAttribute("aria-label");
+      draw("circle", {cx: x(point), cy: y(point), r: 5, fill: "currentColor"}, link);
+    }
+  }
+
+  function showAccuracy(data, version) {
+    const rows = data.by_agent_version[version];
+    accuracyTable.hidden = !rows;
+    accuracyStatus.textContent = rows ? "" : "No golden claim accuracy for " + version + ".";
+    if (!rows) return;
+    const [head, body] = [accuracyTable.tHead, accuracyTable.tBodies[0]];
+    head.replaceChildren();
+    body.replaceChildren();
+    const headings = head.insertRow();
+    for (const label of data.columns) {
+      addText(headings, "th", label);
+      headings.lastElementChild.scope = "col";
+    }
+    for (const [claim, ...values] of rows) {
+      const row = body.insertRow();
+      addText(row, "th", claim);
+      row.firstElementChild.scope = "row";
+      for (const value of values) addText(row, "td", value);
+    }
+  }
+
+  Promise.allSettled([
+    loadJSON("data-history/history.json"),
+    loadJSON("data-evals/scorecard.json")
+  ]).then(([history, evals]) => {
+    const snapshots = history.value?.snapshots;
+    const accuracy = evals.value?.claim_accuracy;
+    const versions = new Set(Object.keys(accuracy?.by_agent_version ?? {}));
+    for (const point of snapshots ?? []) {
+      if (point.claim_level) versions.add(baseline);
+      for (const version of Object.keys(point.variant_claim_levels ?? {})) versions.add(version);
+    }
+    if (!snapshots) historyStatus.textContent = "Could not load committed scorecards.";
+    if (!accuracy) accuracyStatus.textContent = "Could not load golden claim accuracy.";
+    for (const version of [...versions].sort()) versionPicker.add(new Option(version, version));
+    versionPicker.disabled = !versions.size;
+    const update = () => {
+      if (snapshots) showTrend(snapshots, versionPicker.value);
+      if (accuracy) showAccuracy(accuracy, versionPicker.value);
+    };
+    versionPicker.addEventListener("change", update);
+    update();
+  });
 
   fetch("data-scorecard/scorecard.json")
     .then(response => {

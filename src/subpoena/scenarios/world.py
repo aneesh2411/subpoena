@@ -16,7 +16,14 @@ from zoneinfo import ZoneInfo
 
 from subpoena.auditor import Auditor, ClaimExtractor, NaiveAuditor, Sealer
 from subpoena.auditor.incidents import group_incidents
-from subpoena.models import AuditReport, Incident, PatientRef, ReviewCandidate, VerdictStatus
+from subpoena.models import (
+    AuditReport,
+    Incident,
+    PatientRef,
+    Provenance,
+    ReviewCandidate,
+    VerdictStatus,
+)
 from subpoena.sor import SqliteStore, SystemOfRecord, with_outage
 from subpoena.suspect import (
     AGENT_ID,
@@ -28,7 +35,11 @@ from subpoena.suspect import (
     SimClock,
     Step,
 )
+from subpoena.suspect.narrator import ChattyNarrator
 from subpoena.util import ClinicConfig
+
+BASELINE_AGENT = "receptionist-v1"
+CHATTY_AGENT = "receptionist-v2-chatty"
 
 CLINIC = ClinicConfig()
 TZ = ZoneInfo(CLINIC.tz)
@@ -114,6 +125,7 @@ class Scenario:
     # positionally.
     followups: tuple[Followup, ...] = ()
     audit_delay_min: int = 1
+    agent_version: str = BASELINE_AGENT
 
     @property
     def fault_modes(self) -> frozenset[FaultMode]:
@@ -137,6 +149,10 @@ class ScenarioRun:
     scenario: Scenario
     result: CallResult
     report: AuditReport
+
+    @property
+    def agent_version(self) -> str:
+        return self.scenario.agent_version
 
 
 def _seed(scenario: Scenario, store: SqliteStore, call_start: datetime, roster: bool) -> None:
@@ -212,10 +228,15 @@ def run_suspect(scenario: Scenario, world: World) -> CallResult:
     # The platform session stamps every write with the call id, so the journal
     # can attribute a mutation to one call, not just to the shared agent identity.
     call_id = f"call-{scenario.id}"
+    chatty = scenario.agent_version == CHATTY_AGENT
+    narrator = ChattyNarrator if chatty else Narrator
     agent = ReceptionistAgent(
         world.store.session(f"{AGENT_ID}:{call_id}", world.clock),
         world.clock,
-        narrator=Narrator(random.Random(scenario.id), TZ, hard=scenario.hard_phrasing),
+        narrator=narrator(random.Random(scenario.id), TZ, hard=scenario.hard_phrasing),
+        provenance=Provenance(agent_version=CHATTY_AGENT, prompt_version="narrator:chatty")
+        if chatty
+        else None,
         clinic=CLINIC,
         faults=ForcedFaults(scenario.faults),
     )

@@ -68,7 +68,7 @@
   <h1>Eval results</h1>
   <p class="intro">Recorded results from <code>evals/results/latest.json</code>.</p>
   <p class="meta">Scorecard check-in date <strong>2026-11-22</strong><br>
-    SHA-256 fingerprint <code>b22e6300b4b504da441b0f9e5dabab0b464e3dfaa9c61f4b5948eb28b6c23000</code></p>
+    SHA-256 fingerprint <code>2fe98955583552462cb7f5bdfbf98a54e541fe9679449f4b15921dde4fa77cfd</code></p>
   <p><a href="data-evals/scorecard.json">Download the scorecard JSON</a></p>
   <section class="panel">
     <h2>Golden results and naive baseline</h2>
@@ -77,6 +77,7 @@
         <thead role="rowgroup"><tr role="row"><th scope="col">Suite and system</th><th scope="col">Calls</th><th scope="col">Strict call accuracy</th><th scope="col">Claim-level precision</th><th scope="col">Claim-level recall</th></tr></thead>
         <tbody role="rowgroup">
         <tr role="row"><th scope="row">Golden · Subpoena</th><td>67</td><td>97.01%</td><td>100.00%</td><td>95.00%</td></tr>
+        <tr role="row"><th scope="row">Golden · receptionist-v2-chatty</th><td>67</td><td>94.03%</td><td>100.00%</td><td>89.47%</td></tr>
         <tr role="row"><th scope="row">Golden · Naive existence check</th><td>67</td><td>50.75%</td><td>92.00%</td><td>57.50%</td></tr>
         <tr role="row"><th scope="row">Golden v2-semantic · Subpoena</th><td>65</td><td>96.92%</td><td>100.00%</td><td>95.00%</td></tr>
         </tbody>
@@ -85,12 +86,30 @@
   </section>
   <section class="panel">
     <h2>Auditor accuracy by claim type</h2>
-    <p class="intro">Strict accuracy requires an exact verdict match. Safe rate counts expected claims without an incorrect VERIFIED verdict. A missing verdict lowers strict accuracy and still counts as safe. Known gaps count misses in labeled scenarios.</p>
+    <p class="intro">Agent version: receptionist-v1. Strict accuracy requires an exact verdict match. Safe rate counts expected claims without an incorrect VERIFIED verdict. A missing verdict lowers strict accuracy and still counts as safe. Known gaps count misses in labeled scenarios.</p>
     <div class="table-scroll" tabindex="0" role="region" aria-label="Auditor accuracy by claim type">
       <table role="table">
         <thead role="rowgroup"><tr role="row"><th scope="col">Claim type</th><th scope="col">Golden claims</th><th scope="col">Strict accuracy</th><th scope="col">Safe rate</th><th scope="col">Known gaps</th></tr></thead>
         <tbody role="rowgroup">
         <tr role="row"><th scope="row">AppointmentBooked</th><td>44</td><td>97.73%</td><td>100.00%</td><td>1</td></tr>
+        <tr role="row"><th scope="row">Cancelled</th><td>4</td><td>100.00%</td><td>100.00%</td><td>0</td></tr>
+        <tr role="row"><th scope="row">ConfirmationSent</th><td>33</td><td>100.00%</td><td>100.00%</td><td>0</td></tr>
+        <tr role="row"><th scope="row">HandoffCreated</th><td>9</td><td>88.89%</td><td>88.89%</td><td>1</td></tr>
+        <tr role="row"><th scope="row">PaymentCollected</th><td>2</td><td>100.00%</td><td>100.00%</td><td>0</td></tr>
+        <tr role="row"><th scope="row">PrescriptionRefilled</th><td>2</td><td>100.00%</td><td>100.00%</td><td>0</td></tr>
+        <tr role="row"><th scope="row">RecordsUpdated</th><td>2</td><td>100.00%</td><td>100.00%</td><td>0</td></tr>
+        <tr role="row"><th scope="row">Rescheduled</th><td>9</td><td>100.00%</td><td>100.00%</td><td>0</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="panel">
+    <h2>Auditor accuracy by claim type · receptionist-v2-chatty</h2>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Auditor accuracy by claim type · receptionist-v2-chatty">
+      <table role="table">
+        <thead role="rowgroup"><tr role="row"><th scope="col">Claim type</th><th scope="col">Golden claims</th><th scope="col">Strict accuracy</th><th scope="col">Safe rate</th><th scope="col">Known gaps</th></tr></thead>
+        <tbody role="rowgroup">
+        <tr role="row"><th scope="row">AppointmentBooked</th><td>44</td><td>93.18%</td><td>100.00%</td><td>3</td></tr>
         <tr role="row"><th scope="row">Cancelled</th><td>4</td><td>100.00%</td><td>100.00%</td><td>0</td></tr>
         <tr role="row"><th scope="row">ConfirmationSent</th><td>33</td><td>100.00%</td><td>100.00%</td><td>0</td></tr>
         <tr role="row"><th scope="row">HandoffCreated</th><td>9</td><td>88.89%</td><td>88.89%</td><td>1</td></tr>

@@ -21,6 +21,7 @@ from subpoena.evals.run import render_markdown as render_eval
 from subpoena.ingest.twilio import load_call_record, load_callbacks
 from subpoena.models import AuditReport, Outcome, Severity, Verdict, VerdictStatus
 from subpoena.scenarios import BY_ID, GOLDEN, HERO, run_scenario
+from subpoena.scenarios.golden import GOLDEN_BY_AGENT_VERSION
 
 _STATUS_STYLE = {
     VerdictStatus.VERIFIED: "bold green",
@@ -180,7 +181,7 @@ def cmd_eval(args: argparse.Namespace, console: Console) -> int:
     def pct(x: float | None) -> str:
         return f"{x:.1%}" if x is not None else "n/a"
 
-    for s in (result.golden, result.baseline, result.fuzz):
+    for s in (result.golden, *result.golden_variants.values(), result.baseline, result.fuzz):
         table.add_row(
             s.label, str(s.calls), pct(s.claims.precision), pct(s.claims.recall),
             pct(s.status_accuracy), pct(s.findings.recall), pct(s.call_accuracy),
@@ -201,6 +202,16 @@ def cmd_eval(args: argparse.Namespace, console: Console) -> int:
         console.print(f"  [red]FUZZ[/] {run.scenario_id}: {'; '.join(run.problems)}")
     for sid in fixed:
         console.print(f"  [green]known gap now passes[/] {sid}: remove its known_gap label")
+
+    for version, summary in result.golden_variants.items():
+        scenarios = {s.id: s for s in GOLDEN_BY_AGENT_VERSION[version]}
+        for run in summary.failures:
+            if scenarios[run.scenario_id].known_gap:
+                continue
+            unexpected.append(run)
+            console.print(
+                f"[red]UNEXPECTED[/] {version} · {run.scenario_id}: " + "; ".join(run.problems)
+            )
 
     if args.json:
         Path(args.json).parent.mkdir(parents=True, exist_ok=True)

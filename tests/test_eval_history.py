@@ -37,6 +37,10 @@ def test_export_eval_history(tmp_path):
                 counts = golden.get("claim_level") or {}
                 expected = {key: counts[key] for key in ("tp", "fp", "fn", "tn") if key in counts}
                 assert point.get("claim_level") == (expected if len(expected) == 4 else None)
+                assert point.get("variant_claim_levels", {}) == {
+                    version: {key: summary["claim_level"][key] for key in ("tp", "fp", "fn", "tn")}
+                    for version, summary in artifact.get("golden_variants", {}).items()
+                }
 
     assert latest_scorecard is not None
     assert data["latest_scorecard_diff"] == latest_scorecard.get("diff")

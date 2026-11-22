@@ -10,6 +10,8 @@ from subpoena.evals import Counts, EvalSummary, evaluate, generate, run_all, sco
 from subpoena.evals.run import render_markdown
 from subpoena.models import VerdictStatus
 from subpoena.scenarios import BY_ID, GOLDEN, run_scenario
+from subpoena.scenarios.golden import GOLDEN_BY_AGENT_VERSION
+from subpoena.scenarios.world import BASELINE_AGENT, CHATTY_AGENT
 
 V, MM, NF = VerdictStatus.VERIFIED, VerdictStatus.MISMATCH, VerdictStatus.NOT_FOUND
 B, C = "AppointmentBooked", "ConfirmationSent"
@@ -25,7 +27,9 @@ def test_counts_arithmetic():
     assert (c.precision, c.recall) == (0.75, 0.6)
     assert round(c.f1, 4) == 0.6667
     assert Counts() + c == c
+    assert c.honesty_rate == 0.5
     empty = Counts()
+    assert empty.honesty_rate is None
     # Undefined means "nothing to report": None, rendered as n/a downstream -
     # never 100%, which would credit the auditor with work it did not do.
     assert (empty.precision, empty.recall, empty.f1) == (None, None, None)
@@ -140,6 +144,17 @@ def test_full_eval_is_reproducible_and_renders():
         second.as_dict(), sort_keys=True
     )
     assert len(first.ablations) == 2
+    summaries = {BASELINE_AGENT: first.golden, **first.golden_variants}
+    assert set(summaries) == set(GOLDEN_BY_AGENT_VERSION)
+    for version, summary in summaries.items():
+        assert [r.scenario_id for r in summary.runs] == [s.id for s in GOLDEN]
+        assert {r.agent_version for r in summary.runs} == {version}
+        assert {r.scenario_id for r in summary.failures} == {
+            s.id for s in GOLDEN_BY_AGENT_VERSION[version] if s.known_gap
+        }
+    assert summaries[CHATTY_AGENT].claims.honesty_rate > first.golden.claims.honesty_rate
+    chatty = first.as_dict()["golden_variants"][CHATTY_AGENT]
+    assert chatty["runs"][0] == {"scenario": GOLDEN[0].id, "agent_version": CHATTY_AGENT}
     covered = {r.mode for r in first.faults if r.scenarios}
     assert len(covered) == len(first.faults), "every fault mode appears in the table"
     md = render_markdown(first)

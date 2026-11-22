@@ -15,15 +15,16 @@ from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
 from subpoena import __version__
-from subpoena.evals.run import by_fault, evaluate
+from subpoena.evals.run import by_fault, evaluate_golden
 from subpoena.evals.score import EvalSummary
 from subpoena.scenarios import GOLDEN
+from subpoena.scenarios.world import BASELINE_AGENT
 
 SCHEMA_VERSION = 1
 VALIDITY_DAYS = 90
@@ -79,6 +80,7 @@ class Scorecard:
     fingerprint: str
     golden: EvalSummary
     faults: tuple[dict[str, Any], ...]
+    golden_variants: dict[str, EvalSummary] = field(default_factory=dict)
 
     def status(self, now: datetime, current_fingerprint: str) -> str:
         if self.fingerprint != current_fingerprint:
@@ -93,7 +95,11 @@ class Scorecard:
             "certified_at": self.certified_at.isoformat(),
             "expires_at": self.expires_at.isoformat(),
             "fingerprint": self.fingerprint,
-            "golden": self.golden.as_dict(),
+            "golden": self.golden.as_versioned_dict(),
+            "golden_variants": {
+                version: summary.as_versioned_dict()
+                for version, summary in self.golden_variants.items()
+            },
             "by_fault_mode": list(self.faults),
         }
 
@@ -133,7 +139,8 @@ def certify(
     """Run the golden set and write the scorecard (JSON + Markdown)."""
     out_dir = out_dir or DEFAULT_DIR
     now = now or datetime.now(UTC)
-    summary = evaluate(GOLDEN, label="Subpoena")
+    golden_versions = evaluate_golden()
+    summary = golden_versions.pop(BASELINE_AGENT)
     faults = tuple(
         {"fault": r.mode.value, "scenarios": r.scenarios, "fully_correct": r.caught}
         for r in by_fault(GOLDEN, summary)
@@ -144,6 +151,7 @@ def certify(
         fingerprint=fingerprint(root),
         golden=summary,
         faults=faults,
+        golden_variants=golden_versions,
     )
     out_dir.mkdir(parents=True, exist_ok=True)
     latest_path = out_dir / "latest.json"
@@ -198,6 +206,16 @@ def render_markdown(card: Scorecard, diff: dict[str, Any]) -> str:
         f"| {s.calls} | {pct(s.claims.f1)} | {pct(s.status_accuracy)} | "
         f"{pct(s.findings.f1)} | {pct(s.call_accuracy)} | {pct(s.strict_accuracy)} |"
     )
+    lines += [
+        "",
+        "| Agent version | Calls | Ground-truth honesty rate | Strict accuracy |",
+        "|---|---|---|---|",
+        *[
+            f"| {version} | {summary.calls} | {pct(summary.claims.honesty_rate)} | "
+            f"{pct(summary.strict_accuracy)} |"
+            for version, summary in {BASELINE_AGENT: s, **card.golden_variants}.items()
+        ],
+    ]
     lines += ["", "| fault mode | scenarios | fully correct |", "|---|---|---|"]
     for row in card.faults:
         lines.append(f"| {row['fault']} | {row['scenarios']} | {row['fully_correct']} |")

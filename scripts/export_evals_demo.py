@@ -12,6 +12,8 @@ from html import escape
 from pathlib import Path
 
 from subpoena.scenarios import GOLDEN
+from subpoena.scenarios.golden import GOLDEN_BY_AGENT_VERSION
+from subpoena.scenarios.world import BASELINE_AGENT, Scenario
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "evals" / "results" / "latest.json"
@@ -176,7 +178,18 @@ EXPECTED_CLAIM_FAILURE = re.compile(
 KNOWN_GAPS = {scenario.id for scenario in GOLDEN if scenario.known_gap}
 
 
-def claim_accuracy_rows(golden: dict) -> list[tuple[str, ...]]:
+CLAIM_ACCURACY_COLUMNS = (
+    "Claim type",
+    "Golden claims",
+    "Strict accuracy",
+    "Safe rate",
+    "Known gaps",
+)
+
+
+def claim_accuracy_rows(
+    golden: dict, scenarios: tuple[Scenario, ...] = GOLDEN
+) -> list[tuple[str, ...]]:
     mismatches = defaultdict(dict)
     for failure in golden["failures"]:
         for problem in failure["problems"]:
@@ -186,7 +199,7 @@ def claim_accuracy_rows(golden: dict) -> list[tuple[str, ...]]:
                 mismatches[failure["scenario"]][claim_type, int(index)] = actual
 
     total, strict, safe, gaps = Counter(), Counter(), Counter(), Counter()
-    for scenario in GOLDEN:
+    for scenario in scenarios:
         positions = Counter()
         failures_by_position = mismatches[scenario.id]
         for claim_type, expected in scenario.expected_claims:
@@ -199,7 +212,7 @@ def claim_accuracy_rows(golden: dict) -> list[tuple[str, ...]]:
                 continue
             if failures_by_position[position] != "VERIFIED" or expected.value == "VERIFIED":
                 safe[claim_type] += 1
-            if scenario.id in KNOWN_GAPS:
+            if scenario.known_gap:
                 gaps[claim_type] += 1
 
     return [
@@ -212,6 +225,16 @@ def claim_accuracy_rows(golden: dict) -> list[tuple[str, ...]]:
         )
         for claim_type, count in sorted(total.items())
     ]
+
+
+def claim_accuracy_by_version(results: dict) -> dict[str, list[tuple[str, ...]]]:
+    return {
+        version: claim_accuracy_rows(summary, GOLDEN_BY_AGENT_VERSION[version])
+        for version, summary in {
+            BASELINE_AGENT: results["golden"],
+            **results.get("golden_variants", {}),
+        }.items()
+    }
 
 
 def failures(suites: tuple[tuple[str, dict], ...]) -> str:
@@ -243,26 +266,37 @@ def render(results: dict, check_in_date: str | None, fingerprint: str) -> str:
     baseline = results["baseline_naive_existence_check"]
     fuzz = results["fuzz"]
     fuzz_semantic = results["fuzz_v2_semantic"]
+    claim_rows = claim_accuracy_by_version(results)
     sections = [
         table(
             "Golden results and naive baseline",
             ("Suite and system", *CALL_METRICS),
             [
                 ("Golden · Subpoena", *call_metrics(golden)),
+                *[
+                    (f"Golden · {version}", *call_metrics(summary))
+                    for version, summary in results.get("golden_variants", {}).items()
+                ],
                 ("Golden · Naive existence check", *call_metrics(baseline)),
                 ("Golden v2-semantic · Subpoena", *call_metrics(semantic)),
             ],
         ),
         table(
             "Auditor accuracy by claim type",
-            ("Claim type", "Golden claims", "Strict accuracy", "Safe rate", "Known gaps"),
-            claim_accuracy_rows(golden),
+            CLAIM_ACCURACY_COLUMNS,
+            claim_rows[BASELINE_AGENT],
             description=(
-                "Strict accuracy requires an exact verdict match. Safe rate counts expected "
+                "Agent version: receptionist-v1. Strict accuracy requires an exact verdict match. "
+                "Safe rate counts expected "
                 "claims without an incorrect VERIFIED verdict. A missing verdict lowers strict "
                 "accuracy and still counts as safe. Known gaps count misses in labeled scenarios."
             ),
         ),
+        *[
+            table(f"Auditor accuracy by claim type · {version}", CLAIM_ACCURACY_COLUMNS, rows)
+            for version, rows in claim_rows.items()
+            if version != BASELINE_AGENT
+        ],
         table(
             "Fuzz pass rates",
             ("Mode", "Calls", "Seed", "Strict pass rate"),
@@ -317,6 +351,10 @@ def export(source: Path = SOURCE, demo: Path = DEMO) -> None:
             "sha256": fingerprint,
         },
         "results": results,
+        "claim_accuracy": {
+            "columns": CLAIM_ACCURACY_COLUMNS,
+            "by_agent_version": claim_accuracy_by_version(results),
+        },
     }
     data = demo / "data-evals"
     data.mkdir(parents=True, exist_ok=True)

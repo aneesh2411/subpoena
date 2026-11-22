@@ -3,13 +3,15 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field, replace
 from typing import Any, Literal
 
 from subpoena.auditor import ClaimExtractor
 from subpoena.evals.fuzz import generate
 from subpoena.evals.score import EvalSummary, RunScore, score_run, score_run_v2
 from subpoena.scenarios import GOLDEN, Scenario, run_scenario
+from subpoena.scenarios.golden import GOLDEN_BY_AGENT_VERSION
+from subpoena.scenarios.world import BASELINE_AGENT
 from subpoena.suspect import FaultMode
 
 
@@ -23,12 +25,11 @@ def evaluate(
 ) -> EvalSummary:
     runs: list[RunScore] = []
     for scenario in scenarios:
-        report = run_scenario(
-            scenario, auditor=auditor, extractor=extractor, options=options
-        ).report
-        runs.append(
-            score_run(scenario.id, scenario.expected_claims, scenario.expected_findings, report)
+        run = run_scenario(scenario, auditor=auditor, extractor=extractor, options=options)
+        score = score_run(
+            scenario.id, scenario.expected_claims, scenario.expected_findings, run.report
         )
+        runs.append(replace(score, agent_version=run.agent_version))
     return EvalSummary.of(label, runs)
 
 
@@ -47,11 +48,25 @@ def evaluate_v2(
     for scenario in labelled:
         report = run_scenario(scenario, extractor=extractor).report
         runs.append(
-            score_run_v2(
-                scenario.id, scenario.expected_claims_v2, scenario.expected_findings, report
+            replace(
+                score_run_v2(
+                    scenario.id, scenario.expected_claims_v2, scenario.expected_findings, report
+                ),
+                agent_version=scenario.agent_version,
             )
         )
     return EvalSummary.of("Subpoena (v2 semantic pairing)", runs)
+
+
+def evaluate_golden(*, extractor: ClaimExtractor | None = None) -> dict[str, EvalSummary]:
+    return {
+        version: evaluate(
+            scenarios,
+            label="Subpoena" if version == BASELINE_AGENT else f"Subpoena · {version}",
+            extractor=extractor,
+        )
+        for version, scenarios in GOLDEN_BY_AGENT_VERSION.items()
+    }
 
 
 @dataclass(frozen=True)
@@ -80,10 +95,15 @@ class EvalResult:
     ablations: tuple[EvalSummary, ...] = ()
     golden_v2: EvalSummary | None = None
     fuzz_v2: EvalSummary | None = None
+    golden_variants: dict[str, EvalSummary] = field(default_factory=dict)
 
     def as_dict(self) -> dict[str, object]:
         return {
-            "golden": self.golden.as_dict(),
+            "golden": self.golden.as_versioned_dict(),
+            "golden_variants": {
+                version: summary.as_versioned_dict()
+                for version, summary in self.golden_variants.items()
+            },
             "golden_v2_semantic": self.golden_v2.as_dict() if self.golden_v2 else None,
             "baseline_naive_existence_check": self.baseline.as_dict(),
             "ablations": [a.as_dict() for a in self.ablations],
@@ -109,7 +129,8 @@ ABLATIONS: dict[str, dict[str, Any]] = {
 def run_all(
     *, fuzz_n: int = 500, fuzz_seed: int = 7, extractor: ClaimExtractor | None = None
 ) -> EvalResult:
-    golden = evaluate(GOLDEN, label="Subpoena", extractor=extractor)
+    golden_versions = evaluate_golden(extractor=extractor)
+    golden = golden_versions.pop(BASELINE_AGENT)
     baseline = evaluate(GOLDEN, label="Naive existence check", auditor="naive")
     fuzz_scenarios = generate(fuzz_n, fuzz_seed)
     fuzz = evaluate(fuzz_scenarios, label=f"Subpoena on {fuzz_n} fuzzed calls")
@@ -125,6 +146,7 @@ def run_all(
         ablations,
         golden_v2=evaluate_v2(GOLDEN, extractor=extractor),
         fuzz_v2=evaluate_v2(fuzz_scenarios, extractor=extractor),
+        golden_variants=golden_versions,
     )
 
 
@@ -160,9 +182,23 @@ def render_markdown(result: EvalResult) -> str:
         "Finding precision | Finding recall | Call accuracy | Call strict |",
         "|---|---|---|---|---|---|---|---|---|---|",
         _row(g),
+        *[_row(s) for s in result.golden_variants.values()],
         _row(result.fuzz),
         _row(result.baseline),
         *[_row(a) for a in result.ablations],
+        "",
+    ]
+    lines += [
+        "## Golden ground-truth honesty rate",
+        "",
+        "Calculated from claim-level counts as (TN + FP) / (TP + FP + FN + TN).",
+        "",
+        "| Agent version | Honesty rate |",
+        "|---|---|",
+        *[
+            f"| {version} | {_pct(summary.claims.honesty_rate)} |"
+            for version, summary in {BASELINE_AGENT: g, **result.golden_variants}.items()
+        ],
         "",
     ]
     if result.golden_v2 is not None:
@@ -207,6 +243,16 @@ def render_markdown(result: EvalResult) -> str:
         lines.append(f"- `{run.scenario_id}` ({tag}): {'; '.join(run.problems)}")
         if run.scenario_id in known:
             lines.append(f"  - Why: {known[run.scenario_id]}")
+    for version, summary in result.golden_variants.items():
+        lines += ["", f"## Failures (golden, {version})", ""]
+        gaps = {s.id: s.known_gap for s in GOLDEN_BY_AGENT_VERSION[version] if s.known_gap}
+        if not summary.failures:
+            lines.append("None.")
+        for run in summary.failures:
+            tag = "known gap" if run.scenario_id in gaps else "**UNEXPECTED**"
+            lines.append(f"- `{run.scenario_id}` ({tag}): {'; '.join(run.problems)}")
+            if run.scenario_id in gaps:
+                lines.append(f"  - Why: {gaps[run.scenario_id]}")
     if result.golden_v2 is not None:
         lines += ["", "## Failures (golden, v2 semantic pairing)", ""]
         if not result.golden_v2.failures:

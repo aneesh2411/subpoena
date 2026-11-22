@@ -84,11 +84,13 @@
     <p>Each point represents a committed scorecard. The charts share a UTC time axis and
       use a vertical scale fitted to each metric.</p>
     <figure>
-      <h3>Strict accuracy</h3>
+      <h3>Strict accuracy · receptionist-v1</h3>
       <svg class="sparkline" id="scorecard-accuracy" role="group" aria-label="Strict accuracy by commit time"></svg>
     </figure>
     <figure>
-      <h3>Suspect honesty rate</h3>
+      <h3>Ground-truth honesty rate</h3>
+      <label for="history-agent-version">Agent version</label>
+      <select id="history-agent-version" disabled></select>
       <p>The share of the suspect agent’s golden-set claims that were actually true.
         This trend includes runs with claim counts and at least one claim.</p>
       <svg class="sparkline" id="scorecard-honesty" role="group" aria-label="Suspect honesty rate by commit time"></svg>
@@ -258,10 +260,26 @@
 
     const accuracy = document.querySelector("#scorecard-accuracy");
     const honesty = document.querySelector("#scorecard-honesty");
+    const versionPicker = document.querySelector("#history-agent-version");
+    const baseline = "receptionist-v1";
+    const versions = new Set([baseline]);
+    for (const run of runs) {
+      for (const version of Object.keys(run.variant_claim_levels ?? {})) versions.add(version);
+    }
+    for (const version of [...versions].sort()) versionPicker.add(new Option(version, version));
+    versionPicker.disabled = versions.size < 2;
     const redraw = () => {
       renderSparkline(accuracy, runs, "strict_accuracy", "var(--accent)");
-      renderSparkline(honesty, runs, "honesty", "var(--scorecards)");
+      const version = versionPicker.value;
+      const versionRuns = version === baseline ? runs : runs.map(run => ({
+        ...run, honesty: honestyRate(run.variant_claim_levels?.[version]),
+      }));
+      renderSparkline(honesty, versionRuns, "honesty", "var(--scorecards)");
     };
+    versionPicker.addEventListener("change", () => {
+      honesty.removeAttribute("viewBox");
+      redraw();
+    });
     redraw();
     new ResizeObserver(redraw).observe(accuracy);
     const range = document.querySelector("#scorecard-range");
@@ -301,7 +319,7 @@
     const changes = diff?.previous
       ? ` Newly failing: ${diff.newly_failing.join(", ") || "none"}. Newly passing: ${diff.newly_passing.join(", ") || "none"}.`
       : " Scenario changes unavailable.";
-    comparison.textContent = `Strict accuracy ${percent(previous.strict_accuracy)} → ${percent(latest.strict_accuracy)}. ${honestyChange}${changes}`;
+    comparison.textContent = `Baseline · Strict accuracy ${percent(previous.strict_accuracy)} → ${percent(latest.strict_accuracy)}. ${honestyChange}${changes}`;
   }
 
   function showHistory({snapshots}) {

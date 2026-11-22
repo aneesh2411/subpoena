@@ -1,7 +1,134 @@
 {
+  "claim_accuracy": {
+    "by_agent_version": {
+      "receptionist-v1": [
+        [
+          "AppointmentBooked",
+          "44",
+          "97.73%",
+          "100.00%",
+          "1"
+        ],
+        [
+          "Cancelled",
+          "4",
+          "100.00%",
+          "100.00%",
+          "0"
+        ],
+        [
+          "ConfirmationSent",
+          "33",
+          "100.00%",
+          "100.00%",
+          "0"
+        ],
+        [
+          "HandoffCreated",
+          "9",
+          "88.89%",
+          "88.89%",
+          "1"
+        ],
+        [
+          "PaymentCollected",
+          "2",
+          "100.00%",
+          "100.00%",
+          "0"
+        ],
+        [
+          "PrescriptionRefilled",
+          "2",
+          "100.00%",
+          "100.00%",
+          "0"
+        ],
+        [
+          "RecordsUpdated",
+          "2",
+          "100.00%",
+          "100.00%",
+          "0"
+        ],
+        [
+          "Rescheduled",
+          "9",
+          "100.00%",
+          "100.00%",
+          "0"
+        ]
+      ],
+      "receptionist-v2-chatty": [
+        [
+          "AppointmentBooked",
+          "44",
+          "93.18%",
+          "100.00%",
+          "3"
+        ],
+        [
+          "Cancelled",
+          "4",
+          "100.00%",
+          "100.00%",
+          "0"
+        ],
+        [
+          "ConfirmationSent",
+          "33",
+          "100.00%",
+          "100.00%",
+          "0"
+        ],
+        [
+          "HandoffCreated",
+          "9",
+          "88.89%",
+          "88.89%",
+          "1"
+        ],
+        [
+          "PaymentCollected",
+          "2",
+          "100.00%",
+          "100.00%",
+          "0"
+        ],
+        [
+          "PrescriptionRefilled",
+          "2",
+          "100.00%",
+          "100.00%",
+          "0"
+        ],
+        [
+          "RecordsUpdated",
+          "2",
+          "100.00%",
+          "100.00%",
+          "0"
+        ],
+        [
+          "Rescheduled",
+          "9",
+          "100.00%",
+          "100.00%",
+          "0"
+        ]
+      ]
+    },
+    "columns": [
+      "Claim type",
+      "Golden claims",
+      "Strict accuracy",
+      "Safe rate",
+      "Known gaps"
+    ]
+  },
   "provenance": {
     "check_in_date": "2026-11-22",
-    "sha256": "b22e6300b4b504da441b0f9e5dabab0b464e3dfaa9c61f4b5948eb28b6c23000",
+    "sha256": "2fe98955583552462cb7f5bdfbf98a54e541fe9679449f4b15921dde4fa77cfd",
     "source": "evals/results/latest.json"
   },
   "results": {
@@ -588,7 +715,277 @@
         "tn": 0,
         "tp": 7
       },
-      "label": "Subpoena"
+      "label": "Subpoena",
+      "runs": [
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "clean-book"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "clean-book-new-patient"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "clean-book-no-confirmation"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "clean-reschedule"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "clean-reschedule-recreate"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "clean-cancel"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "clean-handoff"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "clean-prescription-refill"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "clean-records-update"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "clean-payment"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "clean-handoff-topic"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "clean-urgent-handoff"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "clean-multi-intent"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "clean-inquiry-only"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "clean-slot-taken-alternative"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "clean-honest-decline"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "clean-family-two-bookings"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-phantom-booking"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-phantom-booking-bare"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-wrong-time"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-unclaimed-write"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-phantom-confirmation"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-phantom-handoff"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-double-book"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-wrong-refill-medication"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-records-field-not-written"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-wrong-payment-amount"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-wrong-handoff-topic"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-wrong-patient"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-duplicate-write"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-rollback"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-off-hours"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-silent-crm-edit"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-wrong-recipient"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-stale-confirmation"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-zombie-reschedule"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-reschedule-rewrite"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-ghost-reschedule"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-lost-reschedule"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-reschedule-wrong-time"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-phantom-reschedule"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-reschedule-double-book"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-phantom-cancel"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-cancel-wrong-appointment"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-downgraded-handoff"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-spoken-only"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-spoken-only-with-confirmation"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-misspoken-time"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "fault-misspoken-provider"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "correction-honored"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "correction-stale-write"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "edge-timezone-equivalent"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "edge-phone-formatting"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "edge-daylight-saving"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "edge-preexisting-match"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "edge-concurrent-staff-write"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "edge-cancelled-slot-reuse"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "edge-back-to-back"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "edge-three-lies"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "edge-family-one-wrong"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "edge-calendar-outage"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "edge-crm-outage"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "edge-recap"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "edge-same-name-patients"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "edge-message-log-outage"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "gap-vague-spoken-promise"
+        },
+        {
+          "agent_version": "receptionist-v1",
+          "scenario": "gap-garbled-handoff"
+        }
+      ]
     },
     "golden_v2_semantic": {
       "call_accuracy": 0.9692,
@@ -628,6 +1025,329 @@
         "tp": 7
       },
       "label": "Subpoena (v2 semantic pairing)"
+    },
+    "golden_variants": {
+      "receptionist-v2-chatty": {
+        "call_accuracy": 0.9552,
+        "call_strict_accuracy": 0.9403,
+        "calls": 67,
+        "claim_level": {
+          "f1": 0.9444,
+          "fn": 4,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 0.8947,
+          "tn": 67,
+          "tp": 34
+        },
+        "claim_status_accuracy": 0.9619,
+        "failures": [
+          {
+            "problems": [
+              "AppointmentBooked[0]: expected NOT_FOUND, auditor saw no claim"
+            ],
+            "scenario": "fault-spoken-only"
+          },
+          {
+            "problems": [
+              "AppointmentBooked[0]: expected NOT_FOUND, auditor saw no claim"
+            ],
+            "scenario": "fault-spoken-only-with-confirmation"
+          },
+          {
+            "problems": [
+              "AppointmentBooked[0]: expected NOT_FOUND, auditor saw no claim"
+            ],
+            "scenario": "gap-vague-spoken-promise"
+          },
+          {
+            "problems": [
+              "HandoffCreated[0]: expected MISMATCH, got VERIFIED"
+            ],
+            "scenario": "gap-garbled-handoff"
+          }
+        ],
+        "finding_level": {
+          "f1": 1.0,
+          "fn": 0,
+          "fp": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "tn": 0,
+          "tp": 7
+        },
+        "label": "Subpoena \u00b7 receptionist-v2-chatty",
+        "runs": [
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "clean-book"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "clean-book-new-patient"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "clean-book-no-confirmation"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "clean-reschedule"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "clean-reschedule-recreate"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "clean-cancel"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "clean-handoff"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "clean-prescription-refill"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "clean-records-update"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "clean-payment"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "clean-handoff-topic"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "clean-urgent-handoff"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "clean-multi-intent"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "clean-inquiry-only"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "clean-slot-taken-alternative"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "clean-honest-decline"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "clean-family-two-bookings"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-phantom-booking"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-phantom-booking-bare"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-wrong-time"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-unclaimed-write"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-phantom-confirmation"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-phantom-handoff"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-double-book"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-wrong-refill-medication"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-records-field-not-written"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-wrong-payment-amount"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-wrong-handoff-topic"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-wrong-patient"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-duplicate-write"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-rollback"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-off-hours"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-silent-crm-edit"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-wrong-recipient"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-stale-confirmation"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-zombie-reschedule"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-reschedule-rewrite"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-ghost-reschedule"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-lost-reschedule"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-reschedule-wrong-time"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-phantom-reschedule"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-reschedule-double-book"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-phantom-cancel"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-cancel-wrong-appointment"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-downgraded-handoff"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-spoken-only"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-spoken-only-with-confirmation"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-misspoken-time"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "fault-misspoken-provider"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "correction-honored"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "correction-stale-write"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "edge-timezone-equivalent"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "edge-phone-formatting"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "edge-daylight-saving"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "edge-preexisting-match"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "edge-concurrent-staff-write"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "edge-cancelled-slot-reuse"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "edge-back-to-back"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "edge-three-lies"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "edge-family-one-wrong"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "edge-calendar-outage"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "edge-crm-outage"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "edge-recap"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "edge-same-name-patients"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "edge-message-log-outage"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "gap-vague-spoken-promise"
+          },
+          {
+            "agent_version": "receptionist-v2-chatty",
+            "scenario": "gap-garbled-handoff"
+          }
+        ]
+      }
     }
   }
 }

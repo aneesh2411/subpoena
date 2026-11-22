@@ -32,6 +32,13 @@ def git(*args: str) -> str:
     )
 
 
+def claim_counts(summary: dict) -> dict[str, int] | None:
+    counts = summary.get("claim_level") or {}
+    if all(type(counts.get(key)) is int for key in CLAIM_COUNTS):
+        return {key: counts[key] for key in CLAIM_COUNTS}
+    return None
+
+
 def snapshots() -> Iterator[dict]:
     history = git(
         "log",
@@ -61,7 +68,8 @@ def snapshots() -> Iterator[dict]:
             if key in seen:
                 seen[key]["paths"].append(path)
                 continue
-            golden = json.loads(content)["golden"]
+            artifact = json.loads(content)
+            golden = artifact["golden"]
             point = {
                 "commit": commit,
                 "commit_time": timestamp,
@@ -71,9 +79,15 @@ def snapshots() -> Iterator[dict]:
                 "scenarios": golden["calls"],
             }
             if dated_scorecard([path]):
-                claims = golden.get("claim_level") or {}
-                if all(isinstance(claims.get(count), int) for count in CLAIM_COUNTS):
-                    point["claim_level"] = {count: claims[count] for count in CLAIM_COUNTS}
+                if (counts := claim_counts(golden)) is not None:
+                    point["claim_level"] = counts
+                variants = {
+                    version: counts
+                    for version, summary in artifact.get("golden_variants", {}).items()
+                    if (counts := claim_counts(summary)) is not None
+                }
+                if variants:
+                    point["variant_claim_levels"] = variants
             seen[key] = point
         yield from seen.values()
 

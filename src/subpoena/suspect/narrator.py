@@ -131,6 +131,13 @@ class Narrator:
         return f"{clinic}: your appointment with {provider} is confirmed for {self.when(start)}."
 
 
+class ChattyNarrator(Narrator):
+    """A more conversational receptionist using the same call script."""
+
+    def polish(self, line: str) -> str:
+        return f"Thanks for chatting with me today. {line}"
+
+
 class LLMNarrator(Narrator):
     """Lets a live model rephrase the suspect's lines. Falls back to the template."""
 

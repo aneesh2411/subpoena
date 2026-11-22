@@ -87,6 +87,11 @@ class Counts:
         )
 
     @property
+    def honesty_rate(self) -> float | None:
+        total = self.tp + self.fp + self.fn + self.tn
+        return (self.tn + self.fp) / total if total else None
+
+    @property
     def precision(self) -> float | None:
         """None when undefined (nothing predicted): 100% would be a lie."""
         return self.tp / (self.tp + self.fp) if self.tp + self.fp else None
@@ -114,6 +119,7 @@ class RunScore:
     expected_dirty: bool
     predicted_dirty: bool
     problems: tuple[str, ...] = ()
+    agent_version: str | None = None
 
     @property
     def call_correct(self) -> bool:
@@ -306,6 +312,15 @@ class EvalSummary:
     @property
     def failures(self) -> tuple[RunScore, ...]:
         return tuple(r for r in self.runs if not r.strict_correct)
+
+    def as_versioned_dict(self) -> dict[str, object]:
+        return {
+            **self.as_dict(),
+            "runs": [
+                {"scenario": run.scenario_id, "agent_version": run.agent_version}
+                for run in self.runs
+            ],
+        }
 
     def as_dict(self) -> dict[str, object]:
         def counts(c: Counts) -> dict[str, float | None]:
