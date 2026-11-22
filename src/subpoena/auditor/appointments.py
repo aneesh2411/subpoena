@@ -61,11 +61,16 @@ def candidates_booked(
             continue
         who = appt.patient_id in ids
         when = appt.start == claim.start
-        where = claim.provider is None or _same(appt.provider, claim.provider)
-        # Strict: everything lines up. Loose: same person, or same slot under another name.
-        eligible = (who and when and where) if strict else (who or (when and where))
-        if eligible:
-            out.append((4 * who + 2 * when + where, Match(primary=nc)))
+        where = claim.provider is not None and _same(appt.provider, claim.provider)
+        duration = claim.duration_min is not None and claim.duration_min == appt.duration_min
+        reason = claim.reason is not None and _same(appt.reason, claim.reason)
+        same_slot = when and (claim.provider is None or where)
+        # Duration and reason refine the pairing. The judge still checks both
+        # on a booking identified by patient, start and provider.
+        eligible = (who and same_slot) if strict else (who or same_slot)
+        if not eligible:
+            continue
+        out.append((12 * who + 6 * when + 3 * where + duration + reason, Match(primary=nc)))
     return out
 
 
@@ -213,12 +218,14 @@ def candidates_rescheduled(
         new_ok = appt.start == claim.new_start
         if strict and not new_ok:
             continue
-        # A new booking that matches nothing the claim says - not the new time,
-        # no released old record beside it - is not a reschedule gone wrong;
-        # it is someone else's write, and leaving it unclaimed is the answer.
-        if not new_ok and old is None:
+        # A replacement at another time needs both the old release and a
+        # matching provider before it can be linked to this reschedule.
+        provider_ok = claim.provider is not None and _same(appt.provider, claim.provider)
+        if not new_ok and (old is None or not provider_ok):
             continue
-        candidates.append((2 * new_ok + 2 * (old is not None), Match(primary=nc, secondary=old)))
+        candidates.append(
+            (2 * new_ok + 2 * (old is not None) + provider_ok, Match(primary=nc, secondary=old))
+        )
 
     # Shape C: the old record was released and nothing replaced it. Always
     # offered loose, even beside shape B candidates: pool assignment may find

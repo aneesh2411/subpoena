@@ -143,7 +143,9 @@ def candidates_handoff(
         topic = claim.topic is None or ticket.topic == claim.topic
         if strict and not (who and priority and topic):
             continue
-        score = 2 * who + priority + (topic if claim.topic is not None else 0)
+        summary = bool(claim.summary) and norm_text(claim.summary) == norm_text(ticket.summary)
+        # Free-text agreement helps pair tickets without changing the verdict checks.
+        score = 2 * (2 * who + priority + (topic if claim.topic is not None else 0)) + summary
         out.append((score, Match(primary=nc)))
     return out
 

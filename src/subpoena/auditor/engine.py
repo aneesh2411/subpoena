@@ -276,19 +276,7 @@ class Auditor:
     def _reconcile(
         self, claims: Sequence[Claim], ctx: AuditContext
     ) -> tuple[dict[str, Match], dict[str, str]]:
-        """Pair claims with writes: exact matches claim their evidence first, and
-        within a pass the most specific claims go first so a vague claim cannot
-        take the write a specific one describes.
-
-        When several claims share an evidence pool (same-type or same-system
-        claims in one call), the pool is paired by global assignment, not
-        claim order: the pairing chosen is the one that matches the most
-        claims, then the most exact matches, then the highest total score,
-        then the most structured claims, then the reading where each write
-        follows closest on the words that promised it. A leftover copy of a
-        write a claim already owns is never borrowed by another claim: the
-        copy is itself the anomaly an unclaimed-write finding reports.
-        """
+        """Assign writes across each evidence pool before judging individual claims."""
         matches: dict[str, Match] = {}
         blocked: dict[str, str] = {}
         by_specificity = sorted(claims, key=self._specificity, reverse=True)
@@ -381,19 +369,8 @@ class Auditor:
         matches: dict[str, Match],
         blocked: dict[str, str],
     ) -> None:
-        """Pair a pool of competing claims with writes by global assignment.
-
-        The objective: match as many claims as possible; prefer the reading
-        where each write follows closest on the words that promised it (a
-        write belongs to the utterance that caused it, not a look-alike);
-        then exact over partial matches, highest total score, and structured
-        claims over transcript-only ones. Full ties resolve for the more
-        specific claim.
-        """
+        """Rank assignments by content, using position only for tied pairings."""
         order = sorted(pool, key=lambda c: (-self._specificity(c), c.claim_id))
-        # Each claim's options, best first: exact candidates, then partial,
-        # then no match. The search visits earlier claims first, so a full
-        # tie resolves for the more specific claim.
         options: list[list[tuple[int, Match, bool] | None]] = []
         for claim in order:
             try:
@@ -419,33 +396,28 @@ class Auditor:
             ctx.log(
                 "reconcile",
                 f"{SOURCE[entity]}: {len(order)} competing claims, assignment space too "
-                "large; falling back to per-claim best match",
+                "large to resolve safely",
             )
             for claim, opts in zip(order, options, strict=True):
-                for entry in opts:
-                    if entry is None:
-                        continue
-                    _, match, is_exact = entry
-                    if ctx._consumed.isdisjoint(match.keys):
-                        self._take(claim, match, ctx, matches, "exact" if is_exact else "partial")
-                        break
+                if len(opts) > 1:
+                    blocked[claim.claim_id] = "the write assignment exceeds the search limit"
             return
 
-        def write_time(match: Match) -> datetime:
-            return max(c.at for nc in match.changes for c in nc.changes)
-
-        def objective(chosen: list[tuple[int, Match, bool] | None]) -> tuple:
-            paired = [(i, e) for i, e in enumerate(chosen) if e is not None]
-            return (
-                len(paired),
-                -sum(self._claim_distance(order[i], write_time(m), ctx) for i, (_, m, _) in paired),
-                sum(1 for _, (_, _, exact) in paired if exact),
-                sum(s for _, (s, _, _) in paired),
-                sum(1 for i, _ in paired if order[i].source is ClaimSource.STRUCTURED),
+        def position(chosen: list[tuple[int, Match, bool] | None]) -> float:
+            return sum(
+                self._claim_distance(
+                    claim, max(c.at for nc in entry[1].changes for c in nc.changes), ctx
+                )
+                for claim, entry in zip(order, chosen, strict=True)
+                if entry is not None
             )
 
-        best_key: tuple | None = None
+        best_key: tuple[int, int, int] | None = None
         best: list[tuple[int, Match, bool] | None] = []
+        best_distance = float("inf")
+        matched_in_any: set[int] = set()
+        matched_in_all: set[int] = set()
+        alternate_writes: set[int] = set()
 
         def search(
             i: int,
@@ -453,11 +425,27 @@ class Auditor:
             copies: set[str],
             chosen: list[tuple[int, Match, bool] | None],
         ) -> None:
-            nonlocal best_key, best
+            nonlocal best_key, best, best_distance, matched_in_any, matched_in_all
             if i == len(order):
-                k = objective(chosen)
-                if best_key is None or k > best_key:
-                    best_key, best = k, list(chosen)
+                paired = {i for i, entry in enumerate(chosen) if entry is not None}
+                entries = [entry for entry in chosen if entry is not None]
+                key = (
+                    sum(exact for _, _, exact in entries),
+                    sum(s for s, _, _ in entries),
+                    len(paired),
+                )
+                if best_key is None or key > best_key:
+                    best_key, best = key, list(chosen)
+                    best_distance = position(chosen)
+                    matched_in_any, matched_in_all = paired.copy(), paired
+                    alternate_writes.clear()
+                elif key == best_key:
+                    matched_in_any.update(paired)
+                    matched_in_all.intersection_update(paired)
+                    alternate_writes.update(i for i in matched_in_all if best[i] != chosen[i])
+                    distance = position(chosen)
+                    if distance < best_distance:
+                        best, best_distance = list(chosen), distance
                 return
             for entry in options[i]:
                 keys = entry[1].keys if entry is not None else ()
@@ -475,8 +463,17 @@ class Auditor:
                 copies.difference_update(sigs)
 
         search(0, set(), set(), [])
-        for claim, entry in zip(order, best, strict=True):
-            if entry is not None:
+        ambiguous = matched_in_any - matched_in_all
+        if alternate_writes & matched_in_all:
+            # Position can choose among tied writes for a claim that has evidence
+            # in every best assignment. It cannot decide which claim gets evidence.
+            ctx.log("reconcile", f"{SOURCE[entity]}: positional fallback for tied write pairings")
+        for i, (claim, entry) in enumerate(zip(order, best, strict=True)):
+            if i in ambiguous:
+                reason = "ambiguous write assignment: equally matching claims compete for evidence"
+                blocked[claim.claim_id] = reason
+                ctx.log("reconcile", f"{claim.claim_id} ({claim.type}): {reason}")
+            elif entry is not None:
                 _, match, is_exact = entry
                 self._take(claim, match, ctx, matches, "exact" if is_exact else "partial")
 
