@@ -2155,6 +2155,16 @@
       ],
       "strict_accuracy": 0.9701,
       "scenarios": 67
+    },
+    {
+      "commit": "f956f7686155389f7b4516f82b488bcf5d863f1b",
+      "commit_time": 1795376346,
+      "series": "results",
+      "paths": [
+        "evals/results/fuzz-seed-3.json"
+      ],
+      "strict_accuracy": 0.9701,
+      "scenarios": 67
     }
   ],
   "latest_scorecard_diff": {
