@@ -1,0 +1,35 @@
+{
+  "audits": 60,
+  "by_claim_type": {
+    "AppointmentBooked": {
+      "MISMATCH": 5,
+      "NOT_FOUND": 9,
+      "UNVERIFIABLE": 3,
+      "VERIFIED": 27
+    },
+    "Cancelled": {
+      "MISMATCH": 1,
+      "NOT_FOUND": 1,
+      "UNVERIFIABLE": 0,
+      "VERIFIED": 2
+    },
+    "ConfirmationSent": {
+      "MISMATCH": 2,
+      "NOT_FOUND": 4,
+      "UNVERIFIABLE": 1,
+      "VERIFIED": 27
+    },
+    "HandoffCreated": {
+      "MISMATCH": 1,
+      "NOT_FOUND": 2,
+      "UNVERIFIABLE": 0,
+      "VERIFIED": 4
+    },
+    "Rescheduled": {
+      "MISMATCH": 5,
+      "NOT_FOUND": 1,
+      "UNVERIFIABLE": 0,
+      "VERIFIED": 3
+    }
+  }
+}
