@@ -8,7 +8,7 @@ from typing import Any, Literal
 
 from subpoena.auditor import ClaimExtractor
 from subpoena.evals.extraction import ExtractionSummary, golden_extraction_quality
-from subpoena.evals.fuzz import generate
+from subpoena.evals.fuzz import MAX_WHOLE_CALL_FAULTS, WHOLE_CALL_FAULTS, generate
 from subpoena.evals.score import EvalSummary, RunScore, score_run, score_run_v2
 from subpoena.scenarios import GOLDEN, Scenario, run_scenario
 from subpoena.scenarios.golden import GOLDEN_BY_AGENT_VERSION
@@ -99,6 +99,7 @@ class EvalResult:
     golden_variants: dict[str, EvalSummary] = field(default_factory=dict)
 
     extraction_quality: tuple[ExtractionSummary, ...] = ()
+    fuzz_mix: dict[str, object] = field(default_factory=dict)
 
     def as_dict(self) -> dict[str, object]:
         return {
@@ -111,7 +112,7 @@ class EvalResult:
             "golden_v2_semantic": self.golden_v2.as_dict() if self.golden_v2 else None,
             "baseline_naive_existence_check": self.baseline.as_dict(),
             "ablations": [a.as_dict() for a in self.ablations],
-            "fuzz": {**self.fuzz.as_dict(), "seed": self.fuzz_seed},
+            "fuzz": {**self.fuzz.as_dict(), "seed": self.fuzz_seed, "mix": self.fuzz_mix},
             "fuzz_v2_semantic": (
                 {**self.fuzz_v2.as_dict(), "seed": self.fuzz_seed} if self.fuzz_v2 else None
             ),
@@ -138,6 +139,15 @@ def run_all(
     baseline = evaluate(GOLDEN, label="Naive existence check", auditor="naive")
     fuzz_scenarios = generate(fuzz_n, fuzz_seed)
     fuzz = evaluate(fuzz_scenarios, label=f"Subpoena on {fuzz_n} fuzzed calls")
+    whole_call_histogram = dict.fromkeys(range(MAX_WHOLE_CALL_FAULTS + 1), 0)
+    same_kind_chains = 0
+    multi_intent_calls = 0
+    for scenario in fuzz_scenarios:
+        kinds = {type(step) for step in scenario.steps}
+        multi_intent_calls += len(scenario.steps) > 1
+        same_kind_chains += len(scenario.steps) > len(kinds)
+        whole_call_count = sum(len(modes & WHOLE_CALL_FAULTS) for modes in scenario.faults.values())
+        whole_call_histogram[whole_call_count] += 1
     ablations = tuple(
         evaluate(GOLDEN, label=label, options=options) for label, options in ABLATIONS.items()
     )
@@ -152,6 +162,13 @@ def run_all(
         fuzz_v2=evaluate_v2(fuzz_scenarios, extractor=extractor),
         golden_variants=golden_versions,
         extraction_quality=golden_extraction_quality(),
+        fuzz_mix={
+            "multi_intent_calls": multi_intent_calls,
+            "same_kind_chains": same_kind_chains,
+            "calls_by_whole_call_fault_count": {
+                str(count): calls for count, calls in whole_call_histogram.items()
+            },
+        },
     )
 
 

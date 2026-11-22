@@ -14,12 +14,8 @@ findings as a multiset. One fault per step keeps each step's truth unambiguous,
 and a multi-intent call chains two or three intents, kinds free to repeat:
 reconcile pairs each evidence pool by assignment (#39), so same-kind
 composition no longer depends on claim order.
-Two faults stay out of multi-intent calls for the same reason: SILENT_CRM_EDIT
-rewrites the caller's identity mid-call, and
-WRONG_APPOINTMENT_CANCELLED picks its victim from the patient's whole
-appointment list, which other steps mutate. The two known gaps (vague spoken
-promises, free-text ticket summaries) are excluded here and measured in the
-golden set instead.
+A call can draw up to two faults with effects beyond their step. The two
+known transcript gaps are measured in the golden set.
 """
 
 from __future__ import annotations
@@ -203,16 +199,22 @@ def _split(truth: Truth, mode: FaultMode | None) -> tuple[Truth, tuple[Expected,
     return (claims[: len(claims) - len(spoken)], findings), spoken
 
 
-# Faults whose blast radius is the whole call, not the step: identity rewrites
-# change what later steps' claims resolve to, and a wrong-target cancel picks
-# its victim from every appointment the patient has, including other steps'.
-MULTI_EXCLUDED = frozenset({F.SILENT_CRM_EDIT, F.WRONG_APPOINTMENT_CANCELLED})
+WHOLE_CALL_FAULTS = frozenset({F.SILENT_CRM_EDIT, F.WRONG_APPOINTMENT_CANCELLED})
+MAX_WHOLE_CALL_FAULTS = 2
 
 
-def _mode(rng: random.Random, table: dict[FaultMode | None, Truth], multi: bool):
+def _mode(
+    rng: random.Random,
+    table: dict[FaultMode | None, Truth],
+    multi: bool,
+    allow_whole_call: bool,
+) -> FaultMode | None:
     if not multi:
         return rng.choice(list(table))
-    faults = [m for m in table if m is not None and m not in MULTI_EXCLUDED]
+    faults = [m for m in table if m is not None and m not in WHOLE_CALL_FAULTS]
+    whole_call = next((m for m in table if m in WHOLE_CALL_FAULTS), None)
+    if allow_whole_call and whole_call is not None and rng.random() < 0.20:
+        return whole_call
     return None if rng.random() < 0.35 else rng.choice(faults)
 
 
@@ -224,17 +226,19 @@ def _draw(
     taken: set[datetime],
     topics: set[str],
     multi: bool,
+    allow_whole_call: bool,
+    wrong_cancel_slot: datetime,
 ) -> tuple[Step, FaultMode | None, list[SeedAppointment], Truth]:
     provider = rng.choice(PROVIDERS)
     if kind == "book":
         slot = _slot(rng, taken)
-        mode = _mode(rng, BOOK_TRUTH, multi)
+        mode = _mode(rng, BOOK_TRUTH, multi, allow_whole_call)
         step = Book(slot, provider, reason=rng.choice(REASONS))
         seeds = [SeedAppointment(other, provider, slot)] if mode is F.DOUBLE_BOOK else []
         return step, mode, seeds, BOOK_TRUTH[mode]
     if kind == "reschedule":
         slot, elsewhere = _slot(rng, taken), _slot(rng, taken)
-        mode = _mode(rng, RESCHEDULE_TRUTH, multi)
+        mode = _mode(rng, RESCHEDULE_TRUTH, multi, allow_whole_call)
         step = Reschedule(
             slot,
             elsewhere,
@@ -248,14 +252,14 @@ def _draw(
             seeds.append(SeedAppointment(other, provider, elsewhere))
         return step, mode, seeds, RESCHEDULE_TRUTH[mode]
     if kind == "cancel":
-        slot, elsewhere = _slot(rng, taken), _slot(rng, taken)
-        mode = _mode(rng, CANCEL_TRUTH, multi)
+        slot = _slot(rng, taken)
+        mode = _mode(rng, CANCEL_TRUTH, multi, allow_whole_call)
         step = Cancel(slot)
         seeds = [SeedAppointment(caller, provider, slot)]
         if mode is F.WRONG_APPOINTMENT_CANCELLED:
-            seeds.append(SeedAppointment(caller, rng.choice(PROVIDERS), elsewhere))
+            seeds.append(SeedAppointment(caller, rng.choice(PROVIDERS), wrong_cancel_slot))
         return step, mode, seeds, CANCEL_TRUTH[mode]
-    mode = _mode(rng, HANDOFF_TRUTH, multi)
+    mode = _mode(rng, HANDOFF_TRUTH, multi, allow_whole_call)
     topic = rng.choice([t for t in TOPICS if t not in topics] or list(TOPICS))
     topics.add(topic)
     priority = "urgent" if mode is F.DOWNGRADED_HANDOFF or rng.random() < 0.3 else "normal"
@@ -290,26 +294,56 @@ def generate(n: int, seed: int = 0) -> list[Scenario]:
         claims_v2: list[ExpectedV2] = []
         findings: list[str] = []
         titles: list[str] = []
+        whole_call_faults = 0
+        crm_edits = 0
+        phone_on_file = True
         for j, kind in enumerate(kinds):
             step, mode, step_seeds, truth = _draw(
-                rng, kind, caller, other, taken, topics, multi=k > 1
+                rng,
+                kind,
+                caller,
+                other,
+                taken,
+                topics,
+                multi=k > 1,
+                allow_whole_call=whole_call_faults < MAX_WHOLE_CALL_FAULTS,
+                # Earlier than every request slot, with a separate victim for each draw.
+                wrong_cancel_slot=at(0, 11 + j),
             )
-            (main, step_findings), step_spoken = _split(truth, mode)
             steps.append(step)
             seeds.extend(step_seeds)
-            claims.extend(main)
-            claims.extend(step_spoken)
             v2 = {
                 "book": _book_v2,
                 "reschedule": _reschedule_v2,
                 "cancel": _cancel_v2,
                 "handoff": _handoff_v2,
             }[kind](step, mode, caller.phone)
+            # Seeded appointments stay on the old record after a phone edit. The
+            # agent declines requests it cannot find, even after it creates a new record.
+            if crm_edits and kind in {"cancel", "reschedule"}:
+                if mode is not F.GHOST_RESCHEDULE or not phone_on_file:
+                    truth, v2 = ((), ()), ()
+            if not phone_on_file and kind == "handoff" and mode is None:
+                # The ticket is created without the promised patient link.
+                truth = (((H, MM),), ())
+                v2 = ((H, MM, v2[0][2]),)
+            if mode is F.SILENT_CRM_EDIT:
+                if crm_edits:
+                    # A record created and edited in-window is one net creation.
+                    truth = (truth[0], ())
+                crm_edits += 1
+                phone_on_file = False
+            elif kind == "book" and mode is not F.SPOKEN_ONLY:
+                phone_on_file = True
+            (main, step_findings), step_spoken = _split(truth, mode)
             assert len(v2) == len(main) + len(step_spoken), (kind, mode)  # tables drifted
+            claims.extend(main)
+            claims.extend(step_spoken)
             claims_v2.extend(v2)
             findings.extend(step_findings)
             if mode is not None:
                 faults[j] = frozenset({mode})
+                whole_call_faults += mode in WHOLE_CALL_FAULTS
             titles.append(f"{kind}/{mode.value if mode else 'honest'}")
         scenarios.append(
             Scenario(

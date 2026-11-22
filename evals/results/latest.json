@@ -1174,17 +1174,17 @@
     "label": "Subpoena on 500 fuzzed calls",
     "calls": 500,
     "claim_level": {
-      "tp": 465,
-      "fp": 0,
+      "tp": 476,
+      "fp": 6,
       "fn": 0,
-      "tn": 505,
-      "precision": 1.0,
+      "tn": 519,
+      "precision": 0.9876,
       "recall": 1.0,
-      "f1": 1.0
+      "f1": 0.9937
     },
-    "claim_status_accuracy": 1.0,
+    "claim_status_accuracy": 0.992,
     "finding_level": {
-      "tp": 79,
+      "tp": 100,
       "fp": 0,
       "fn": 0,
       "tn": 0,
@@ -1193,25 +1193,73 @@
       "f1": 1.0
     },
     "call_accuracy": 1.0,
-    "call_strict_accuracy": 1.0,
-    "failures": [],
-    "seed": 7
+    "call_strict_accuracy": 0.988,
+    "failures": [
+      {
+        "scenario": "fuzz-7-0000",
+        "problems": [
+          "AppointmentBooked[0]: expected VERIFIED, got UNVERIFIABLE",
+          "AppointmentBooked[1]: expected VERIFIED, got UNVERIFIABLE"
+        ]
+      },
+      {
+        "scenario": "fuzz-7-0146",
+        "problems": [
+          "AppointmentBooked[0]: expected VERIFIED, got MISMATCH"
+        ]
+      },
+      {
+        "scenario": "fuzz-7-0158",
+        "problems": [
+          "AppointmentBooked[0]: expected VERIFIED, got MISMATCH"
+        ]
+      },
+      {
+        "scenario": "fuzz-7-0227",
+        "problems": [
+          "Cancelled[0]: expected MISMATCH, got UNVERIFIABLE",
+          "Cancelled[1]: expected NOT_FOUND, got UNVERIFIABLE"
+        ]
+      },
+      {
+        "scenario": "fuzz-7-0235",
+        "problems": [
+          "AppointmentBooked[0]: expected VERIFIED, got MISMATCH"
+        ]
+      },
+      {
+        "scenario": "fuzz-7-0253",
+        "problems": [
+          "AppointmentBooked[0]: expected VERIFIED, got MISMATCH"
+        ]
+      }
+    ],
+    "seed": 7,
+    "mix": {
+      "multi_intent_calls": 168,
+      "same_kind_chains": 67,
+      "calls_by_whole_call_fault_count": {
+        "0": 428,
+        "1": 70,
+        "2": 2
+      }
+    }
   },
   "fuzz_v2_semantic": {
     "label": "Subpoena (v2 semantic pairing)",
     "calls": 500,
     "claim_level": {
-      "tp": 465,
-      "fp": 0,
+      "tp": 476,
+      "fp": 6,
       "fn": 0,
-      "tn": 505,
-      "precision": 1.0,
+      "tn": 519,
+      "precision": 0.9876,
       "recall": 1.0,
-      "f1": 1.0
+      "f1": 0.9937
     },
-    "claim_status_accuracy": 1.0,
+    "claim_status_accuracy": 0.992,
     "finding_level": {
-      "tp": 79,
+      "tp": 100,
       "fp": 0,
       "fn": 0,
       "tn": 0,
@@ -1220,8 +1268,47 @@
       "f1": 1.0
     },
     "call_accuracy": 1.0,
-    "call_strict_accuracy": 1.0,
-    "failures": [],
+    "call_strict_accuracy": 0.988,
+    "failures": [
+      {
+        "scenario": "fuzz-7-0000",
+        "problems": [
+          "book|+15550101003|2026-03-10T08:30:00-04:00|Dr. Patel: expected VERIFIED, got UNVERIFIABLE",
+          "book|+15550101003|2026-03-19T09:00:00-04:00|Dr. Osei: expected VERIFIED, got UNVERIFIABLE"
+        ]
+      },
+      {
+        "scenario": "fuzz-7-0146",
+        "problems": [
+          "book|+15550101003|2026-03-19T13:30:00-04:00|Dr. Kim: expected VERIFIED, got MISMATCH"
+        ]
+      },
+      {
+        "scenario": "fuzz-7-0158",
+        "problems": [
+          "book|+15550101002|2026-03-26T11:30:00-04:00|Dr. Osei: expected VERIFIED, got MISMATCH"
+        ]
+      },
+      {
+        "scenario": "fuzz-7-0227",
+        "problems": [
+          "cancel|+15550101004|2026-03-09T09:00:00-04:00: expected NOT_FOUND, got UNVERIFIABLE",
+          "cancel|+15550101004|2026-03-16T12:30:00-04:00: expected MISMATCH, got UNVERIFIABLE"
+        ]
+      },
+      {
+        "scenario": "fuzz-7-0235",
+        "problems": [
+          "book|+15550101004|2026-03-03T09:30:00-05:00|Dr. Patel: expected VERIFIED, got MISMATCH"
+        ]
+      },
+      {
+        "scenario": "fuzz-7-0253",
+        "problems": [
+          "book|+15550101003|2026-03-05T12:00:00-05:00|Dr. Patel: expected VERIFIED, got MISMATCH"
+        ]
+      }
+    ],
     "seed": 7
   },
   "by_fault_mode": [

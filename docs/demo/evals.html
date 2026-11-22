@@ -68,7 +68,7 @@
   <h1>Eval results</h1>
   <p class="intro">Recorded results from <code>evals/results/latest.json</code>.</p>
   <p class="meta">Scorecard check-in date <strong>2026-11-22</strong><br>
-    SHA-256 fingerprint <code>8f8700fb7df906a57956a2817553dc13956dfd8a2aa6847db2e4a2576b2ca7ba</code></p>
+    SHA-256 fingerprint <code>97a68ed6b227fcd97c303dc0d630ce92c3c2ed7515236b019148ea155c0877b3</code></p>
   <p><a href="data-evals/scorecard.json">Download the scorecard JSON</a></p>
   <section class="panel">
     <h2>Golden results and naive baseline</h2>
@@ -91,8 +91,8 @@
       <table role="table">
         <thead role="rowgroup"><tr role="row"><th scope="col">Extractor and claim type</th><th scope="col">Precision</th><th scope="col">Recall</th><th scope="col">Invented</th><th scope="col">Missed</th></tr></thead>
         <tbody role="rowgroup">
-        <tr role="row"><th scope="row">Rule-based extractor · Overall</th><td>93.63%</td><td>90.95%</td><td>13</td><td>19</td></tr>
-        <tr role="row"><th scope="row">Rule-based extractor · AppointmentBooked</th><td>85.71%</td><td>81.82%</td><td>12</td><td>16</td></tr>
+        <tr role="row"><th scope="row">Rule-based extractor · Overall</th><td>90.78%</td><td>89.05%</td><td>19</td><td>23</td></tr>
+        <tr role="row"><th scope="row">Rule-based extractor · AppointmentBooked</th><td>79.07%</td><td>77.27%</td><td>18</td><td>20</td></tr>
         <tr role="row"><th scope="row">Rule-based extractor · Cancelled</th><td>100.00%</td><td>100.00%</td><td>0</td><td>0</td></tr>
         <tr role="row"><th scope="row">Rule-based extractor · ConfirmationSent</th><td>98.44%</td><td>95.45%</td><td>1</td><td>3</td></tr>
         <tr role="row"><th scope="row">Rule-based extractor · HandoffCreated</th><td>100.00%</td><td>100.00%</td><td>0</td><td>0</td></tr>
@@ -100,8 +100,8 @@
         <tr role="row"><th scope="row">Rule-based extractor · PrescriptionRefilled</th><td>100.00%</td><td>100.00%</td><td>0</td><td>0</td></tr>
         <tr role="row"><th scope="row">Rule-based extractor · RecordsUpdated</th><td>100.00%</td><td>100.00%</td><td>0</td><td>0</td></tr>
         <tr role="row"><th scope="row">Rule-based extractor · Rescheduled</th><td>100.00%</td><td>100.00%</td><td>0</td><td>0</td></tr>
-        <tr role="row"><th scope="row">Deterministic stub · Overall</th><td>46.72%</td><td>60.95%</td><td>146</td><td>82</td></tr>
-        <tr role="row"><th scope="row">Deterministic stub · AppointmentBooked</th><td>85.71%</td><td>81.82%</td><td>12</td><td>16</td></tr>
+        <tr role="row"><th scope="row">Deterministic stub · Overall</th><td>44.93%</td><td>59.05%</td><td>152</td><td>86</td></tr>
+        <tr role="row"><th scope="row">Deterministic stub · AppointmentBooked</th><td>79.07%</td><td>77.27%</td><td>18</td><td>20</td></tr>
         <tr role="row"><th scope="row">Deterministic stub · Cancelled</th><td>100.00%</td><td>100.00%</td><td>0</td><td>0</td></tr>
         <tr role="row"><th scope="row">Deterministic stub · ConfirmationSent</th><td>—</td><td>0.00%</td><td>0</td><td>66</td></tr>
         <tr role="row"><th scope="row">Deterministic stub · HandoffCreated</th><td>11.84%</td><td>100.00%</td><td>134</td><td>0</td></tr>
@@ -156,8 +156,8 @@
       <table role="table">
         <thead role="rowgroup"><tr role="row"><th scope="col">Mode</th><th scope="col">Calls</th><th scope="col">Seed</th><th scope="col">Strict pass rate</th></tr></thead>
         <tbody role="rowgroup">
-        <tr role="row"><th scope="row">Fuzz</th><td>500</td><td>7</td><td>100.00%</td></tr>
-        <tr role="row"><th scope="row">Fuzz v2-semantic</th><td>500</td><td>7</td><td>100.00%</td></tr>
+        <tr role="row"><th scope="row">Fuzz</th><td>500</td><td>7</td><td>98.80%</td></tr>
+        <tr role="row"><th scope="row">Fuzz v2-semantic</th><td>500</td><td>7</td><td>98.80%</td></tr>
         </tbody>
       </table>
     </div>
@@ -183,9 +183,51 @@
       </ul></li>
     </ul>
     <h3>Fuzz</h3>
-    <p>No failures recorded.</p>
+    <ul>
+      <li><strong>fuzz-7-0000</strong><ul>
+        <li><code>AppointmentBooked[0]: expected VERIFIED, got UNVERIFIABLE</code></li>
+        <li><code>AppointmentBooked[1]: expected VERIFIED, got UNVERIFIABLE</code></li>
+      </ul></li>
+      <li><strong>fuzz-7-0146</strong><ul>
+        <li><code>AppointmentBooked[0]: expected VERIFIED, got MISMATCH</code></li>
+      </ul></li>
+      <li><strong>fuzz-7-0158</strong><ul>
+        <li><code>AppointmentBooked[0]: expected VERIFIED, got MISMATCH</code></li>
+      </ul></li>
+      <li><strong>fuzz-7-0227</strong><ul>
+        <li><code>Cancelled[0]: expected MISMATCH, got UNVERIFIABLE</code></li>
+        <li><code>Cancelled[1]: expected NOT_FOUND, got UNVERIFIABLE</code></li>
+      </ul></li>
+      <li><strong>fuzz-7-0235</strong><ul>
+        <li><code>AppointmentBooked[0]: expected VERIFIED, got MISMATCH</code></li>
+      </ul></li>
+      <li><strong>fuzz-7-0253</strong><ul>
+        <li><code>AppointmentBooked[0]: expected VERIFIED, got MISMATCH</code></li>
+      </ul></li>
+    </ul>
     <h3>Fuzz v2-semantic</h3>
-    <p>No failures recorded.</p>
+    <ul>
+      <li><strong>fuzz-7-0000</strong><ul>
+        <li><code>book|+15550101003|2026-03-10T08:30:00-04:00|Dr. Patel: expected VERIFIED, got UNVERIFIABLE</code></li>
+        <li><code>book|+15550101003|2026-03-19T09:00:00-04:00|Dr. Osei: expected VERIFIED, got UNVERIFIABLE</code></li>
+      </ul></li>
+      <li><strong>fuzz-7-0146</strong><ul>
+        <li><code>book|+15550101003|2026-03-19T13:30:00-04:00|Dr. Kim: expected VERIFIED, got MISMATCH</code></li>
+      </ul></li>
+      <li><strong>fuzz-7-0158</strong><ul>
+        <li><code>book|+15550101002|2026-03-26T11:30:00-04:00|Dr. Osei: expected VERIFIED, got MISMATCH</code></li>
+      </ul></li>
+      <li><strong>fuzz-7-0227</strong><ul>
+        <li><code>cancel|+15550101004|2026-03-09T09:00:00-04:00: expected NOT_FOUND, got UNVERIFIABLE</code></li>
+        <li><code>cancel|+15550101004|2026-03-16T12:30:00-04:00: expected MISMATCH, got UNVERIFIABLE</code></li>
+      </ul></li>
+      <li><strong>fuzz-7-0235</strong><ul>
+        <li><code>book|+15550101004|2026-03-03T09:30:00-05:00|Dr. Patel: expected VERIFIED, got MISMATCH</code></li>
+      </ul></li>
+      <li><strong>fuzz-7-0253</strong><ul>
+        <li><code>book|+15550101003|2026-03-05T12:00:00-05:00|Dr. Patel: expected VERIFIED, got MISMATCH</code></li>
+      </ul></li>
+    </ul>
   </section>
   <section class="panel">
     <h2>Ablations</h2>

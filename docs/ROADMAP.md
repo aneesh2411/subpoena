@@ -65,10 +65,10 @@ fail to reproduce, and the eval still passes.
    `CallRecord` and retains the original request for audit.
 5. **Fuzz multi-intent and multi-fault calls.** **Done**
    ([#38](https://github.com/aneesh2411/subpoena/issues/38)): about 30% of fuzzed calls
-   chain two or three distinct intents with a fault drawn per step, so honest and
-   dishonest requests mix inside one call. Same-kind chains and two whole-call faults
-   stay excluded until reconcile pairs claims with writes by assignment instead of
-   claim order ([#39](https://github.com/aneesh2411/subpoena/issues/39)).
+   chain two or three intents with a fault drawn per step. Intent kinds can repeat.
+   Up to two whole-call faults can be drawn independently at eligible steps
+   ([#262](https://github.com/aneesh2411/subpoena/issues/262)). The eval results record
+   the generated mix and the failure analysis tracks the discrepancies it exposes.
 
 ## Later: make it a product (v0.4+)
 

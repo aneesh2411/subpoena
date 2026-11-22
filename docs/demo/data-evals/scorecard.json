@@ -128,7 +128,7 @@
   },
   "provenance": {
     "check_in_date": "2026-11-22",
-    "sha256": "8f8700fb7df906a57956a2817553dc13956dfd8a2aa6847db2e4a2576b2ca7ba",
+    "sha256": "97a68ed6b227fcd97c303dc0d630ce92c3c2ed7515236b019148ea155c0877b3",
     "source": "evals/results/latest.json"
   },
   "results": {
@@ -628,11 +628,11 @@
       {
         "by_claim_type": {
           "AppointmentBooked": {
-            "fn": 16,
-            "fp": 12,
-            "precision": 0.8571428571428571,
-            "recall": 0.8181818181818182,
-            "tp": 72
+            "fn": 20,
+            "fp": 18,
+            "precision": 0.7906976744186046,
+            "recall": 0.7727272727272727,
+            "tp": 68
           },
           "Cancelled": {
             "fn": 0,
@@ -687,21 +687,21 @@
         "calls": 134,
         "label": "Rule-based extractor",
         "overall": {
-          "fn": 19,
-          "fp": 13,
-          "precision": 0.9362745098039216,
-          "recall": 0.9095238095238095,
-          "tp": 191
+          "fn": 23,
+          "fp": 19,
+          "precision": 0.9077669902912622,
+          "recall": 0.8904761904761904,
+          "tp": 187
         }
       },
       {
         "by_claim_type": {
           "AppointmentBooked": {
-            "fn": 16,
-            "fp": 12,
-            "precision": 0.8571428571428571,
-            "recall": 0.8181818181818182,
-            "tp": 72
+            "fn": 20,
+            "fp": 18,
+            "precision": 0.7906976744186046,
+            "recall": 0.7727272727272727,
+            "tp": 68
           },
           "Cancelled": {
             "fn": 0,
@@ -756,29 +756,68 @@
         "calls": 134,
         "label": "Deterministic stub",
         "overall": {
-          "fn": 82,
-          "fp": 146,
-          "precision": 0.46715328467153283,
-          "recall": 0.6095238095238096,
-          "tp": 128
+          "fn": 86,
+          "fp": 152,
+          "precision": 0.4492753623188406,
+          "recall": 0.5904761904761905,
+          "tp": 124
         }
       }
     ],
     "fuzz": {
       "call_accuracy": 1.0,
-      "call_strict_accuracy": 1.0,
+      "call_strict_accuracy": 0.988,
       "calls": 500,
       "claim_level": {
-        "f1": 1.0,
+        "f1": 0.9937,
         "fn": 0,
-        "fp": 0,
-        "precision": 1.0,
+        "fp": 6,
+        "precision": 0.9876,
         "recall": 1.0,
-        "tn": 505,
-        "tp": 465
+        "tn": 519,
+        "tp": 476
       },
-      "claim_status_accuracy": 1.0,
-      "failures": [],
+      "claim_status_accuracy": 0.992,
+      "failures": [
+        {
+          "problems": [
+            "AppointmentBooked[0]: expected VERIFIED, got UNVERIFIABLE",
+            "AppointmentBooked[1]: expected VERIFIED, got UNVERIFIABLE"
+          ],
+          "scenario": "fuzz-7-0000"
+        },
+        {
+          "problems": [
+            "AppointmentBooked[0]: expected VERIFIED, got MISMATCH"
+          ],
+          "scenario": "fuzz-7-0146"
+        },
+        {
+          "problems": [
+            "AppointmentBooked[0]: expected VERIFIED, got MISMATCH"
+          ],
+          "scenario": "fuzz-7-0158"
+        },
+        {
+          "problems": [
+            "Cancelled[0]: expected MISMATCH, got UNVERIFIABLE",
+            "Cancelled[1]: expected NOT_FOUND, got UNVERIFIABLE"
+          ],
+          "scenario": "fuzz-7-0227"
+        },
+        {
+          "problems": [
+            "AppointmentBooked[0]: expected VERIFIED, got MISMATCH"
+          ],
+          "scenario": "fuzz-7-0235"
+        },
+        {
+          "problems": [
+            "AppointmentBooked[0]: expected VERIFIED, got MISMATCH"
+          ],
+          "scenario": "fuzz-7-0253"
+        }
+      ],
       "finding_level": {
         "f1": 1.0,
         "fn": 0,
@@ -786,26 +825,74 @@
         "precision": 1.0,
         "recall": 1.0,
         "tn": 0,
-        "tp": 79
+        "tp": 100
       },
       "label": "Subpoena on 500 fuzzed calls",
+      "mix": {
+        "calls_by_whole_call_fault_count": {
+          "0": 428,
+          "1": 70,
+          "2": 2
+        },
+        "multi_intent_calls": 168,
+        "same_kind_chains": 67
+      },
       "seed": 7
     },
     "fuzz_v2_semantic": {
       "call_accuracy": 1.0,
-      "call_strict_accuracy": 1.0,
+      "call_strict_accuracy": 0.988,
       "calls": 500,
       "claim_level": {
-        "f1": 1.0,
+        "f1": 0.9937,
         "fn": 0,
-        "fp": 0,
-        "precision": 1.0,
+        "fp": 6,
+        "precision": 0.9876,
         "recall": 1.0,
-        "tn": 505,
-        "tp": 465
+        "tn": 519,
+        "tp": 476
       },
-      "claim_status_accuracy": 1.0,
-      "failures": [],
+      "claim_status_accuracy": 0.992,
+      "failures": [
+        {
+          "problems": [
+            "book|+15550101003|2026-03-10T08:30:00-04:00|Dr. Patel: expected VERIFIED, got UNVERIFIABLE",
+            "book|+15550101003|2026-03-19T09:00:00-04:00|Dr. Osei: expected VERIFIED, got UNVERIFIABLE"
+          ],
+          "scenario": "fuzz-7-0000"
+        },
+        {
+          "problems": [
+            "book|+15550101003|2026-03-19T13:30:00-04:00|Dr. Kim: expected VERIFIED, got MISMATCH"
+          ],
+          "scenario": "fuzz-7-0146"
+        },
+        {
+          "problems": [
+            "book|+15550101002|2026-03-26T11:30:00-04:00|Dr. Osei: expected VERIFIED, got MISMATCH"
+          ],
+          "scenario": "fuzz-7-0158"
+        },
+        {
+          "problems": [
+            "cancel|+15550101004|2026-03-09T09:00:00-04:00: expected NOT_FOUND, got UNVERIFIABLE",
+            "cancel|+15550101004|2026-03-16T12:30:00-04:00: expected MISMATCH, got UNVERIFIABLE"
+          ],
+          "scenario": "fuzz-7-0227"
+        },
+        {
+          "problems": [
+            "book|+15550101004|2026-03-03T09:30:00-05:00|Dr. Patel: expected VERIFIED, got MISMATCH"
+          ],
+          "scenario": "fuzz-7-0235"
+        },
+        {
+          "problems": [
+            "book|+15550101003|2026-03-05T12:00:00-05:00|Dr. Patel: expected VERIFIED, got MISMATCH"
+          ],
+          "scenario": "fuzz-7-0253"
+        }
+      ],
       "finding_level": {
         "f1": 1.0,
         "fn": 0,
@@ -813,7 +900,7 @@
         "precision": 1.0,
         "recall": 1.0,
         "tn": 0,
-        "tp": 79
+        "tp": 100
       },
       "label": "Subpoena (v2 semantic pairing)",
       "seed": 7

@@ -55,7 +55,8 @@ def test_saved_report_verifies_and_a_doctored_one_does_not(tmp_path, capsys, mon
 
 def test_eval_writes_reports_and_passes_with_only_known_gaps(tmp_path, capsys):
     metrics, report = tmp_path / "out" / "metrics.json", tmp_path / "out" / "EVAL.md"
-    assert main(["eval", "--fuzz", "40", "--json", str(metrics), "--report", str(report)]) == 0
+    args = ["eval", "--fuzz", "40", "--seed", "5", "--json", str(metrics), "--report", str(report)]
+    assert main(args) == 0
     out = capsys.readouterr().out
     assert "PASS" in out and "known gap" in out
     data = json.loads(metrics.read_text())

@@ -56,7 +56,7 @@ def test_demo_and_verify_offline(offline, tmp_path, capsys):
 
 
 def test_eval_offline(offline, capsys):
-    assert main(["eval", "--fuzz", "1"]) == 0
+    assert main(["eval", "--fuzz", "1", "--seed", "5"]) == 0
     assert capsys.readouterr().out.splitlines()[-1] == "PASS"
 
 

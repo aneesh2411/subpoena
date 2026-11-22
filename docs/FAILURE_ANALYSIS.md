@@ -26,7 +26,7 @@ Golden set: 67 hand-labelled calls, 105 claims, 7 findings beyond claims.
 
 Claim-level confusion for Subpoena: 38 true positives, 0 false positives, 2 false negatives, 65 true negatives.
 
-Fuzzed set: 500 generated calls, 970 claims, 79 findings. No disagreements with ground truth.
+Fuzzed set: 500 generated calls, 1001 claims, 100 findings. 98.8% of calls fully correct.
 <!-- metrics:fa-results:end -->
 
 ## 2. The two failures
@@ -222,19 +222,37 @@ call transcripts. Speech-to-text errors, interruptions, corrections ("sorry, I m
 Thursday") and agents that paraphrase are not represented. The one vague phrasing in the set
 is a miss.
 
-**100% on fuzzing is narrower than it sounds.** Fuzzing varies patient, provider, day, time
-of day, phrasing variant and fault mode. About 30% of calls chain two or three intents
-(book, reschedule, cancel, handoff) with a fault drawn per step, so one call can mix
-honest and dishonest requests. It shows the verdicts do not depend on hand-picked dates
-and slots (it crosses the daylight-saving change and month boundaries). Multi-intent calls
-chain two or three intents with kinds free to repeat: steps of one kind share the
-per-type evidence pool, and reconcile pairs each pool by assignment instead of claim
-order (#39, `tests/test_reconcile_assignment.py`), so same-kind fault composition is
-covered rather than excluded.
-`wrong_appointment_cancelled` and `silent_crm_edit` never fire in a multi-intent call
-(their blast radius is the whole call, not the step), and the two known gaps are excluded
-from generation. Expected outcomes come from a table written by the same author as the
-auditor.
+**Fuzzing covers seeded variations and overlapping faults.** The 500-call run at seed 7
+contains 168 multi-intent calls, including 67 with a repeated intent kind. The generator
+draws the whole-call faults `silent_crm_edit` and `wrong_appointment_cancelled` independently
+at eligible steps until the call reaches two. The run contains 428 calls with zero
+whole-call faults selected, 70 with one, and two with two. Wrong-target cancellations
+start with earlier decoy appointments, so the expected victim does not depend on the
+time drawn for another intent. The labels account for later requests that the agent
+declines because it can no longer look up the caller after an edit.
+
+Strict fuzz accuracy moved from 100.0% to 98.8% under both positional and semantic
+scoring. The six failures still flag the calls for review.
+
+- **A later booking recreates the caller record** (`fuzz-7-0146`, `0158`, `0235`, `0253`).
+  An earlier booking correctly references the original patient record. After the agent
+  changes that record's phone and a later booking creates a new record with the caller's
+  original phone, the audit uses the new record for both claims and marks the earlier
+  booking `MISMATCH`.
+- **Two silent CRM edits in one call** (`fuzz-7-0000`). Both bookings were written to
+  records for the same caller. At audit time the original phone is missing and both
+  records match by name. Both bookings are `UNVERIFIABLE`.
+- **A wrong-target cancel and a phantom cancel share one release** (`fuzz-7-0227`).
+  The oracle knows which step released the decoy appointment. Both claims only
+  partially match that release by content, so reconcile returns `UNVERIFIABLE` for
+  both. The expected statuses are `MISMATCH` for the wrong-target cancel and
+  `NOT_FOUND` for the phantom cancel.
+
+Seed 3 also exposes the patient-resolution problem on a handoff made before the edit
+(`fuzz-3-0209`). The ticket is linked to the original record, but the audit checks it
+against the replacement record and reports `MISMATCH`.
+
+The golden set measures the two known transcript gaps separately.
 
 **Precision is measured on a 57-call sample.** Zero false accusations in that sample is
 encouraging and not a guarantee. Both false positives found so far were caught and fixed
