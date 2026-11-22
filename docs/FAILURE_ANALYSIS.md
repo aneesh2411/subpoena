@@ -6,6 +6,7 @@ one by hand. Refresh the artifacts, then re-sync the docs:
 ```bash
 subpoena eval --report docs/EVAL_REPORT.md --json evals/results/latest.json
 subpoena eval --seed 3 --json evals/results/fuzz-seed-3.json
+python scripts/export_fuzz_sweep.py
 python scripts/sync_docs.py
 ```
 
@@ -248,28 +249,47 @@ If multiple records match at the strongest available level, the auditor returns
 - **Two silent CRM edits in one call** (`fuzz-7-0000`). Both records match by name
   when the audit runs. The journal shows which record held the caller's phone
   during each exchange, so both bookings verify.
-### Shared-release cancellation ties
 
-Reconciliation compares the patient resolved over each exchange, the claimed start,
-and the provider when the claim names one. For these five cases, both cancellation
-claims resolve to the release's patient, both name a different start from that release,
-and neither names a provider. The shared candidates have equal content scores, so
-both cancellations remain `UNVERIFIABLE`. Seed 7 reaches 99.8% strict accuracy and
-seed 3 reaches 99.2%.
+### Fuzz seed sweep
 
-| Case | Wrong-target claim | Phantom claim | Shared release |
-|---|---|---|---|
-| `fuzz-7-0227` | Mar 16 12:30 | Mar 9 09:00 | Mar 2 11:00, Dr. Patel |
-| `fuzz-3-0014` | Mar 18 13:00 | Mar 10 08:00 | Mar 2 12:00, Dr. Kim |
-| `fuzz-3-0157` | Mar 10 09:30 | Mar 11 09:30 | Mar 2 12:00, Dr. Kim |
-| `fuzz-3-0179` | Mar 10 08:30 | Mar 10 11:00 | Mar 2 11:00, Dr. Osei |
-| `fuzz-3-0250` | Mar 9 11:00 | Mar 19 10:00 | Mar 2 11:00, Dr. Kim |
+The sweep uses the same positional scorer as the landing figure, which reports seed 7.
+Strict accuracy requires every verdict and finding in a call to match the oracle. Claim
+precision measures how often a flagged claim was false in the oracle. The failure table
+counts each failed call once by its set of verdict and finding discrepancies, ignoring
+claim positions and repeated instances of the same discrepancy within a call. The
+[committed JSON](../evals/fuzz-sweep.json) records the counts by seed.
 
-Times are clinic-local. The other release in `fuzz-3-0014` belongs to a
-reschedule whose replacement write identifies the move. The oracle uses the
-injected fault to identify the wrong-target cancel as `MISMATCH` and the phantom
-as `NOT_FOUND`. Awarding the shared release to one of the cancellation claims
-based on exchange timing alone would resolve an evidence-ownership tie by position.
+<!-- metrics:fa-fuzz-sweep:start -->
+Strict accuracy ranged from 98.6% to 99.8%. Claim precision range was 100% to 100%.
+
+| Seed | Calls | Strict accuracy | Claim precision | Failed calls |
+|---|---:|---:|---:|---:|
+| 1 | 500 | 98.8% | 100% | 6 |
+| 2 | 500 | 98.6% | 100% | 7 |
+| 3 | 500 | 99.2% | 100% | 4 |
+| 4 | 500 | 99.6% | 100% | 2 |
+| 5 | 500 | 99.6% | 100% | 2 |
+| 6 | 500 | 99.6% | 100% | 2 |
+| 7 | 500 | 99.8% | 100% | 1 |
+| 8 | 500 | 99.4% | 100% | 3 |
+| 9 | 500 | 99.6% | 100% | 2 |
+| 10 | 500 | 99.6% | 100% | 2 |
+
+| Failure shape | Failed calls | Seeds (failed calls) |
+|---|---:|---|
+| `Cancelled: expected MISMATCH, got UNVERIFIABLE`<br>`Cancelled: expected NOT_FOUND, got UNVERIFIABLE` | 28 | 1 (5), 2 (7), 3 (4), 4 (2), 5 (1), 6 (2), 7 (1), 8 (3), 9 (1), 10 (2) |
+| `ConfirmationSent: expected MISMATCH, got UNVERIFIABLE`<br>`ConfirmationSent: expected NOT_FOUND, got UNVERIFIABLE` | 2 | 1 (1), 5 (1) |
+| `AppointmentBooked: expected NOT_FOUND, got MISMATCH`<br>`unclaimed_appointment_created: expected 1, got 0` | 1 | 9 (1) |
+<!-- metrics:fa-fuzz-sweep:end -->
+
+The most frequent shape is a wrong-target cancellation and a phantom cancellation
+competing for a release. The claims resolve to the same patient, neither names a provider,
+and both name a start different from the release. The oracle expects `MISMATCH` for the
+wrong target and `NOT_FOUND` for the phantom. With equal evidence scores, the auditor
+returns `UNVERIFIABLE` for both. The sweep also found confirmation verdicts that fall
+back to `UNVERIFIABLE`, and a phantom booking scored as `MISMATCH` alongside a missing
+unclaimed-appointment finding. These errors reduce strict accuracy even when the
+affected claims were correctly flagged as false.
 
 The golden set measures the two known transcript gaps separately.
 

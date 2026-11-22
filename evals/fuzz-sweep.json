@@ -1,0 +1,108 @@
+{
+  "scorer": "positional-v1",
+  "calls_per_seed": 500,
+  "seeds": [
+    {
+      "seed": 1,
+      "call_strict_accuracy": 0.988,
+      "claim_precision": 1.0,
+      "failed_calls": 6
+    },
+    {
+      "seed": 2,
+      "call_strict_accuracy": 0.986,
+      "claim_precision": 1.0,
+      "failed_calls": 7
+    },
+    {
+      "seed": 3,
+      "call_strict_accuracy": 0.992,
+      "claim_precision": 1.0,
+      "failed_calls": 4
+    },
+    {
+      "seed": 4,
+      "call_strict_accuracy": 0.996,
+      "claim_precision": 1.0,
+      "failed_calls": 2
+    },
+    {
+      "seed": 5,
+      "call_strict_accuracy": 0.996,
+      "claim_precision": 1.0,
+      "failed_calls": 2
+    },
+    {
+      "seed": 6,
+      "call_strict_accuracy": 0.996,
+      "claim_precision": 1.0,
+      "failed_calls": 2
+    },
+    {
+      "seed": 7,
+      "call_strict_accuracy": 0.998,
+      "claim_precision": 1.0,
+      "failed_calls": 1
+    },
+    {
+      "seed": 8,
+      "call_strict_accuracy": 0.994,
+      "claim_precision": 1.0,
+      "failed_calls": 3
+    },
+    {
+      "seed": 9,
+      "call_strict_accuracy": 0.996,
+      "claim_precision": 1.0,
+      "failed_calls": 2
+    },
+    {
+      "seed": 10,
+      "call_strict_accuracy": 0.996,
+      "claim_precision": 1.0,
+      "failed_calls": 2
+    }
+  ],
+  "failure_shapes": [
+    {
+      "discrepancies": [
+        "Cancelled: expected MISMATCH, got UNVERIFIABLE",
+        "Cancelled: expected NOT_FOUND, got UNVERIFIABLE"
+      ],
+      "failed_calls": 28,
+      "failed_calls_by_seed": {
+        "1": 5,
+        "2": 7,
+        "3": 4,
+        "4": 2,
+        "5": 1,
+        "6": 2,
+        "7": 1,
+        "8": 3,
+        "9": 1,
+        "10": 2
+      }
+    },
+    {
+      "discrepancies": [
+        "ConfirmationSent: expected MISMATCH, got UNVERIFIABLE",
+        "ConfirmationSent: expected NOT_FOUND, got UNVERIFIABLE"
+      ],
+      "failed_calls": 2,
+      "failed_calls_by_seed": {
+        "1": 1,
+        "5": 1
+      }
+    },
+    {
+      "discrepancies": [
+        "AppointmentBooked: expected NOT_FOUND, got MISMATCH",
+        "unclaimed_appointment_created: expected 1, got 0"
+      ],
+      "failed_calls": 1,
+      "failed_calls_by_seed": {
+        "9": 1
+      }
+    }
+  ]
+}
