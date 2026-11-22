@@ -10,8 +10,9 @@ static page fetches. Regenerate after any auditor or scenario change:
 
 from __future__ import annotations
 
+import argparse
 import json
-import shutil
+from collections.abc import Callable
 from datetime import timedelta
 from pathlib import Path
 
@@ -30,12 +31,21 @@ TWILIO_DEMO_ID = "twilio-booked-nothing"
 # Fixed key so the baked seals are deterministic from one export to the next.
 SEALING_KEY = b"subpoena-pages-demo"
 
+# Files this exporter wrote on its previous run. docs/demo/data is shared with
+# other exporters (the remediation demo writes into the same directory), so
+# cleanup may only ever delete names from this manifest, never the directory.
+MANIFEST_NAME = ".manifest.json"
+
 
 def export(out: Path) -> list[str]:
-    if out.exists():
-        shutil.rmtree(out)
-    out.mkdir(parents=True)
+    out.mkdir(parents=True, exist_ok=True)
     sealer, extractor = Sealer(SEALING_KEY), RuleBasedExtractor()
+    written: set[str] = set()
+
+    def write(name: str, text: str) -> None:
+        (out / name).write_text(text)
+        written.add(name)
+
     index = []
     for scenario in BY_ID.values():
         world = build_world(scenario)
@@ -45,9 +55,9 @@ def export(out: Path) -> list[str]:
         finally:
             world.store.close()
         payload = json.dumps(report.model_dump(mode="json"), indent=1)
-        (out / f"run-{scenario.id}.json").write_text(payload)
-        (out / f"audit-{report.audit_id}.json").write_text(payload)
-        (out / f"report-{report.audit_id}.md").write_text(render_markdown(report))
+        write(f"run-{scenario.id}.json", payload)
+        write(f"audit-{report.audit_id}.json", payload)
+        write(f"report-{report.audit_id}.md", render_markdown(report))
         index.append(
             {
                 "id": scenario.id,
@@ -58,12 +68,27 @@ def export(out: Path) -> list[str]:
                 "known_gap": scenario.known_gap,
             }
         )
-    index.append(export_twilio(out, sealer, extractor))
-    (out / "scenarios.json").write_text(json.dumps(index, indent=1))
-    return sorted(p.name for p in out.iterdir())
+    index.append(export_twilio(out, sealer, extractor, write))
+    write("scenarios.json", json.dumps(index, indent=1))
+
+    manifest_path = out / MANIFEST_NAME
+    previous: set[str] = set()
+    if manifest_path.exists():
+        previous = set(json.loads(manifest_path.read_text()))
+    for stale in sorted(previous - written):
+        target = out / stale
+        if target.is_file():
+            target.unlink()
+    manifest_path.write_text(json.dumps(sorted(written), indent=1) + "\n")
+    return sorted(written)
 
 
-def export_twilio(out: Path, sealer: Sealer, extractor: RuleBasedExtractor) -> dict:
+def export_twilio(
+    out: Path,
+    sealer: Sealer,
+    extractor: RuleBasedExtractor,
+    write: Callable[[str, str], None] | None = None,
+) -> dict:
     """Audit the call that arrives as saved Twilio Voice exports, then bake it.
 
     The payload fixtures live in docs/demo/twilio/ so the page can link the raw
@@ -106,10 +131,15 @@ def export_twilio(out: Path, sealer: Sealer, extractor: RuleBasedExtractor) -> d
         ).audit(record, audit_id=f"aud-{TWILIO_DEMO_ID}")
     finally:
         store.close()
+    if write is None:
+
+        def write(name: str, text: str) -> None:
+            (out / name).write_text(text)
+
     payload = json.dumps(report.model_dump(mode="json"), indent=1)
-    (out / f"run-{TWILIO_DEMO_ID}.json").write_text(payload)
-    (out / f"audit-{report.audit_id}.json").write_text(payload)
-    (out / f"report-{report.audit_id}.md").write_text(render_markdown(report))
+    write(f"run-{TWILIO_DEMO_ID}.json", payload)
+    write(f"audit-{report.audit_id}.json", payload)
+    write(f"report-{report.audit_id}.md", render_markdown(report))
     return {
         "id": TWILIO_DEMO_ID,
         "title": "Booked for Tuesday at 3. Nothing was booked.",
@@ -127,8 +157,11 @@ def export_twilio(out: Path, sealer: Sealer, extractor: RuleBasedExtractor) -> d
 
 
 def main() -> None:
-    files = export(DEFAULT_OUT)
-    print(f"wrote {len(files)} files to {DEFAULT_OUT}")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
+    args = parser.parse_args()
+    files = export(args.out)
+    print(f"wrote {len(files)} files to {args.out}")
 
 
 if __name__ == "__main__":
