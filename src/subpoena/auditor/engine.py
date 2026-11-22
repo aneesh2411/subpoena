@@ -215,7 +215,7 @@ class Auditor:
             ctx.log("recheck", f"Re-checking claim {claim.claim_id} after remediation.")
         matches, blocked = self._reconcile((claim,), ctx)
         if fix_unavailable is not None:
-            blocked[claim.claim_id] = fix_unavailable
+            blocked[claim.claim_id] = _Block(fix_unavailable)
         try:
             verdict = self._judge(claim, matches.get(claim.claim_id), blocked, ctx)
         except AdapterUnavailable as exc:
