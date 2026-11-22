@@ -60,7 +60,7 @@ def test_recorded_extraction_results_and_page_match_the_harness():
     ]
 
     page = (DEMO / "evals.html").read_text(encoding="utf-8")
-    assert "<h2>Extractor quality</h2>" in page
+    assert '<h2 id="extractor-quality">Extractor quality</h2>' in page
     assert (
         '<th scope="row">Rule-based extractor · Overall</th>'
         "<td>93.63%</td><td>90.95%</td><td>13</td><td>19</td>"

@@ -146,6 +146,7 @@ def call_metrics(result: dict) -> tuple[str, ...]:
 
 
 def table(
+    section_id: str,
     title: str,
     columns: tuple[str, ...],
     rows: list[tuple[str, ...]],
@@ -158,10 +159,11 @@ def table(
         cells = "".join(f"<td>{escape(value)}</td>" for value in values)
         body.append(f'        <tr role="row"><th scope="row">{escape(label)}</th>{cells}</tr>')
     return (
-        '  <section class="panel">\n'
-        f"    <h2>{title}</h2>\n"
+        f'  <section class="panel" aria-labelledby="{section_id}">\n'
+        f'    <h2 id="{section_id}">{escape(title)}</h2>\n'
         + (f'    <p class="intro">{escape(description)}</p>\n' if description else "")
-        + f'    <div class="table-scroll" tabindex="0" role="region" aria-label="{title}">\n'
+        + '    <div class="table-scroll" tabindex="0" role="region" '
+        f'aria-label="{escape(title)} table">\n'
         '      <table role="table">\n'
         f'        <thead role="rowgroup"><tr role="row">{heading}</tr></thead>\n'
         '        <tbody role="rowgroup">\n' + "\n".join(body) + "\n"
@@ -240,8 +242,8 @@ def claim_accuracy_by_version(results: dict) -> dict[str, list[tuple[str, ...]]]
 
 def failures(suites: tuple[tuple[str, dict], ...]) -> str:
     lines = [
-        '  <section class="panel failures">',
-        "    <h2>Failing scenarios</h2>",
+        '  <section class="panel failures" aria-labelledby="failing-scenarios">',
+        '    <h2 id="failing-scenarios">Failing scenarios</h2>',
     ]
     for label, result in suites:
         lines.append(f"    <h3>{label}</h3>")
@@ -270,6 +272,7 @@ def render(results: dict, check_in_date: str | None, fingerprint: str) -> str:
     claim_rows = claim_accuracy_by_version(results)
     sections = [
         table(
+            "golden-results",
             "Golden results and naive baseline",
             ("Suite and system", *CALL_METRICS),
             [
@@ -283,6 +286,7 @@ def render(results: dict, check_in_date: str | None, fingerprint: str) -> str:
             ],
         ),
         table(
+            "claim-accuracy",
             "Auditor accuracy by claim type",
             CLAIM_ACCURACY_COLUMNS,
             claim_rows[BASELINE_AGENT],
@@ -294,11 +298,17 @@ def render(results: dict, check_in_date: str | None, fingerprint: str) -> str:
             ),
         ),
         *[
-            table(f"Auditor accuracy by claim type · {version}", CLAIM_ACCURACY_COLUMNS, rows)
-            for version, rows in claim_rows.items()
+            table(
+                f"claim-accuracy-{index}",
+                f"Auditor accuracy by claim type · {version}",
+                CLAIM_ACCURACY_COLUMNS,
+                rows,
+            )
+            for index, (version, rows) in enumerate(claim_rows.items(), start=1)
             if version != BASELINE_AGENT
         ],
         table(
+            "fuzz-pass-rates",
             "Fuzz pass rates",
             ("Mode", "Calls", "Seed", "Strict pass rate"),
             [
@@ -315,6 +325,7 @@ def render(results: dict, check_in_date: str | None, fingerprint: str) -> str:
             )
         ),
         table(
+            "ablations",
             "Ablations",
             ("Configuration", *CALL_METRICS, "Finding-level recall"),
             [
@@ -327,6 +338,7 @@ def render(results: dict, check_in_date: str | None, fingerprint: str) -> str:
         sections.insert(
             1,
             table(
+                "extractor-quality",
                 "Extractor quality",
                 ("Extractor and claim type", "Precision", "Recall", "Invented", "Missed"),
                 [

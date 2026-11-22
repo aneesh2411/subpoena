@@ -55,8 +55,8 @@
   <p class="intro">Check the seal on a published audit, then edit a local copy and see the verifier
     reject it. The seal covers the whole report, including the order of its receipts. A failed
     check identifies the affected report. It cannot pinpoint which receipt changed.</p>
-  <section class="panel">
-    <h2>Verify a sealed audit in your browser</h2>
+  <section class="panel" aria-labelledby="browser-verification">
+    <h2 id="browser-verification">Verify a sealed audit in your browser</h2>
     <p>Check the bundled <a href="data/run-edge-calendar-outage.json">calendar outage report</a>
       or select a local copy. The report stays in your browser. The public demo key checks the
       signature for this example. Anyone with that key can sign a report.</p>
@@ -81,15 +81,15 @@ python3 -m venv .venv
 . .venv/bin/activate
 python -m pip install -e .</code></pre>
 
-  <section class="panel">
-    <h2>1. Download the sealed audit</h2>
+  <section class="panel" aria-labelledby="download-audit">
+    <h2 id="download-audit">1. Download the sealed audit</h2>
     <p>Use curl to save the <a href="data/audit-aud-clean-family-two-bookings.json">Family two
       bookings audit</a> from the live demo.</p>
     <pre id="download"><code>curl -fsSLO https://aneesh2411.github.io/subpoena/demo/data/audit-aud-clean-family-two-bookings.json</code></pre>
   </section>
 
-  <section class="panel">
-    <h2>2. Verify the original</h2>
+  <section class="panel" aria-labelledby="verify-original-title">
+    <h2 id="verify-original-title">2. Verify the original</h2>
     <p>The export uses the public demo key <code>subpoena-pages-demo</code> (key ID
       <code id="demo-key-id">6508b98a7ace</code>). Anyone with this key can produce a matching
       signature, so it demonstrates the seal check without establishing who published the report.</p>
@@ -100,8 +100,8 @@ VERDICT PASS (whole-report verification, 1/1 reports passed)
 Exit code: 0</code></pre>
   </section>
 
-  <section class="panel">
-    <h2>3. Verify a tampered copy</h2>
+  <section class="panel" aria-labelledby="tampered-copy">
+    <h2 id="tampered-copy">3. Verify a tampered copy</h2>
     <p>Change the provider on the first receipt in a local copy, keeping the original seal.
       The report line names the affected audit and the verdict line shows the overall failure.</p>
     <pre id="edit-copy"><code>python -c '
@@ -120,8 +120,8 @@ VERDICT FAIL (whole-report verification, 0/1 reports passed)
 Exit code: 1</code></pre>
   </section>
 
-  <section class="panel">
-    <h2>4. Verify the revisions journal</h2>
+  <section class="panel" aria-labelledby="verify-journal">
+    <h2 id="verify-journal">4. Verify the revisions journal</h2>
     <p>Your browser checks the <a href="data-revisions/revisions.json">published revisions
       export</a> from GENESIS and checks each signature with the public demo key
       <code>subpoena-revisions-demo</code>. Anyone with this key can sign a revision.</p>

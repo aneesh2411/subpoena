@@ -56,7 +56,7 @@ def test_page_renders_recorded_comparisons_and_failures():
             f"<td>{run['seed']}</td><td>{run['call_strict_accuracy']:.2%}</td>"
         ) in page
 
-    assert "<h2>Auditor accuracy by claim type</h2>" in page
+    assert '<h2 id="claim-accuracy">Auditor accuracy by claim type</h2>' in page
     assert (
         '<th scope="row">AppointmentBooked</th><td>44</td><td>97.73%</td><td>100.00%</td><td>1</td>'
     ) in page
