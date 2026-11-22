@@ -298,7 +298,7 @@ function initHero() {
   const found = { lines: ['RECEIPT FOUND'], color: green, tilt: -0.10 };
   const missing = { lines: ['NO RECEIPT'], color: red, tilt: -0.10 };
   const mismatch = { lines: ['RECEIPT DOES', 'NOT MATCH'], color: red, tilt: -0.10 };
-  const unverifiable = { lines: ['UNVERIFIABLE'], color: '#a86110', tilt: 0.08 };
+  const unverifiable = { lines: ['COULD NOT CHECK'], color: '#a86110', tilt: 0.08 };
   const CARDS = [
     { verdict: missing, rows: [['ticket', 'claimed: created'], ['', 'record: none']] },
     { verdict: found, rows: [['cancelled', 'claimed: Mar 10 3:00 PM'], ['', 'record: Mar 10 3:00 PM']] },
@@ -307,6 +307,7 @@ function initHero() {
     { verdict: unverifiable, rows: [['sms', 'claimed: sent'], ['', 'record: unavailable']] },
     { verdict: found, rows: [['message', 'claimed: msg_0003 sent'], ['journal #12', 'record: msg_0003 sent']] },
     { verdict: found, rows: [['callback', 'claimed: scheduled'], ['', 'record: scheduled']] },
+    { verdict: mismatch, rows: [['topic', 'claimed: records'], ['', 'record: billing']] },
   ];
 
   const group = new THREE.Group();
@@ -323,7 +324,7 @@ function initHero() {
     const radius = 5.4 + (i % 2) * 1.4;
     mesh.position.set(
       Math.cos(ring) * radius,
-      Math.sin(ring * 1.7) * 2.2,
+      Math.sin(ring + Math.PI / 4) * 2.2,
       -1.5 + Math.sin(ring) * 2.4
     );
     mesh.rotation.set((Math.random() - 0.5) * 0.5, (Math.random() - 0.5) * 0.9, (Math.random() - 0.5) * 0.2);
