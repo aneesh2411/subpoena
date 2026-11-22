@@ -1,0 +1,190 @@
+{
+  "audit_id": "aud-revisions-first",
+  "auditor": "subpoena/0.1.0",
+  "call": {
+    "agent_id": "agent:receptionist",
+    "call_id": "call-revisions-demo",
+    "caller": {
+      "name": "Maya Chen",
+      "phone": "+15550101001"
+    },
+    "claims": [
+      {
+        "claim_id": "call-revisions-demo-c1",
+        "corrects_prior": false,
+        "patient": {
+          "name": "Maya Chen",
+          "phone": "+15550101001"
+        },
+        "priority": "urgent",
+        "source": "structured",
+        "summary": "Caller needs help with call back about billing",
+        "turn_index": 2,
+        "type": "HandoffCreated",
+        "utterance": "I've created an urgent ticket for the on-call dentist about call back about billing. They'll call you right away."
+      }
+    ],
+    "ended_at": "2026-03-02T09:05:16-05:00",
+    "provenance": {
+      "agent_version": "receptionist-sim/0.1.0",
+      "completion_callback_at": null,
+      "from_address": null,
+      "human_handoffs": [],
+      "model": null,
+      "platform": null,
+      "prompt_version": "narrator:standard",
+      "to_address": null
+    },
+    "raw_transcript": null,
+    "started_at": "2026-03-02T09:05:00-05:00",
+    "transcript": [
+      {
+        "at": "2026-03-02T09:05:04-05:00",
+        "index": 0,
+        "speaker": "agent",
+        "text": "Thank you for calling Brightside Dental. How can I help?"
+      },
+      {
+        "at": "2026-03-02T09:05:08-05:00",
+        "index": 1,
+        "speaker": "caller",
+        "text": "I also have call back about billing. Can someone help with that?"
+      },
+      {
+        "at": "2026-03-02T09:05:12-05:00",
+        "index": 2,
+        "speaker": "agent",
+        "text": "I've created an urgent ticket for the on-call dentist about call back about billing. They'll call you right away."
+      },
+      {
+        "at": "2026-03-02T09:05:16-05:00",
+        "index": 3,
+        "speaker": "agent",
+        "text": "Is there anything else? Have a great day."
+      }
+    ]
+  },
+  "coverage_gaps": [],
+  "created_at": "2026-03-02T09:05:21-05:00",
+  "extraction": {
+    "degraded": false,
+    "detail": null,
+    "extractor": "rules"
+  },
+  "findings": [],
+  "fulfillments": [],
+  "outcome": "DISCREPANCIES",
+  "seal": {
+    "algorithm": "sha256",
+    "chain_hash": "3aa893902695bebd64db3a35383a8f906ebf34dff0e5c6e6d7a9d1aef0f9000e",
+    "content_hash": "74653e2643db97241334b5b9e988e05b08a11ec861faa93143211dddbf53320c",
+    "key_id": "edd027d0161b",
+    "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "signature": "e784a6fe4bf35563ad344413705e578db262d1b282ff80da12a7337e82445f05"
+  },
+  "stats": {
+    "claims": 1,
+    "findings": 0,
+    "max_severity": "CRITICAL",
+    "mismatch": 0,
+    "not_found": 1,
+    "trust_score": 0.0,
+    "unverifiable": 0,
+    "verified": 0
+  },
+  "trail": [
+    {
+      "message": "calendar: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window",
+      "seq": 1,
+      "stage": "evidence"
+    },
+    {
+      "message": "crm: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window",
+      "seq": 2,
+      "stage": "evidence"
+    },
+    {
+      "message": "messages: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window",
+      "seq": 3,
+      "stage": "evidence"
+    },
+    {
+      "message": "tickets: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window",
+      "seq": 4,
+      "stage": "evidence"
+    },
+    {
+      "message": "1 structured claim(s); 1 recovered from the transcript, 0 of them never logged by the agent",
+      "seq": 5,
+      "stage": "claims"
+    },
+    {
+      "message": "call-revisions-demo-c1 (HandoffCreated): no write corresponds",
+      "seq": 6,
+      "stage": "reconcile"
+    },
+    {
+      "message": "call-revisions-demo-c1 (HandoffCreated): NOT_FOUND",
+      "seq": 7,
+      "stage": "verdict"
+    },
+    {
+      "message": "Outcome: DISCREPANCIES",
+      "seq": 8,
+      "stage": "verdict"
+    }
+  ],
+  "verdicts": [
+    {
+      "checks": [
+        {
+          "detail": "No write by the agent during the call corresponds to this claim.",
+          "name": "existence",
+          "passed": false
+        },
+        {
+          "detail": "Nothing to compare.",
+          "name": "exactness",
+          "passed": null
+        },
+        {
+          "detail": "Nothing to compare.",
+          "name": "side_effects",
+          "passed": null
+        },
+        {
+          "detail": "The tickets change history for the call window was fully observed.",
+          "name": "coverage",
+          "passed": true
+        }
+      ],
+      "claim": {
+        "claim_id": "call-revisions-demo-c1",
+        "corrects_prior": false,
+        "patient": {
+          "name": "Maya Chen",
+          "phone": "+15550101001"
+        },
+        "priority": "urgent",
+        "source": "structured",
+        "summary": "Caller needs help with call back about billing",
+        "turn_index": 2,
+        "type": "HandoffCreated",
+        "utterance": "I've created an urgent ticket for the on-call dentist about call back about billing. They'll call you right away."
+      },
+      "diffs": [],
+      "evidence": [
+        {
+          "note": "0 agent write(s) to tickets in the call window. None is this handoff.",
+          "record": null,
+          "ref": "tickets 2026-03-02T09:05:00-05:00 .. 2026-03-02T09:05:46-05:00",
+          "source": "journal"
+        }
+      ],
+      "remediation": "Create the ticket now and have a human follow up with the caller.",
+      "severity": "CRITICAL",
+      "status": "NOT_FOUND",
+      "summary": "The agent claimed it created an urgent handoff ticket, but no ticket was created during the call. Nobody is going to call this person back."
+    }
+  ]
+}

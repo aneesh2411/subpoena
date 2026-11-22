@@ -10,8 +10,11 @@ from pathlib import Path
 from typing import Any
 
 from diff_audits import _diff, _field_rows, _index, _json, _verify
+from export_revisions_demo import SEALING_KEY as REVISION_KEY
+from export_revisions_demo import replay
 
-from subpoena.auditor import RuleBasedExtractor, Sealer
+from subpoena.auditor import GENESIS, RuleBasedExtractor, Sealer
+from subpoena.models import AuditReport
 from subpoena.scenarios.golden import BY_ID
 from subpoena.scenarios.world import run_scenario
 
@@ -55,7 +58,14 @@ def export(out: Path = DEFAULT_OUT) -> None:
             "seal": status,
         }
 
-    before, after = reports
+    write_json(data_dir / "diff.json", comparison(fault.id, *reports, outcomes))
+    export_reaudit(data_dir)
+    (out / "audit-diff.html").write_text(PAGE, encoding="utf-8")
+
+
+def comparison(
+    scenario_id: str, before: AuditReport, after: AuditReport, outcomes: dict[str, Any]
+) -> dict[str, Any]:
     old_verdicts, new_verdicts = _index(before), _index(after)
     if before.call.call_id != after.call.call_id or old_verdicts.keys() != new_verdicts.keys():
         raise ValueError("The demo requires matching call and claim IDs across the replay.")
@@ -79,17 +89,43 @@ def export(out: Path = DEFAULT_OUT) -> None:
             }
         )
 
+    return {
+        "scenario_id": scenario_id,
+        "call_id": before.call.call_id,
+        "runs": outcomes,
+        "claims": claims,
+        "cli_diff": _diff(before, after),
+    }
+
+
+def export_reaudit(data_dir: Path) -> None:
+    run = replay()
+    sealer = Sealer(REVISION_KEY)
+    reports = []
+    outcomes = {}
+    previous = GENESIS
+    for side, payload in zip(("before", "after"), run["audits"], strict=True):
+        report = AuditReport.model_validate(payload)
+        check = sealer.verify(report, expected_prev=previous)
+        if not check.ok or report.seal is None:
+            raise ValueError(f"{side} re-audit seal: {check.reason}")
+        filename = f"reaudit-{side}.json"
+        write_json(data_dir / filename, payload)
+        reports.append(report)
+        outcomes[side] = {
+            "outcome": report.outcome.value,
+            "seal": f"OK integrity={check.integrity} authentication={check.authentication}"
+            f" ({check.reason})",
+            "file": filename,
+            "audit_id": report.audit_id,
+            "call_id": report.call.call_id,
+            "chain_hash": report.seal.chain_hash,
+        }
+        previous = report.seal.chain_hash
     write_json(
-        data_dir / "diff.json",
-        {
-            "scenario_id": fault.id,
-            "call_id": before.call.call_id,
-            "runs": outcomes,
-            "claims": claims,
-            "cli_diff": _diff(before, after),
-        },
+        data_dir / "reaudit.json",
+        {**comparison("revisions-demo", *reports, outcomes), "journal": run["journal"]},
     )
-    (out / "audit-diff.html").write_text(PAGE, encoding="utf-8")
 
 
 PAGE = """<!doctype html>
@@ -122,6 +158,17 @@ PAGE = """<!doctype html>
   h2 { font-size: 1.35rem; margin-bottom: .8rem; }
   h3 { font-size: 1rem; }
   a { color: var(--mint); }
+  nav { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+  nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: .25rem .75rem;
+    border: 1px solid var(--line);
+    border-radius: .35rem;
+  }
+  nav a[aria-current="page"] { background: var(--panel); border-color: var(--mint); }
+  #receipts article { overflow-wrap: anywhere; }
   :focus-visible { outline: 2px solid var(--mint); outline-offset: 4px; }
   .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
   .card { border: 1px solid var(--line); border-radius: .75rem; background: var(--panel); }
@@ -140,7 +187,8 @@ PAGE = """<!doctype html>
   .badge { border: 1px solid currentColor; border-radius: .35rem; padding: .2rem .4rem; }
   .badge, .outcome { font-family: ui-monospace, monospace; }
   [data-state="VERIFIED"], [data-state="CLEAN"] { color: var(--mint); }
-  [data-state="MISMATCH"], [data-state="DISCREPANCIES"] { color: var(--amber); }
+  [data-state="MISMATCH"], [data-state="NOT_FOUND"],
+  [data-state="DISCREPANCIES"] { color: var(--amber); }
   svg { width: 100%; color: var(--muted); }
   #fields { display: grid; gap: .75rem; }
   .field-grid { margin-top: .75rem; }
@@ -167,7 +215,11 @@ PAGE = """<!doctype html>
 <main>
   <header>
     <h1>Audit diff</h1>
-    <p>Replay the same booking call after correcting the calendar write.
+    <nav aria-label="Audit comparisons">
+      <a id="booking" href="./audit-diff.html">Calendar correction</a>
+      <a id="late-write" href="?pair=late-write">Late handoff ticket</a>
+    </nav>
+    <p id="intro">Replay the same booking call after correcting the calendar write.
        Compare the sealed audits to see which promises the receipts support.</p>
   </header>
   <p id="status" role="status">Loading the audit comparison…</p>
@@ -178,12 +230,16 @@ PAGE = """<!doctype html>
     </section>
     <section aria-labelledby="verdicts-title">
       <h2 id="verdicts-title">Claim verdicts</h2>
-      <p>Before the fix and after the replay, in that order.</p>
+      <p id="verdict-intro">Before the fix and after the replay, in that order.</p>
       <ul class="list" id="verdicts"></ul>
     </section>
     <section aria-labelledby="fields-title">
       <h2 id="fields-title">Field-level changes</h2>
       <div id="fields"></div>
+    </section>
+    <section id="receipts" aria-labelledby="receipts-title" hidden>
+      <h2 id="receipts-title">Signed revision receipt</h2>
+      <div class="list" id="receipt-list"></div>
     </section>
   </div>
 </main>
@@ -201,10 +257,20 @@ PAGE = """<!doctype html>
     return element;
   }
 
-  const labels = { before: "Before the fix", after: "After the fix" };
+  const lateWrite = new URLSearchParams(location.search).get("pair") === "late-write";
+  byId(lateWrite ? "late-write" : "booking").setAttribute("aria-current", "page");
+  if (lateWrite) {
+    byId("intro").textContent = "A handoff ticket arrives after the first audit. "
+      + "Compare the first audit and the re-audit of that call.";
+    byId("verdict-intro").textContent = "First audit, then re-audit after the ticket lands.";
+  }
+  const labels = lateWrite
+    ? { before: "First audit", after: "Re-audit" }
+    : { before: "Before the fix", after: "After the fix" };
   const claimNames = {
     AppointmentBooked: "Appointment booking",
-    ConfirmationSent: "Confirmation message"
+    ConfirmationSent: "Confirmation message",
+    HandoffCreated: "Handoff ticket"
   };
 
   function renderOutcome(side, run) {
@@ -212,7 +278,7 @@ PAGE = """<!doctype html>
     const outcome = node("p", run.outcome, "outcome");
     outcome.dataset.state = run.outcome;
     const report = node("a", "Download sealed audit JSON");
-    report.href = `data-diff/${side}.json`;
+    report.href = `data-diff/${run.file ?? side + ".json"}`;
     card.append(node("h3", labels[side]), outcome, node("p", run.seal, "seal"), report);
     byId("outcomes").append(card);
   }
@@ -262,7 +328,59 @@ PAGE = """<!doctype html>
     renderFields(claim, title);
   }
 
-  fetch("data-diff/diff.json")
+  async function verifyJournal(journal) {
+    let previous = "0".repeat(64);
+    if (journal.authentication !== "authenticated") return false;
+    for (const [index, receipt] of journal.revisions.entries()) {
+      const { hash, signature, ...body } = receipt;
+      if (body.version !== 1 || body.sequence !== index + 1 || body.previous_hash !== previous
+          || !/^[0-9a-f]{64}$/.test(signature ?? "")
+          || !body.key_id || body.key_id !== journal.revisions[0].key_id) return false;
+
+      // Revision v1 has flat fields. Match Python's sorted keys, compact JSON and ensure_ascii.
+      const sorted = Object.fromEntries(Object.keys(body).sort().map(key => [key, body[key]]));
+      const canonical = JSON.stringify(sorted).replace(/[^ -~]/g, unit =>
+        "\\\\u" + unit.charCodeAt(0).toString(16).padStart(4, "0"));
+      const bytes = new TextEncoder().encode("subpoena.revision.v1:" + canonical);
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      const hex = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0"))
+        .join("");
+      if (hex !== hash) return false;
+      previous = hash;
+    }
+    return previous === journal.journal_head;
+  }
+
+  async function renderReceipts({ runs: { before, after }, claims, journal }) {
+    if (!journal || !before.call_id || before.call_id !== after.call_id
+        || before.audit_id === after.audit_id) return;
+
+    // The revision API names the old audit directly and the new audit in the evidence.
+    const target = `Re-audit ${after.audit_id} (chain ${after.chain_hash.slice(0, 16)}...)`;
+    const receipts = journal.revisions.filter(receipt =>
+      receipt.signature && receipt.source === "reaudit" && receipt.audit_id === before.audit_id
+      && receipt.evidence.startsWith(target + " of the same call ")
+      && claims.some(claim => claim.claim_id === receipt.claim_id
+        && claim.before === receipt.from_status && claim.after === receipt.to_status));
+    if (!receipts.length) return;
+
+    const verified = await verifyJournal(journal).catch(() => false);
+    for (const receipt of receipts) {
+      const card = node("article", undefined, "card");
+      const change = node("h3", `${receipt.from_status} → ${receipt.to_status}`);
+      const status = node("p", verified ? "Chain verified"
+        : "Chain verification failed", "seal");
+      status.dataset.state = verified ? "VERIFIED" : "MISMATCH";
+      const details = node("dl");
+      details.append(node("dt", "Evidence"), node("dd", receipt.evidence),
+                     node("dt", "Signature"), node("dd", receipt.signature, "seal"));
+      card.append(change, status, details);
+      byId("receipt-list").append(card);
+    }
+    byId("receipts").hidden = false;
+  }
+
+  (lateWrite ? fetch("data-diff/reaudit.json") : fetch("data-diff/diff.json"))
     .then(response => {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return response.json();
@@ -272,6 +390,7 @@ PAGE = """<!doctype html>
       for (const claim of data.claims) renderClaim(claim);
       byId("status").hidden = true;
       byId("comparison").hidden = false;
+      return renderReceipts(data);
     })
     .catch(() => {
       byId("status").textContent = "Could not load the audit comparison. "

@@ -1,0 +1,84 @@
+{
+  "call_id": "call-revisions-demo",
+  "claims": [
+    {
+      "after": "VERIFIED",
+      "before": "NOT_FOUND",
+      "claim_id": "call-revisions-demo-c1",
+      "claim_type": "HandoffCreated",
+      "fields": [
+        {
+          "after": [
+            {
+              "actual": "Maya Chen (+15550101001)",
+              "claimed": "Maya Chen (+15550101001)",
+              "match": true
+            }
+          ],
+          "before": null,
+          "field": "patient",
+          "kind": "receipt"
+        },
+        {
+          "after": [
+            {
+              "actual": "urgent",
+              "claimed": "urgent",
+              "match": true
+            }
+          ],
+          "before": null,
+          "field": "priority",
+          "kind": "receipt"
+        }
+      ]
+    }
+  ],
+  "cli_diff": [
+    "Claim \"call-revisions-demo-c1\":",
+    "  Verdict: NOT_FOUND -> VERIFIED",
+    "  Receipt field \"patient\": (absent) -> [{\"actual\":\"Maya Chen (+15550101001)\",\"claimed\":\"Maya Chen (+15550101001)\",\"match\":true}]",
+    "  Receipt field \"priority\": (absent) -> [{\"actual\":\"urgent\",\"claimed\":\"urgent\",\"match\":true}]"
+  ],
+  "journal": {
+    "authentication": "authenticated",
+    "journal_head": "8fcaa766377b12616fb1135a9f481ce1a4fd44d9092274f737085ec53039ad31",
+    "revisions": [
+      {
+        "audit_id": "aud-revisions-first",
+        "claim_id": "call-revisions-demo-c1",
+        "evidence": "Re-audit aud-revisions-second (chain 7a22b37d1b325a6c...) of the same call reached a different verdict.",
+        "from_status": "NOT_FOUND",
+        "hash": "8fcaa766377b12616fb1135a9f481ce1a4fd44d9092274f737085ec53039ad31",
+        "item_id": "ae0361d8d0ef1d2f0f1b62375a10b0e5a6aa98d5103abdefb85f2a70eda77673",
+        "key_id": "edd027d0161b",
+        "previous_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+        "sequence": 1,
+        "signature": "96df3456bef1c8d1ad5409ecfcecf509d2f8a66b97c87b83613b2a71a9990dd7",
+        "source": "reaudit",
+        "timestamp": "2026-03-02T14:05:41.000000+00:00",
+        "to_status": "VERIFIED",
+        "version": 1
+      }
+    ]
+  },
+  "runs": {
+    "after": {
+      "audit_id": "aud-revisions-second",
+      "call_id": "call-revisions-demo",
+      "chain_hash": "7a22b37d1b325a6c1666c6e1b49a2d99f8726bc1b288d1a089fe290760418801",
+      "file": "reaudit-after.json",
+      "outcome": "CLEAN",
+      "seal": "OK integrity=intact authentication=authenticated (content and chain verified (signature verified))"
+    },
+    "before": {
+      "audit_id": "aud-revisions-first",
+      "call_id": "call-revisions-demo",
+      "chain_hash": "3aa893902695bebd64db3a35383a8f906ebf34dff0e5c6e6d7a9d1aef0f9000e",
+      "file": "reaudit-before.json",
+      "outcome": "DISCREPANCIES",
+      "seal": "OK integrity=intact authentication=authenticated (content and chain verified (signature verified))"
+    }
+  },
+  "scenario_id": "revisions-demo"
+}
