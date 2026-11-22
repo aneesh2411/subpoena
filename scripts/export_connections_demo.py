@@ -76,14 +76,14 @@ def render_table(scenario: dict) -> str:
         )
         if outage := adapter["outage"]:
             details = "".join(
-                f'<li><strong>{escape(verdict["claim"])} · {verdict["status"]}</strong><br>'
-                f'{escape(verdict["summary"])}</li>'
+                f"<li><strong>{escape(verdict['claim'])} · {verdict['status']}</strong><br>"
+                f"{escape(verdict['summary'])}</li>"
                 for verdict in adapter["verdicts"]
             )
             verdicts = f"<ul>{details}</ul>" if details else "<p>No verdicts affected.</p>"
             rows.append(
                 '        <tr class="outage"><td colspan="3">'
-                f'<strong>{escape(outage["name"])}</strong> · {escape(outage["detail"])}'
+                f"<strong>{escape(outage['name'])}</strong> · {escape(outage['detail'])}"
                 f"{verdicts}</td></tr>"
             )
     body = "\n".join(rows)

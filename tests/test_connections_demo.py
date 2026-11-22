@@ -33,7 +33,12 @@ def test_connections_demo_is_byte_reproducible(tmp_path: Path) -> None:
     for scenario, down in zip(scenarios, (None, "calendar", "crm", "messages"), strict=True):
         adapters = scenario["adapters"]
         assert [row["source"] for row in adapters] == [
-            "calendar", "crm", "messages", "tickets", "payments", "prescriptions",
+            "calendar",
+            "crm",
+            "messages",
+            "tickets",
+            "payments",
+            "prescriptions",
         ]
         assert [row["source"] for row in adapters if row["status"] == "unreadable"] == (
             [down] if down else []
@@ -51,7 +56,7 @@ def test_connections_demo_is_byte_reproducible(tmp_path: Path) -> None:
             recorded = json.loads(
                 (ROOT / "docs" / "demo" / "data" / f"run-{scenario['id']}.json").read_bytes()
             )
-            gap, = recorded["coverage_gaps"]
+            (gap,) = recorded["coverage_gaps"]
             assert gap["source"] == down
             assert row["outage"]["detail"] == gap["detail"]
             assert row["verdicts"] == [
