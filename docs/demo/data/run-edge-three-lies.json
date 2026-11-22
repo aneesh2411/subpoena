@@ -373,6 +373,12 @@
    ],
    "diffs": [
     {
+     "field": "patient",
+     "claimed": "Maya Chen (+15550101001)",
+     "actual": "Maya Chen (+15550101001)",
+     "match": true
+    },
+    {
      "field": "start",
      "claimed": "Tue Mar 10 2026, 3:00 PM EDT",
      "actual": "Tue Mar 10 2026, 3:00 PM EDT",
@@ -490,10 +496,10 @@
  "coverage_gaps": [],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "973c67d313165d2d2b99d6f3594e7e37fee893c26015071399d44a31b1a9d307",
+  "content_hash": "c7cdd101402af1e8e188daa8d9bcf529af7ca1343d5848e4c5482e5408e72d6c",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "8773157272b126936c8923938a53721ed1725fca9d5c7f66ef53d99d73086342",
-  "signature": "7dd8161effe4d1a8a6151051e65a4c9df6429136d28212b7f958a340628a6de8",
+  "chain_hash": "c8094b271aaeef91674fe6826236e2c71eba064806f8648b3b5326199f963d92",
+  "signature": "7613958cfdf1423b7d94294dbad3e8ef360ffb5ff4fae6d9a77686956143ee31",
   "key_id": "6508b98a7ace"
  },
  "escalation_log": [

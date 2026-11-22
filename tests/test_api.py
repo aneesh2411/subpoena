@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
 
 from subpoena.api import Settings, create_app
-from subpoena.models import AppointmentBooked
+from subpoena.models import AppointmentBooked, AuditReport
 from subpoena.scenarios import BY_ID, HERO, build_world, run_suspect
 from subpoena.sor.base import with_outage
 
@@ -125,6 +126,52 @@ def test_duplicate_and_missing_resources(client):
     assert "audit" in _error(client.post("/audit/nope/claims/nope/recheck"), 404)
     report = _data(client.post("/audit", json={"call_id": call["call_id"]}), 201)
     assert "claim" in _error(client.post(f"/audit/{report['audit_id']}/claims/nope/recheck"), 404)
+
+
+def test_escalations_returns_sealed_decisions(client):
+    fixture = (
+        Path(__file__).resolve().parents[1] / "docs/demo/data-review/ambiguous-assignment.json"
+    )
+    audit = AuditReport.model_validate_json(fixture.read_bytes())
+    client.app.state.store.append(audit, client.app.state.sealer)
+
+    path = f"/audit/{audit.audit_id}"
+    entries = _data(client.get(f"{path}/escalations"))
+    assert entries == _data(client.get(f"{path}/report"))["escalation_log"]
+    assert len(entries) == 2
+    assert set(entries[0]) == {
+        "claim_id", "block_reason", "candidate_count", "score_spread", "disposition",
+    }  # fmt: skip
+
+
+def test_escalations_returns_empty_list_for_clean_audit(client):
+    audit = _data(client.post("/demo/scenarios/clean-book/run"), 201)
+    assert _data(client.get(f"/audit/{audit['audit_id']}/escalations")) == []
+
+
+def test_escalations_rejects_unsealed_audit(client, monkeypatch):
+    audit = _data(client.post("/demo/scenarios/clean-book/run"), 201)
+    unsealed = AuditReport.model_validate({**audit, "seal": None})
+    monkeypatch.setattr(client.app.state.store, "get_audit", lambda audit_id: unsealed)
+
+    path = f"/audit/{unsealed.audit_id}/escalations"
+    assert _error(client.get(path), 409) == f"audit {unsealed.audit_id} is not sealed"
+
+
+def test_escalations_returns_not_found_for_unknown_audit(client):
+    assert _error(client.get("/audit/nope/escalations"), 404) == "audit nope not found"
+
+
+def test_repair_queue_escalations_links_resolve(client):
+    for scenario in ("fault-phantom-booking", "fault-double-book"):
+        _data(client.post(f"/demo/scenarios/{scenario}/run"), 201)
+    groups = _data(client.get("/repair-queue"))["groups"]
+    assert {group["origin"] for group in groups} == {"verdict", "finding"}
+    for group in groups:
+        for item in group["evidence"]:
+            path = f"/audit/{item['audit_id']}/escalations"
+            assert item["escalations"] == path
+            assert isinstance(_data(client.get(path)), list)
 
 
 def test_conflicting_inline_call_is_rejected_identical_is_idempotent(client):

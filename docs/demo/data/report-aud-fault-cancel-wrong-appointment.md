@@ -8,7 +8,7 @@
 - Findings beyond claims: 0 | Claim trust score: 0% | Highest severity: `CRITICAL`
 - Audited by `subpoena/0.1.0` at 2026-03-02T09:06:16-05:00
 - Extraction: `rules`
-- Seal: sha256 chain `882bfa4b28246b49f0480ee6...`, signed (key `6508b98a7ace`)
+- Seal: sha256 chain `4c08a309ead65de9bffb8dbd...`, signed (key `6508b98a7ace`)
 - Provenance (platform-supplied, unverified): agent `receptionist-sim/0.1.0` | prompt `narrator:standard` | human handoffs: 0
 
 ## Claims
@@ -22,6 +22,7 @@
 
 | Field | Agent claimed | System of record | Match |
 |---|---|---|---|
+| patient | Maya Chen (+15550101001) | Maya Chen (+15550101001) | yes |
 | start | Tue Mar 3 2026, 10:00 AM EST | Tue Mar 10 2026, 3:00 PM EDT | **NO** |
 
 Checks:
@@ -51,6 +52,6 @@ None. Every write the agent made is accounted for by a claim.
 
 ## Seal
 
-- content `3b463a701a14e5c1ef55ea77e2e6de6bb3b58cba32c6a59b171f3c9dd1822a89`
-- chain `882bfa4b28246b49f0480ee622613c28f70c04f33b2bd91cfe2652e120d09587` (prev `0000000000000000...`)
+- content `ac680a1753914db11b996bfc6c516c49311a8f2d709ecf3d11717a97c82dd72d`
+- chain `4c08a309ead65de9bffb8dbd7a4faf12c30d73fb69a05818d3376074099b6d72` (prev `0000000000000000...`)
 - signed (key `6508b98a7ace`)

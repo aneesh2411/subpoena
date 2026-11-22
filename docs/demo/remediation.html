@@ -305,14 +305,6 @@
         </td>
       </tr>
       <tr role="row">
-        <td role="cell"><span class="label" aria-hidden="true">Suggested fix</span>Disambiguate the patient (confirm the phone number on file) and re-run the audit.</td>
-        <td role="cell"><span class="label" aria-hidden="true">Claim type</span>AppointmentBooked</td>
-        <td role="cell"><span class="label" aria-hidden="true">Severity</span>HIGH</td>
-        <td role="cell">
-          <span class="label" aria-hidden="true">Scenario</span><a href="index.html#edge-same-name-patients">Two patients share the caller&#x27;s name</a>
-        </td>
-      </tr>
-      <tr role="row">
         <td role="cell"><span class="label" aria-hidden="true">Suggested fix</span>Move one of the two appointments and notify that patient.</td>
         <td role="cell"><span class="label" aria-hidden="true">Claim type</span>Finding · POLICY_VIOLATION</td>
         <td role="cell"><span class="label" aria-hidden="true">Severity</span>HIGH</td>
@@ -422,6 +414,14 @@
         <td role="cell"><span class="label" aria-hidden="true">Severity</span>MEDIUM</td>
         <td role="cell">
           <span class="label" aria-hidden="true">Scenario</span><a href="index.html#edge-message-log-outage">Message log is unreachable when the audit runs</a>
+        </td>
+      </tr>
+      <tr role="row">
+        <td role="cell"><span class="label" aria-hidden="true">Suggested fix</span>Re-run the audit when the system of record is reachable.</td>
+        <td role="cell"><span class="label" aria-hidden="true">Claim type</span>AppointmentBooked</td>
+        <td role="cell"><span class="label" aria-hidden="true">Severity</span>MEDIUM</td>
+        <td role="cell">
+          <span class="label" aria-hidden="true">Scenario</span><a href="index.html#edge-same-name-patients">Two patients share the caller&#x27;s name</a>
         </td>
       </tr>
       <tr role="row">

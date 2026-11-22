@@ -9,6 +9,7 @@ Core:
     POST /audit/{id}/approvals   append a human remediation decision
     GET  /audit/{id}/approvals   read a single audit’s approval history
     GET  /audit/{id}/report      the sealed report (JSON, or Markdown with ?format=md)
+    GET  /audit/{id}/escalations   the sealed escalation log
 
 Supporting:
     GET  /audits                 recent audits
@@ -419,16 +420,31 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             ]
         )
 
+    def find_report(audit_id: str) -> AuditReport:
+        found = store().get_audit(audit_id) or store().get_fix_recheck(audit_id)
+        if found is None:
+            raise HTTPException(404, f"audit {audit_id} not found")
+        return found
+
     @app.get("/audit/{audit_id}/report", dependencies=guarded, response_model=None)
     def report(
         audit_id: str, format: Annotated[str, Query(pattern="^(json|md)$")] = "json"
     ) -> JSONResponse | PlainTextResponse:
-        found = store().get_audit(audit_id) or store().get_fix_recheck(audit_id)
-        if found is None:
-            raise HTTPException(404, f"audit {audit_id} not found")
+        found = find_report(audit_id)
         if format == "md":
             return PlainTextResponse(render_markdown(found), media_type="text/markdown")
         return _ok(found.model_dump(mode="json"))
+
+    @app.get("/audit/{audit_id}/escalations", dependencies=guarded)
+    def escalations(audit_id: str) -> JSONResponse:
+        """Read the audit's sealed escalation decisions.
+
+        Returns 404 if the audit does not exist and 409 if it has no seal.
+        """
+        found = find_report(audit_id)
+        if found.seal is None:
+            raise HTTPException(409, f"audit {audit_id} is not sealed")
+        return _ok([entry.model_dump(mode="json") for entry in found.escalation_log])
 
     # -- supporting --------------------------------------------------------- #
 

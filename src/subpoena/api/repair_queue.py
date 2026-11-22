@@ -49,7 +49,12 @@ def build_repair_queue(reports: Iterable[AuditReport]) -> dict[str, Any]:
                 g["remediations"].add(remediation)
             if len(g["evidence"]) < EXAMPLES:
                 g["evidence"].append(
-                    {"audit_id": report.audit_id, "result_pointer": pointer, "summary": summary}
+                    {
+                        "audit_id": report.audit_id,
+                        "result_pointer": pointer,
+                        "summary": summary,
+                        "escalations": f"/audit/{report.audit_id}/escalations",
+                    }
                 )
     items = [
         {

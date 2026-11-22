@@ -87,18 +87,18 @@
     "reason": "cleaning"
    },
    "status": "UNVERIFIABLE",
-   "severity": "HIGH",
-   "summary": "Could not be checked: 'Maya Chen' matches 2 patient records and no phone number disambiguates them. A guess here could clear a booking made for the wrong person.",
+   "severity": "MEDIUM",
+   "summary": "Could not be checked: 'Maya Chen' matches 2 patient records during the claim's exchange and no phone number disambiguates them. No verdict is better than a guessed one.",
    "checks": [
     {
      "name": "existence",
      "passed": null,
-     "detail": "'Maya Chen' matches 2 patient records and no phone number disambiguates them"
+     "detail": "'Maya Chen' matches 2 patient records during the claim's exchange and no phone number disambiguates them"
     }
    ],
    "diffs": [],
    "evidence": [],
-   "remediation": "Disambiguate the patient (confirm the phone number on file) and re-run the audit."
+   "remediation": "Re-run the audit when the system of record is reachable."
   }
  ],
  "findings": [],
@@ -130,21 +130,16 @@
   },
   {
    "seq": 6,
-   "stage": "reconcile",
-   "message": "call-edge-same-name-patients-c1 (AppointmentBooked): exact match -> apt_0001"
-  },
-  {
-   "seq": 7,
    "stage": "verdict",
    "message": "call-edge-same-name-patients-c1 (AppointmentBooked): UNVERIFIABLE"
   },
   {
-   "seq": 8,
+   "seq": 7,
    "stage": "reconcile",
    "message": "calendar: unclaimed-write check skipped, a claim that may own these writes could not be verified"
   },
   {
-   "seq": 9,
+   "seq": 8,
    "stage": "verdict",
    "message": "Outcome: INCONCLUSIVE"
   }
@@ -157,7 +152,7 @@
   "unverifiable": 1,
   "findings": 0,
   "trust_score": null,
-  "max_severity": "HIGH"
+  "max_severity": "MEDIUM"
  },
  "extraction": {
   "extractor": "rules",
@@ -168,16 +163,16 @@
  "coverage_gaps": [],
  "seal": {
   "algorithm": "sha256",
-  "content_hash": "9f795f805ac5a14184d867f1a86ffcf76911566431af807776b1a3b4a382d0ff",
+  "content_hash": "132326ef63b5b88e3ccdfdd07f409a97291bf9310663cc843c8095303226fb4e",
   "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
-  "chain_hash": "3904b1fee11167ce73713099f86a1b66b1e6742a6ce0f8e207ab2c105d14047e",
-  "signature": "6876281a597ab02b2bc39d589ee1aca58ecbf692661aca1386be0566db9e12a4",
+  "chain_hash": "900b9c4a690ad14cb6ff8e96365da8c09ff99ed6654df60b45b6de410cb07ab6",
+  "signature": "687f728988b2b06721374c5c219c2b7c5f57a985acfcef5df320badc38488b9b",
   "key_id": "6508b98a7ace"
  },
  "escalation_log": [
   {
    "claim_id": "call-edge-same-name-patients-c1",
-   "block_reason": "Could not be checked: 'Maya Chen' matches 2 patient records and no phone number disambiguates them. A guess here could clear a booking made for the wrong person.",
+   "block_reason": "'Maya Chen' matches 2 patient records during the claim's exchange and no phone number disambiguates them",
    "candidate_count": 0,
    "score_spread": null,
    "disposition": "UNVERIFIABLE"
