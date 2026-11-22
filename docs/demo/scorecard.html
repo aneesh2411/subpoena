@@ -8,13 +8,13 @@
 <style>
   :root {
     color-scheme: dark;
-    --bg: #11181c; --card: #1a252b; --line: #384b53; --text: #eff3ee;
-    --muted: #b1c1c5; --accent: #9cd8f1; --verified: #8bd9b4;
+    --desk: #14161a; --panel: #1c1f26; --line: #2c313c; --ink: #e8e6df; --dim: #8b919e;
+    --accent: #4f8cff; --verified: #8bd9b4;
     --mismatch: #ffc095; --not-found: #ffa8ad;
     --mono: ui-monospace, Consolas, monospace;
   }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--text); font: 1rem/1.6 system-ui; }
+  body { margin: 0; background: var(--desk); color: var(--ink); font: 1rem/1.6 system-ui; }
   header { border-bottom: 1px solid var(--line); }
   .brand, main { max-width: 66rem; margin: auto; padding-inline: clamp(1rem, 4vw, 3rem); }
   .brand { padding-block: 1rem; font: 700 .9rem var(--mono); letter-spacing: .16em; }
@@ -26,10 +26,10 @@
   a { color: var(--accent); }
   a:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   .intro { max-width: 55ch; margin-block: 1rem; }
-  .intro, #summary { color: var(--muted); }
+  .intro, #summary { color: var(--dim); }
   #summary { margin-top: 1.5rem; }
   .grid { display: grid; gap: .75rem; margin-top: .75rem; }
-  .card { min-width: 0; padding: 1rem; background: var(--card);
+  .card { min-width: 0; padding: 1rem; background: var(--panel);
     border: 1px solid var(--line); border-radius: .65rem; }
   dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem;
     margin-top: .75rem; padding-top: .75rem; border-top: 1px solid var(--line); }
@@ -38,7 +38,7 @@
   .VERIFIED { color: var(--verified); }
   .MISMATCH { color: var(--mismatch); }
   .NOT_FOUND { color: var(--not-found); }
-  .UNVERIFIABLE { color: var(--muted); }
+  .UNVERIFIABLE { color: var(--dim); }
   @media (min-width: 48rem) {
     .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
