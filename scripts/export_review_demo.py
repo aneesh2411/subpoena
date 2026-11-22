@@ -53,6 +53,12 @@ PAGE = """<!doctype html>
   }
   ol { margin: .35rem 0 0; padding-left: 1.5rem; }
   li + li { margin-top: .4rem; }
+  @media (max-width: 600px), (max-width: 900px) and (max-height: 500px) and (hover: none) {
+    main { padding-block: 1rem 2rem; overflow-wrap: anywhere; }
+    h1 { margin-top: .5rem; }
+    .meta, .flag { font-size: .9375rem; }
+    a { display: inline-flex; align-items: center; min-height: 44px; max-width: 100%; }
+  }
 </style>
 </head>
 <body>

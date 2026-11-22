@@ -57,6 +57,12 @@ PAGE = """<!doctype html>
   .VERIFIED, .fulfilled { color: var(--verified); }
   .NOT_FOUND { color: var(--not-found); }
   .flag { color: var(--amber); }
+  @media (max-width: 600px), (max-width: 900px) and (max-height: 500px) and (hover: none) {
+    main { padding-block: 1rem 2rem; overflow-wrap: anywhere; }
+    h1 { margin-top: .5rem; }
+    .meta, .verdict { font-size: .9375rem; }
+    a { display: inline-flex; align-items: center; min-height: 44px; max-width: 100%; }
+  }
 </style>
 </head>
 <body>
