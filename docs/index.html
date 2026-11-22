@@ -426,7 +426,9 @@ function initHero(THREE) {
       renderer.setSize(w, h, false);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
+      return true;
     }
+    return false;
   }
 
   function render() {
@@ -438,9 +440,22 @@ function initHero(THREE) {
     }
   }
 
+  function poseScene(t) {
+    for (const card of cards) {
+      const { baseY, speed, phase } = card.userData;
+      card.position.y = baseY + Math.sin(t * speed + phase) * 0.35;
+      card.rotation.y += 0.0016;
+    }
+    group.rotation.y = t * 0.05;
+  }
+
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    poseScene(0);
     resize();
     render();
+    new ResizeObserver(() => {
+      if (resize()) renderer.render(scene, camera);
+    }).observe(canvas);
     return;
   }
 
@@ -464,12 +479,7 @@ function initHero(THREE) {
     lastFrameTime = now;
     resize();
     if (!visible) return;
-    for (let i = 0; i < cards.length; i++) {
-      const m = cards[i];
-      m.position.y = m.userData.baseY + Math.sin(t * m.userData.speed + m.userData.phase) * 0.35;
-      m.rotation.y += 0.0016;
-    }
-    group.rotation.y = t * 0.05;
+    poseScene(t);
     camera.position.x += (mx * 1.1 - camera.position.x) * 0.04;
     camera.position.y += (-my * 0.7 - camera.position.y) * 0.04;
     camera.lookAt(0, 0, 0);
