@@ -758,12 +758,47 @@
         "fn": 2,
         "tn": 65
       }
+    },
+    {
+      "commit": "cfeba6d05af2ea1b890b3ab7b1f3308a20bd7a69",
+      "commit_time": 1795339554,
+      "series": "results",
+      "paths": [
+        "evals/results/latest.json"
+      ],
+      "strict_accuracy": 0.9701,
+      "scenarios": 67
+    },
+    {
+      "commit": "cfeba6d05af2ea1b890b3ab7b1f3308a20bd7a69",
+      "commit_time": 1795339554,
+      "series": "scorecards",
+      "paths": [
+        "evals/scorecards/20261122-cad5fbcdd457.json",
+        "evals/scorecards/latest.json"
+      ],
+      "strict_accuracy": 0.9701,
+      "scenarios": 67,
+      "claim_level": {
+        "tp": 38,
+        "fp": 0,
+        "fn": 2,
+        "tn": 65
+      },
+      "variant_claim_levels": {
+        "receptionist-v2-chatty": {
+          "tp": 34,
+          "fp": 0,
+          "fn": 4,
+          "tn": 67
+        }
+      }
     }
   ],
   "latest_scorecard_diff": {
-    "previous": "2026-11-22T07:50:32.252538+00:00",
+    "previous": "2026-11-22T09:08:20.270370+00:00",
     "strict_accuracy": {
-      "was": 0.9692,
+      "was": 0.9701,
       "now": 0.9701
     },
     "newly_failing": [],
