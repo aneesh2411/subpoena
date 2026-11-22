@@ -15,12 +15,14 @@ Working today:
   that still holds the corrected-away value is named as evidence.
 - Verdict revision journal: re-audits chain verdict changes into HMAC-signed receipts
   ([#129](https://github.com/aneesh2411/subpoena/issues/129)).
-- 61 golden scenarios at 96.7% strict accuracy, 500-call fuzzing, naive baseline,
+- 67 golden scenarios at 97.0% strict accuracy, 500-call fuzzing, naive baseline,
   ablations. Identity-labelled (v2 semantic) scoring runs over both the golden set
   and the fuzzer, beside the positional headline.
 - Claim accuracy by claim type on the evals page ([#193](https://github.com/aneesh2411/subpoena/issues/193)).
-- FastAPI service, CLI demo, single-page replay view with 62 sealed demo audits.
-- 905 tests, lint clean.
+- FastAPI service, CLI demo, single-page replay view with 70 sealed demo audits.
+  The ops demo includes connections, remediation re-checks, per-claim-type honesty
+  trends, per-agent-version scorecards, and an alert feed.
+- 962 tests, lint clean.
 
 Not done:
 
@@ -74,7 +76,9 @@ fail to reproduce, and the eval still passes.
    ranked repair tasks with suggested fixes and resolution state.
 2. **Agent scorecards over time.** **Done** for trends from committed eval history
    ([#192](https://github.com/aneesh2411/subpoena/issues/192)). Per-agent-version honesty
-   trends are open ([#218](https://github.com/aneesh2411/subpoena/issues/218)).
+   trends are **Done** ([#218](https://github.com/aneesh2411/subpoena/issues/218),
+   [#236](https://github.com/aneesh2411/subpoena/pull/236)). Per-claim-type honesty
+   trends are **Done** ([#241](https://github.com/aneesh2411/subpoena/pull/241)).
 3. **Alerting.** Critical findings to the on-call human within a minute.
 4. **Multi-tenant auth, roles, retention policy** for transcripts and patient data.
 5. **More claim types.** **Done**: payments taken ([#205](https://github.com/aneesh2411/subpoena/issues/205)), records updated ([#215](https://github.com/aneesh2411/subpoena/issues/215)), prescriptions refilled ([#216](https://github.com/aneesh2411/subpoena/issues/216)).
