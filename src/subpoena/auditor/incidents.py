@@ -43,6 +43,7 @@ from subpoena.models import (
     LinkedCall,
     PatientRef,
     PaymentCollected,
+    RecordsUpdated,
     Rescheduled,
     ReviewCandidate,
     VerdictStatus,
@@ -136,8 +137,8 @@ def _collect(reports: list[AuditReport]) -> list[_Entry]:
     entries: list[_Entry] = []
     for report in reports:
         for verdict in report.verdicts:
-            # Separate calls can collect independent payments of the same amount.
-            if isinstance(verdict.claim, PaymentCollected):
+            # Separate calls can independently collect payments or update patient records.
+            if isinstance(verdict.claim, (PaymentCollected, RecordsUpdated)):
                 continue
             writes = [
                 (e.source, e.ref)

@@ -13,6 +13,7 @@ from subpoena.suspect.agent import (
     Reschedule,
     SimClock,
     Step,
+    UpdateRecords,
 )
 from subpoena.suspect.faults import (
     REQUIRED_FAULTS,
@@ -31,6 +32,7 @@ __all__ = [
     "CallResult",
     "Cancel",
     "CollectPayment",
+    "UpdateRecords",
     "Correct",
     "FaultMode",
     "FaultPlan",

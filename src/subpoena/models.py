@@ -34,6 +34,7 @@ Priority = Literal["low", "normal", "urgent"]
 PaymentMethod = Literal["card", "cash", "check"]
 PaymentAmount = Annotated[int, Field(strict=True, gt=0, le=2**63 - 1)]
 HandoffTopic = Literal["billing", "refill", "records"]
+RecordField = Literal["name", "phone", "email", "address", "insurance"]
 
 
 class Entity(StrEnum):
@@ -54,6 +55,8 @@ class Patient(Frozen):
     name: str
     phone: str
     email: str | None = None
+    address: str | None = None
+    insurance: str | None = None
 
 
 class Appointment(Frozen):
@@ -189,13 +192,21 @@ class PaymentCollected(ClaimBase):
     method: PaymentMethod | None = None
 
 
+class RecordsUpdated(ClaimBase):
+    type: Literal["RecordsUpdated"] = "RecordsUpdated"
+    patient: PatientRef
+    field: RecordField
+    new_value: str | None = Field(default=None, min_length=1, max_length=4000)
+
+
 Claim = Annotated[
     AppointmentBooked
     | Rescheduled
     | Cancelled
     | ConfirmationSent
     | HandoffCreated
-    | PaymentCollected,
+    | PaymentCollected
+    | RecordsUpdated,
     Field(discriminator="type"),
 ]
 
@@ -206,6 +217,7 @@ CLAIM_TYPES: tuple[str, ...] = (
     "ConfirmationSent",
     "HandoffCreated",
     "PaymentCollected",
+    "RecordsUpdated",
 )
 
 

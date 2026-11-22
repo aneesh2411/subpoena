@@ -13,18 +13,18 @@ python scripts/sync_docs.py
 ## 1. Results in one screen
 
 <!-- metrics:fa-results:start -->
-Golden set: 63 hand-labelled calls, 101 claims, 7 findings beyond claims.
+Golden set: 65 hand-labelled calls, 103 claims, 7 findings beyond claims.
 
 | Metric | Subpoena | Naive lookup |
 |---|---|---|
-| Claim precision | 100% | 91.3% |
-| Claim recall | 94.7% | 55.3% |
-| Exact verdict | 98.0% | 73.3% |
+| Claim precision | 100% | 91.7% |
+| Claim recall | 94.9% | 56.4% |
+| Exact verdict | 98.1% | 72.8% |
 | Finding recall | 100% | 0% |
-| Call accuracy | 96.8% | 66.7% |
-| Calls fully correct | 96.8% | 50.8% |
+| Call accuracy | 96.9% | 67.7% |
+| Calls fully correct | 96.9% | 50.8% |
 
-Claim-level confusion for Subpoena: 36 true positives, 0 false positives, 2 false negatives, 63 true negatives.
+Claim-level confusion for Subpoena: 37 true positives, 0 false positives, 2 false negatives, 64 true negatives.
 
 Fuzzed set: 500 generated calls, 970 claims, 79 findings. No disagreements with ground truth.
 <!-- metrics:fa-results:end -->
@@ -202,9 +202,9 @@ Ablations switch off one capability of the real auditor:
 <!-- metrics:fa-ablations:start -->
 | Variant | Claim recall | Finding recall | Calls fully correct |
 |---|---|---|---|
-| Full | 94.7% | 100% | 96.8% |
-| No transcript reader | 79.0% | 100% | 90.5% |
-| No policy checks | 94.7% | 42.9% | 90.5% |
+| Full | 94.9% | 100% | 96.9% |
+| No transcript reader | 79.5% | 100% | 90.8% |
+| No policy checks | 94.9% | 42.9% | 90.8% |
 <!-- metrics:fa-ablations:end -->
 
 Each ablation costs what it should and nothing else. That is evidence the dataset exercises

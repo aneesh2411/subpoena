@@ -11,9 +11,9 @@ import json
 from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import Any
+from typing import Any, get_args
 
-from subpoena.models import Change, Entity, Evidence
+from subpoena.models import Change, Entity, Evidence, RecordField
 
 SOURCE: dict[Entity, str] = {
     Entity.APPOINTMENT: "calendar",
@@ -108,6 +108,13 @@ class NetChange:
     @property
     def key(self) -> tuple[Entity, str]:
         return (self.entity, self.entity_id)
+
+    @property
+    def changed_patient_fields(self) -> tuple[RecordField, ...]:
+        if self.entity is not Entity.PATIENT or self.kind is not ChangeKind.UPDATED:
+            return ()
+        before, after = self.before or {}, self.after or {}
+        return tuple(f for f in get_args(RecordField) if before.get(f) != after.get(f))
 
     @property
     def snapshot(self) -> dict[str, Any] | None:

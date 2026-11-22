@@ -31,6 +31,8 @@ from subpoena.models import (
     PaymentMethod,
     Priority,
     Provenance,
+    RecordField,
+    RecordsUpdated,
     Rescheduled,
     Turn,
 )
@@ -123,6 +125,13 @@ class CollectPayment:
 
 
 @dataclass(frozen=True)
+class UpdateRecords:
+    field: RecordField
+    new_value: str
+    spoken_field: RecordField | None = None
+
+
+@dataclass(frozen=True)
 class Recap:
     """The agent restates an earlier booking in a later turn."""
 
@@ -136,7 +145,17 @@ class Inquiry:
     answer: str
 
 
-Step = Book | Reschedule | Cancel | Handoff | Recap | Inquiry | Correct | CollectPayment
+Step = (
+    Book
+    | Reschedule
+    | Cancel
+    | Handoff
+    | Recap
+    | Inquiry
+    | Correct
+    | CollectPayment
+    | UpdateRecords
+)
 
 
 @dataclass(frozen=True)
@@ -204,6 +223,7 @@ class _Call:
             Reschedule: (self._reschedule, RESCHEDULE_FAULTS),
             Cancel: (self._cancel, CANCEL_FAULTS),
             Handoff: (self._handoff, HANDOFF_FAULTS),
+            UpdateRecords: (self._update_records, frozenset()),
             CollectPayment: (self._collect_payment, frozenset()),
             Recap: (self._recap, frozenset()),
             Inquiry: (self._inquiry, frozenset()),
@@ -535,6 +555,22 @@ class _Call:
         self.claims.append(
             PaymentCollected(
                 **self._claim_meta(line), patient=ref, amount_cents=amount, method=step.method
+            )
+        )
+        self._say("agent", line)
+
+    def _update_records(self, step: UpdateRecords, _modes: frozenset[FaultMode]) -> None:
+        field = step.spoken_field or step.field
+        self._say("caller", f"Please update my {field} to {step.new_value}.")
+        patient = self._patient(self.caller, create=False)
+        if patient is None:
+            self._say("agent", "I couldn't update your records.")
+            return
+        self.a.sor.crm.update_patient(patient.id, **{step.field: step.new_value})
+        line = f"I've updated your {field} on file to {step.new_value}."
+        self.claims.append(
+            RecordsUpdated(
+                **self._claim_meta(line), patient=self.caller, field=field, new_value=step.new_value
             )
         )
         self._say("agent", line)

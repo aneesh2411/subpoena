@@ -56,6 +56,14 @@
   "known_gap": null
  },
  {
+  "id": "clean-records-update",
+  "title": "Mailing address updated as stated",
+  "story": "The agent reports the new mailing address it recorded for the caller.",
+  "group": "clean",
+  "faults": [],
+  "known_gap": null
+ },
+ {
   "id": "clean-payment",
   "title": "Copay collected as stated",
   "story": "The agent reports the $40 copay it recorded for the caller.",
@@ -187,6 +195,14 @@
   "faults": [
    "double_book"
   ],
+  "known_gap": null
+ },
+ {
+  "id": "fault-records-field-not-written",
+  "title": "Agent says insurance was updated",
+  "story": "The agent writes the insurer into the address field and leaves insurance unchanged.",
+  "group": "fault",
+  "faults": [],
   "known_gap": null
  },
  {

@@ -1,25 +1,25 @@
 {
   "provenance": {
     "check_in_date": "2026-11-22",
-    "sha256": "bad938d0d1d16e15f1dc8f4798e00ef56228c936b0d4dfcf4ab2bd58e772e700",
+    "sha256": "a4b870667615d1cde07a603a9aa926777910510adabc8437d8c67969dc3ef6aa",
     "source": "evals/results/latest.json"
   },
   "results": {
     "ablations": [
       {
-        "call_accuracy": 0.9048,
-        "call_strict_accuracy": 0.9048,
-        "calls": 63,
+        "call_accuracy": 0.9077,
+        "call_strict_accuracy": 0.9077,
+        "calls": 65,
         "claim_level": {
-          "f1": 0.8824,
+          "f1": 0.8857,
           "fn": 8,
           "fp": 0,
           "precision": 1.0,
-          "recall": 0.7895,
-          "tn": 63,
-          "tp": 30
+          "recall": 0.7949,
+          "tn": 64,
+          "tp": 31
         },
-        "claim_status_accuracy": 0.9208,
+        "claim_status_accuracy": 0.9223,
         "failures": [
           {
             "problems": [
@@ -72,19 +72,19 @@
         "label": "Subpoena without the transcript reader"
       },
       {
-        "call_accuracy": 0.9206,
-        "call_strict_accuracy": 0.9048,
-        "calls": 63,
+        "call_accuracy": 0.9231,
+        "call_strict_accuracy": 0.9077,
+        "calls": 65,
         "claim_level": {
-          "f1": 0.973,
+          "f1": 0.9737,
           "fn": 2,
           "fp": 0,
           "precision": 1.0,
-          "recall": 0.9474,
-          "tn": 63,
-          "tp": 36
+          "recall": 0.9487,
+          "tn": 64,
+          "tp": 37
         },
-        "claim_status_accuracy": 0.9802,
+        "claim_status_accuracy": 0.9806,
         "failures": [
           {
             "problems": [
@@ -136,19 +136,19 @@
       }
     ],
     "baseline_naive_existence_check": {
-      "call_accuracy": 0.6667,
-      "call_strict_accuracy": 0.5079,
-      "calls": 63,
+      "call_accuracy": 0.6769,
+      "call_strict_accuracy": 0.5077,
+      "calls": 65,
       "claim_level": {
-        "f1": 0.6885,
+        "f1": 0.6984,
         "fn": 17,
         "fp": 2,
-        "precision": 0.913,
-        "recall": 0.5526,
-        "tn": 62,
-        "tp": 21
+        "precision": 0.9167,
+        "recall": 0.5641,
+        "tn": 63,
+        "tp": 22
       },
-      "claim_status_accuracy": 0.7327,
+      "claim_status_accuracy": 0.7282,
       "failures": [
         {
           "problems": [
@@ -167,6 +167,12 @@
             "double_booking: expected 1, got 0"
           ],
           "scenario": "fault-double-book"
+        },
+        {
+          "problems": [
+            "RecordsUpdated[0]: expected MISMATCH, got NOT_FOUND"
+          ],
+          "scenario": "fault-records-field-not-written"
         },
         {
           "problems": [
@@ -540,19 +546,19 @@
       "seed": 7
     },
     "golden": {
-      "call_accuracy": 0.9683,
-      "call_strict_accuracy": 0.9683,
-      "calls": 63,
+      "call_accuracy": 0.9692,
+      "call_strict_accuracy": 0.9692,
+      "calls": 65,
       "claim_level": {
-        "f1": 0.973,
+        "f1": 0.9737,
         "fn": 2,
         "fp": 0,
         "precision": 1.0,
-        "recall": 0.9474,
-        "tn": 63,
-        "tp": 36
+        "recall": 0.9487,
+        "tn": 64,
+        "tp": 37
       },
-      "claim_status_accuracy": 0.9802,
+      "claim_status_accuracy": 0.9806,
       "failures": [
         {
           "problems": [
@@ -579,19 +585,19 @@
       "label": "Subpoena"
     },
     "golden_v2_semantic": {
-      "call_accuracy": 0.9672,
-      "call_strict_accuracy": 0.9672,
-      "calls": 61,
+      "call_accuracy": 0.9683,
+      "call_strict_accuracy": 0.9683,
+      "calls": 63,
       "claim_level": {
-        "f1": 0.973,
+        "f1": 0.9737,
         "fn": 2,
         "fp": 0,
         "precision": 1.0,
-        "recall": 0.9474,
-        "tn": 63,
-        "tp": 36
+        "recall": 0.9487,
+        "tn": 64,
+        "tp": 37
       },
-      "claim_status_accuracy": 0.9802,
+      "claim_status_accuracy": 0.9806,
       "failures": [
         {
           "problems": [

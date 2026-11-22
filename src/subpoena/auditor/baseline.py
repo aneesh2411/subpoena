@@ -27,13 +27,14 @@ from subpoena.models import (
     Outcome,
     PatientRef,
     PaymentCollected,
+    RecordsUpdated,
     Rescheduled,
     Severity,
     Verdict,
     VerdictStatus,
 )
 from subpoena.sor.base import AdapterUnavailable, SystemOfRecordReader
-from subpoena.util import ClinicConfig, utcnow
+from subpoena.util import ClinicConfig, norm_phone, utcnow
 
 
 class NaiveAuditor:
@@ -122,5 +123,14 @@ class NaiveAuditor:
                 and (claim.amount_cents is None or p.amount_cents == claim.amount_cents)
                 and (claim.method is None or p.method == claim.method)
                 for p in payments.list_payments()
+            )
+        if isinstance(claim, RecordsUpdated):
+            value = claim.new_value
+            if value is not None and claim.field == "phone":
+                value = norm_phone(value)
+            return any(
+                (patient := self._sor.crm.get_patient(pid)) is not None
+                and (value is None or getattr(patient, claim.field) == value)
+                for pid in self._patient_ids(claim.patient)
             )
         raise TypeError(f"unknown claim type: {type(claim).__name__}")

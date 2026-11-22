@@ -14,7 +14,7 @@ import threading
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from datetime import datetime
-from typing import Any
+from typing import Any, get_args
 
 from subpoena.models import (
     Appointment,
@@ -29,6 +29,7 @@ from subpoena.models import (
     PaymentAmount,
     PaymentMethod,
     Priority,
+    RecordField,
     Ticket,
 )
 from subpoena.sor.base import RecordNotFound, SystemOfRecord
@@ -59,7 +60,8 @@ _ID_PREFIX = {
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS patients(
-    id TEXT PRIMARY KEY, name TEXT NOT NULL, phone TEXT NOT NULL, email TEXT);
+    id TEXT PRIMARY KEY, name TEXT NOT NULL, phone TEXT NOT NULL, email TEXT,
+    address TEXT, insurance TEXT);
 CREATE TABLE IF NOT EXISTS appointments(
     id TEXT PRIMARY KEY, patient_id TEXT NOT NULL REFERENCES patients(id),
     provider TEXT NOT NULL, start TEXT NOT NULL, duration_min INTEGER NOT NULL,
@@ -99,6 +101,12 @@ def _journal_triggers() -> list[str]:
 
         def snap(alias: str, cols: tuple[str, ...] = cols, entity: Entity = entity) -> str:
             snapshot = "json_object(" + ", ".join(f"'{c}', {alias}.{c}" for c in cols) + ")"
+            if entity is Entity.PATIENT:
+                # Keep existing receipts stable when the new fields are absent.
+                return (
+                    f"json_patch({snapshot}, json_object('address', {alias}.address, "
+                    f"'insurance', {alias}.insurance))"
+                )
             if entity is Entity.TICKET:
                 # Preserve the shape of historical evidence when no topic is recorded.
                 return f"json_patch({snapshot}, json_object('topic', {alias}.topic))"
@@ -134,6 +142,13 @@ class SqliteStore:
                     self._conn.execute("ALTER TABLE tickets ADD COLUMN topic TEXT")
                     for op in ("insert", "update", "delete"):
                         self._conn.execute(f"DROP TRIGGER IF EXISTS journal_tickets_{op}")
+                columns = {col["name"] for col in self._conn.execute("PRAGMA table_info(patients)")}
+                missing = {"address", "insurance"} - columns
+                for column in sorted(missing):
+                    self._conn.execute(f"ALTER TABLE patients ADD COLUMN {column} TEXT")
+                if missing:
+                    for op in ("insert", "update", "delete"):
+                        self._conn.execute(f"DROP TRIGGER IF EXISTS journal_patients_{op}")
                 for trigger in _journal_triggers():
                     self._conn.execute(trigger)
             except sqlite3.Error:
@@ -320,7 +335,7 @@ class _Calendar(_Adapter):
 
 class _Crm(_Adapter):
     entity = Entity.PATIENT
-    _EDITABLE = frozenset({"name", "phone", "email"})
+    _EDITABLE = frozenset(get_args(RecordField))
 
     def create_patient(self, *, name: str, phone: str, email: str | None = None) -> Patient:
         with self._tx() as conn:

@@ -36,16 +36,18 @@ from subpoena.suspect import (
     Inquiry,
     Recap,
     Reschedule,
+    UpdateRecords,
 )
 
 F = FaultMode
-B, R, X, C, H, P = (
+B, R, X, C, H, P, U = (
     "AppointmentBooked",
     "Rescheduled",
     "Cancelled",
     "ConfirmationSent",
     "HandoffCreated",
     "PaymentCollected",
+    "RecordsUpdated",
 )
 V, MM, NF, UV = (
     VerdictStatus.VERIFIED,
@@ -130,6 +132,13 @@ CLEAN: tuple[Scenario, ...] = (
         "A billing question becomes a ticket.",
         (Handoff(BILLING),),
         ((H, V),),
+    ),
+    Scenario(
+        "clean-records-update",
+        "Mailing address updated as stated",
+        "The agent reports the new mailing address it recorded for the caller.",
+        (UpdateRecords("address", "42 Cedar Lane"),),
+        ((U, V),),
     ),
     Scenario(
         "clean-payment",
@@ -257,6 +266,13 @@ REQUIRED: tuple[Scenario, ...] = (
 )
 
 EXTENDED: tuple[Scenario, ...] = (
+    Scenario(
+        "fault-records-field-not-written",
+        "Agent says insurance was updated",
+        "The agent writes the insurer into the address field and leaves insurance unchanged.",
+        (UpdateRecords("address", "Example Health", spoken_field="insurance"),),
+        ((U, MM),),
+    ),
     Scenario(
         "fault-wrong-payment-amount",
         "Agent states the wrong copay amount",
@@ -706,6 +722,8 @@ _V2: dict[str, tuple[ExpectedV2, ...]] = {
             "handoff|+15550101001|normal",
         ),
     ),
+    "clean-records-update": ((U, V, "records|+15550101001|address|42 Cedar Lane"),),
+    "fault-records-field-not-written": ((U, MM, "records|+15550101001|insurance|Example Health"),),
     "clean-payment": ((P, V, "payment|+15550101001|4000|card"),),
     "fault-wrong-payment-amount": ((P, MM, "payment|+15550101001|4500|card"),),
     "clean-handoff-topic": ((H, V, "handoff|+15550101001|normal"),),

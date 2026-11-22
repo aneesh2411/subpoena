@@ -26,6 +26,7 @@ from subpoena.models import (
     HandoffCreated,
     Outcome,
     PaymentCollected,
+    RecordsUpdated,
     Rescheduled,
     VerdictStatus,
 )
@@ -56,6 +57,9 @@ def claim_identity(claim: Claim) -> str:
         case ConfirmationSent():
             about = claim.about_start.isoformat() if claim.about_start else "-"
             return f"confirm|{claim.channel}|{claim.to}|{about}"
+        case RecordsUpdated():
+            patient = claim.patient.phone or claim.patient.name
+            return f"records|{patient}|{claim.field}|{claim.new_value or '-'}"
         case PaymentCollected():
             patient = claim.patient.phone or claim.patient.name
             return f"payment|{patient}|{claim.amount_cents or '-'}|{claim.method or '-'}"

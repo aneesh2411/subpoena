@@ -22,11 +22,15 @@ from subpoena.models import (
     Change,
     Entity,
     Evidence,
+    Patient,
     PatientRef,
+    RecordField,
     TrailEvent,
 )
 from subpoena.sor.base import COMPLETE, AdapterUnavailable, Coverage, SystemOfRecordReader
 from subpoena.util import ClinicConfig, norm_phone, norm_text, show
+
+MatchKey = tuple[Entity, str, RecordField | None]
 
 
 @dataclass(frozen=True)
@@ -35,10 +39,22 @@ class Match:
 
     primary: NetChange | None
     secondary: NetChange | None = None
+    record_field: RecordField | None = None
 
     @property
     def changes(self) -> tuple[NetChange, ...]:
         return tuple(c for c in (self.primary, self.secondary) if c is not None)
+
+    @property
+    def keys(self) -> tuple[MatchKey, ...]:
+        return tuple((*nc.key, self.record_field) for nc in self.changes)
+
+    @property
+    def signatures(self) -> set[str]:
+        if self.record_field is not None:
+            # Distinct fields on one patient record can back independent claims.
+            return set()
+        return {sig for nc in self.changes if (sig := content_signature(nc.after)) is not None}
 
 
 @dataclass
@@ -52,8 +68,10 @@ class AuditContext:
     trail: list[TrailEvent] = field(default_factory=list)
     attribution: dict[tuple[Entity, str], Attribution] = field(default_factory=dict)
     coverage: dict[Entity, Coverage] = field(default_factory=dict)
-    _consumed: set[tuple[Entity, str]] = field(default_factory=set)
+    _consumed: set[MatchKey] = field(default_factory=set)
     _patient_cache: dict[tuple[str, str | None], frozenset[str]] = field(default_factory=dict)
+
+    _patient_changes: tuple[Change, ...] = ()
 
     @classmethod
     def open(
@@ -89,6 +107,8 @@ class AuditContext:
                 ctx.log("evidence", f"{SOURCE[entity]}: UNAVAILABLE ({exc}). Will not guess.")
                 continue
             pulled[entity] = rows
+            if entity is Entity.PATIENT:
+                ctx._patient_changes = tuple(sorted(rows, key=lambda row: row.seq))
             cov_fn = getattr(feed, "coverage", None)
             try:
                 cov = cov_fn(*ctx.window) if callable(cov_fn) else COMPLETE
@@ -174,8 +194,16 @@ class AuditContext:
         return [
             nc
             for nc in self.delta.get(entity) or []
-            if nc.key not in self._consumed and nc.kind is not ChangeKind.TRANSIENT
+            if nc.kind is not ChangeKind.TRANSIENT
+            and (*nc.key, None) not in self._consumed
+            and (
+                not nc.changed_patient_fields
+                or any(self.record_field_free(nc, f) for f in nc.changed_patient_fields)
+            )
         ]
+
+    def record_field_free(self, change: NetChange, field: RecordField) -> bool:
+        return (*change.key, field) not in self._consumed
 
     def transient(self, entity: Entity) -> list[NetChange]:
         return [nc for nc in self.delta.get(entity) or [] if nc.kind is ChangeKind.TRANSIENT]
@@ -184,7 +212,7 @@ class AuditContext:
         return list(self.delta.get(entity) or [])
 
     def consume(self, match: Match) -> None:
-        self._consumed.update(nc.key for nc in match.changes)
+        self._consumed.update(match.keys)
 
     def consumed_signatures(self, entity: Entity) -> set[str]:
         """Content signatures of the writes claims have already accounted for.
@@ -195,7 +223,7 @@ class AuditContext:
         return {
             sig
             for nc in self.touched(entity)
-            if nc.key in self._consumed
+            if (*nc.key, None) in self._consumed
             for sig in [content_signature(nc.after)]
             if sig is not None
         }
@@ -214,7 +242,24 @@ class AuditContext:
             self._patient_cache[key] = frozenset(p.id for p in found)
         return self._patient_cache[key]
 
-    def ambiguous_identity(self, ref: PatientRef | None) -> str | None:
+    def patient_ids_at_start(self, ref: PatientRef) -> frozenset[str]:
+        """Match against the identity before edits in this call window."""
+        first: dict[str, Change] = {}
+        for row in self._patient_changes:
+            first.setdefault(row.entity_id, row)
+        patients = [p for p in self.sor.crm.list_patients() if p.id not in first]
+        patients.extend(
+            Patient.model_validate(row.before) for row in first.values() if row.before is not None
+        )
+        if ref.phone:
+            ids = frozenset(p.id for p in patients if norm_phone(p.phone) == norm_phone(ref.phone))
+            if ids:
+                return ids
+        return frozenset(p.id for p in patients if norm_text(p.name) == norm_text(ref.name))
+
+    def ambiguous_identity(
+        self, ref: PatientRef | None, *, at_call_start: bool = False
+    ) -> str | None:
         """Why this person reference cannot anchor a verdict, or None if it can.
 
         A name that matches several records with nothing to tell them apart must
@@ -223,7 +268,7 @@ class AuditContext:
         """
         if ref is None:
             return None
-        ids = self.patient_ids(ref)
+        ids = self.patient_ids_at_start(ref) if at_call_start else self.patient_ids(ref)
         if len(ids) <= 1:
             return None
         detail = f"{ref.name!r} matches {len(ids)} patient records"

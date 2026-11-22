@@ -1,0 +1,220 @@
+{
+ "audit_id": "aud-fault-records-field-not-written",
+ "auditor": "subpoena/0.1.0",
+ "created_at": "2026-03-02T09:06:16-05:00",
+ "call": {
+  "call_id": "call-fault-records-field-not-written",
+  "agent_id": "agent:receptionist",
+  "caller": {
+   "name": "Maya Chen",
+   "phone": "+15550101001"
+  },
+  "started_at": "2026-03-02T09:05:00-05:00",
+  "ended_at": "2026-03-02T09:05:16-05:00",
+  "transcript": [
+   {
+    "index": 0,
+    "speaker": "agent",
+    "text": "Thank you for calling Brightside Dental. How can I help?",
+    "at": "2026-03-02T09:05:04-05:00"
+   },
+   {
+    "index": 1,
+    "speaker": "caller",
+    "text": "Please update my insurance to Example Health.",
+    "at": "2026-03-02T09:05:08-05:00"
+   },
+   {
+    "index": 2,
+    "speaker": "agent",
+    "text": "I've updated your insurance on file to Example Health.",
+    "at": "2026-03-02T09:05:12-05:00"
+   },
+   {
+    "index": 3,
+    "speaker": "agent",
+    "text": "Is there anything else? Have a great day.",
+    "at": "2026-03-02T09:05:16-05:00"
+   }
+  ],
+  "raw_transcript": null,
+  "claims": [
+   {
+    "claim_id": "call-fault-records-field-not-written-c1",
+    "turn_index": 2,
+    "source": "structured",
+    "utterance": "I've updated your insurance on file to Example Health.",
+    "corrects_prior": false,
+    "type": "RecordsUpdated",
+    "patient": {
+     "name": "Maya Chen",
+     "phone": "+15550101001"
+    },
+    "field": "insurance",
+    "new_value": "Example Health"
+   }
+  ],
+  "provenance": {
+   "agent_version": "receptionist-sim/0.1.0",
+   "model": null,
+   "prompt_version": "narrator:standard",
+   "human_handoffs": [],
+   "platform": null,
+   "from_address": null,
+   "to_address": null,
+   "completion_callback_at": null
+  }
+ },
+ "outcome": "DISCREPANCIES",
+ "verdicts": [
+  {
+   "claim": {
+    "claim_id": "call-fault-records-field-not-written-c1",
+    "turn_index": 2,
+    "source": "structured",
+    "utterance": "I've updated your insurance on file to Example Health.",
+    "corrects_prior": false,
+    "type": "RecordsUpdated",
+    "patient": {
+     "name": "Maya Chen",
+     "phone": "+15550101001"
+    },
+    "field": "insurance",
+    "new_value": "Example Health"
+   },
+   "status": "MISMATCH",
+   "severity": "HIGH",
+   "summary": "The patient record edit differs from what the agent claimed. field: claimed insurance, actual address; new_value: claimed Example Health, actual (unset).",
+   "checks": [
+    {
+     "name": "existence",
+     "passed": true,
+     "detail": "A write by the agent during the call corresponds to this claim."
+    },
+    {
+     "name": "exactness",
+     "passed": false,
+     "detail": "Differs on: field, new_value."
+    },
+    {
+     "name": "side_effects",
+     "passed": null,
+     "detail": "Not applicable."
+    },
+    {
+     "name": "attribution",
+     "passed": true,
+     "detail": "Every backing write carries this call's own stamp."
+    },
+    {
+     "name": "coverage",
+     "passed": true,
+     "detail": "The crm change history for the call window was fully observed."
+    }
+   ],
+   "diffs": [
+    {
+     "field": "patient",
+     "claimed": "Maya Chen (+15550101001)",
+     "actual": "Maya Chen (+15550101001)",
+     "match": true
+    },
+    {
+     "field": "field",
+     "claimed": "insurance",
+     "actual": "address",
+     "match": false
+    },
+    {
+     "field": "new_value",
+     "claimed": "Example Health",
+     "actual": "(unset)",
+     "match": false
+    }
+   ],
+   "evidence": [
+    {
+     "source": "crm",
+     "ref": "pat_0001",
+     "note": "Patient record edit during the call (journal #6; net: updated)",
+     "record": {
+      "id": "pat_0001",
+      "name": "Maya Chen",
+      "phone": "+15550101001",
+      "email": null,
+      "address": "Example Health"
+     }
+    }
+   ],
+   "remediation": "Check the patient record and confirm the correct value with the caller."
+  }
+ ],
+ "findings": [],
+ "trail": [
+  {
+   "seq": 1,
+   "stage": "evidence",
+   "message": "calendar: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 2,
+   "stage": "evidence",
+   "message": "crm: 1 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 3,
+   "stage": "evidence",
+   "message": "messages: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 4,
+   "stage": "evidence",
+   "message": "tickets: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 5,
+   "stage": "claims",
+   "message": "1 structured claim(s); 1 recovered from the transcript, 0 of them never logged by the agent"
+  },
+  {
+   "seq": 6,
+   "stage": "reconcile",
+   "message": "call-fault-records-field-not-written-c1 (RecordsUpdated): partial match -> pat_0001"
+  },
+  {
+   "seq": 7,
+   "stage": "verdict",
+   "message": "call-fault-records-field-not-written-c1 (RecordsUpdated): MISMATCH"
+  },
+  {
+   "seq": 8,
+   "stage": "verdict",
+   "message": "Outcome: DISCREPANCIES"
+  }
+ ],
+ "stats": {
+  "claims": 1,
+  "verified": 0,
+  "mismatch": 1,
+  "not_found": 0,
+  "unverifiable": 0,
+  "findings": 0,
+  "trust_score": 0.0,
+  "max_severity": "HIGH"
+ },
+ "extraction": {
+  "extractor": "rules",
+  "degraded": false,
+  "detail": null
+ },
+ "fulfillments": [],
+ "coverage_gaps": [],
+ "seal": {
+  "algorithm": "sha256",
+  "content_hash": "d088409f16f6a6b7f1a6a87e7402b60bbb01490ae95bfb8059c5bc30999fc89a",
+  "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "chain_hash": "c6568210dd63d46d6df4027f4bb18a23a99c42994ef0fd6d6decfa1483c047d6",
+  "signature": "638ad2ee7e3dec37c047c2e9e51bfd0856a42ca206cadd35f00623c1136c43fb",
+  "key_id": "6508b98a7ace"
+ }
+}

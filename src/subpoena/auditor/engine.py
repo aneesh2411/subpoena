@@ -25,8 +25,8 @@ from typing import Any
 
 from subpoena import __version__
 from subpoena.auditor import appointments, fulfillment, sidefx
-from subpoena.auditor.context import AuditContext, Match
-from subpoena.auditor.delta import SOURCE, Attribution, content_signature
+from subpoena.auditor.context import AuditContext, Match, MatchKey
+from subpoena.auditor.delta import SOURCE, Attribution
 from subpoena.auditor.extractor import ClaimExtractor, RuleBasedExtractor, merge_claims
 from subpoena.auditor.findings import DEFAULT_POLICIES, Policy, policy_violations, unclaimed_writes
 from subpoena.auditor.seal import GENESIS, Sealer
@@ -47,6 +47,7 @@ from subpoena.models import (
     Fulfillment,
     HandoffCreated,
     Outcome,
+    RecordsUpdated,
     Severity,
     Ticket,
     Verdict,
@@ -95,6 +96,13 @@ HANDLERS: dict[str, _Handler] = {
         sidefx.match_confirmation,
         sidefx.candidates_confirmation,
         sidefx.judge_confirmation,
+    ),
+    "RecordsUpdated": _Handler(
+        (Entity.PATIENT,),
+        Entity.PATIENT,
+        sidefx.match_records,
+        sidefx.candidates_records,
+        sidefx.judge_records,
     ),
     "PaymentCollected": _Handler(
         (Entity.PAYMENT, Entity.PATIENT),
@@ -308,10 +316,7 @@ class Auditor:
         return [
             (s, m)
             for s, m in handler.candidates(claim, ctx, False)
-            if not any(
-                (sig := content_signature(nc.after)) is not None and sig in claimed_copies
-                for nc in m.changes
-            )
+            if m.signatures.isdisjoint(claimed_copies)
         ]
 
     @staticmethod
@@ -360,11 +365,11 @@ class Auditor:
         for claim in order:
             try:
                 exact = HANDLERS[claim.type].candidates(claim, ctx, True)
-                exact_keys = {nc.key for _, m in exact for nc in m.changes}
+                exact_keys = {key for _, m in exact for key in m.keys}
                 partial = [
                     (s, m)
                     for s, m in self._loose_candidates(claim, ctx)
-                    if not any(nc.key in exact_keys for nc in m.changes)
+                    if exact_keys.isdisjoint(m.keys)
                 ]
             except AdapterUnavailable as exc:
                 blocked[claim.claim_id] = str(exc)
@@ -388,7 +393,7 @@ class Auditor:
                     if entry is None:
                         continue
                     _, match, is_exact = entry
-                    if all(nc.key not in ctx._consumed for nc in match.changes):
+                    if ctx._consumed.isdisjoint(match.keys):
                         self._take(claim, match, ctx, matches, "exact" if is_exact else "partial")
                         break
             return
@@ -411,7 +416,7 @@ class Auditor:
 
         def search(
             i: int,
-            used: set[tuple[Entity, str]],
+            used: set[MatchKey],
             copies: set[str],
             chosen: list[tuple[int, Match, bool] | None],
         ) -> None:
@@ -422,15 +427,8 @@ class Auditor:
                     best_key, best = k, list(chosen)
                 return
             for entry in options[i]:
-                keys: list[tuple[Entity, str]] = []
-                sigs: list[str] = []
-                if entry is not None:
-                    keys = [nc.key for nc in entry[1].changes]
-                    sigs = [
-                        sig
-                        for nc in entry[1].changes
-                        if (sig := content_signature(nc.after)) is not None
-                    ]
+                keys = entry[1].keys if entry is not None else ()
+                sigs = entry[1].signatures if entry is not None else set()
                 # Two matches in one assignment may not describe the same
                 # content: the leftover copy is the anomaly, not evidence.
                 if any(k_ in used for k_ in keys) or any(s in copies for s in sigs):
@@ -455,7 +453,11 @@ class Auditor:
     ) -> Verdict:
         if claim.claim_id in blocked:
             verdict = unverifiable(claim, blocked[claim.claim_id])
-        elif (ambiguous := ctx.ambiguous_identity(getattr(claim, "patient", None))) is not None:
+        elif (
+            ambiguous := ctx.ambiguous_identity(
+                getattr(claim, "patient", None), at_call_start=isinstance(claim, RecordsUpdated)
+            )
+        ) is not None:
             verdict = Verdict(
                 claim=claim,
                 status=VerdictStatus.UNVERIFIABLE,

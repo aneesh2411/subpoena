@@ -32,9 +32,11 @@ from subpoena.models import (
     HandoffTopic,
     PaymentCollected,
     PaymentMethod,
+    RecordField,
+    RecordsUpdated,
     Rescheduled,
 )
-from subpoena.util import ClinicConfig, find_times, norm_text
+from subpoena.util import ClinicConfig, find_times, norm_phone, norm_text
 
 
 class ClaimExtractor(Protocol):
@@ -75,6 +77,25 @@ _PAYMENT_AMOUNT = re.compile(
     r"\$([0-9]{1,3}(?:,[0-9]{3})+|[0-9]+)(?:\.([0-9]{1,2}))?(?![0-9,]|\.[0-9])"
 )
 _PAYMENT_METHOD = re.compile(r"\b(?:card|(?:in|by|with) (cash|check))\b", re.IGNORECASE)
+_RECORD_FIELDS: dict[str, RecordField] = {
+    "name": "name",
+    "phone": "phone",
+    "phone number": "phone",
+    "email": "email",
+    "email address": "email",
+    "address": "address",
+    "mailing address": "address",
+    "insurance": "insurance",
+    "insurance information": "insurance",
+}
+_RECORD_LABEL = "|".join(_RECORD_FIELDS)
+_RECORD_UPDATE = re.compile(
+    rf"^\s*(?:(?:i|we)(?:['’]ve| have)? updated your (?P<active>{_RECORD_LABEL})"
+    rf"(?: on file)?|your (?P<passive>{_RECORD_LABEL})(?: on file)? "
+    r"(?:is|was|has been) (?:now )?updated)"
+    r"(?: to (?P<value>\S.*?))?[.!]?\s*$",
+    re.IGNORECASE,
+)
 _URGENT = re.compile(r"\b(?:urgent|right away|emergency)\b", re.IGNORECASE)
 _PROVIDER = re.compile(r"\bDr\.\s+[A-Z][A-Za-z'-]+")
 _CORRECTION = re.compile(
@@ -108,6 +129,22 @@ def _spoken_payment(sentence: str) -> tuple[int | None, PaymentMethod | None] | 
     return cents, method
 
 
+def _spoken_record_update(sentence: str) -> tuple[RecordField, str | None] | None:
+    match = _RECORD_UPDATE.fullmatch(sentence)
+    if match is None or sentence.rstrip().endswith("?"):
+        return None
+    return _RECORD_FIELDS[(match["active"] or match["passive"]).lower()], match["value"]
+
+
+def _record_update_claim(call: CallRecord, meta: dict[str, Any]) -> RecordsUpdated | None:
+    if _NEGATED.search(meta["utterance"]):
+        return None
+    if (update := _spoken_record_update(meta["utterance"])) is not None:
+        field, value = update
+        return RecordsUpdated(**meta, patient=call.caller, field=field, new_value=value)
+    return None
+
+
 class RuleBasedExtractor:
     """Deterministic, offline. Reads explicit statements; misses vague ones by design."""
 
@@ -135,7 +172,9 @@ class RuleBasedExtractor:
                     "source": ClaimSource.TRANSCRIPT,
                     "utterance": sentence,
                 }
-                if _RESCHEDULED.search(sentence) and len(times) >= 2:
+                if (record_update := _record_update_claim(call, meta)) is not None:
+                    claims.append(record_update)
+                elif _RESCHEDULED.search(sentence) and len(times) >= 2:
                     if corrected:
                         # The caller re-stated a value; this replaces the earlier claim.
                         meta["corrects_prior"] = True
@@ -208,6 +247,7 @@ class _Extracted(BaseModel):
         "ConfirmationSent",
         "HandoffCreated",
         "PaymentCollected",
+        "RecordsUpdated",
     ]
     start: AwareDatetime | None = None
     old_start: AwareDatetime | None = None
@@ -228,10 +268,11 @@ class LLMClaimExtractor:
     _SYSTEM = (
         "You read phone-call transcripts from an AI receptionist. List every action the AGENT "
         "tells the caller it has COMPLETED (booked, rescheduled, cancelled, sent a confirmation, "
-        "created a handoff ticket, collected a payment). Ignore offers, questions, and failures. "
+        "created a handoff ticket, collected a payment, updated a patient record). "
+        "Ignore offers, questions, and failures. "
         'Reply with a JSON array only. Each item: {"turn_index": int, "type": '
         '"AppointmentBooked|Rescheduled|Cancelled|ConfirmationSent|HandoffCreated|'
-        'PaymentCollected", '
+        'PaymentCollected|RecordsUpdated", '
         '"start"|"old_start"|"new_start": ISO-8601 with UTC offset or null, '
         '"provider": string or null, "channel": "sms|email", '
         '"priority": "low|normal|urgent"}.'
@@ -312,6 +353,10 @@ class LLMClaimExtractor:
                     return PaymentCollected(
                         **meta, patient=call.caller, amount_cents=amount, method=method
                     )
+        if item.type == "RecordsUpdated":
+            for sentence in _SENTENCE.split(meta["utterance"]):
+                if claim := _record_update_claim(call, {**meta, "utterance": sentence}):
+                    return claim
         if item.type == "HandoffCreated":
             return HandoffCreated(
                 **meta,
@@ -378,6 +423,16 @@ def _same_promise(spoken: Claim, logged: Claim) -> bool:
             and (spoken.amount_cents is None or spoken.amount_cents == logged.amount_cents)
             and (spoken.method is None or spoken.method == logged.method)
         )
+    if isinstance(spoken, RecordsUpdated) and isinstance(logged, RecordsUpdated):
+        if spoken.patient != logged.patient or spoken.field != logged.field:
+            return False
+        if spoken.new_value is None:
+            return True
+        if logged.new_value is None:
+            return False
+        if spoken.field == "phone":
+            return norm_phone(spoken.new_value) == norm_phone(logged.new_value)
+        return spoken.new_value == logged.new_value
     if isinstance(spoken, HandoffCreated) and isinstance(logged, HandoffCreated):
         summary = _handoff_summary(spoken)
         same_content = (
@@ -417,7 +472,7 @@ def _spoken_key(claim: Claim) -> tuple | None:
         return ("Cancelled", claim.start)
     if isinstance(claim, ConfirmationSent):
         return ("ConfirmationSent", claim.channel, norm_text(claim.to), claim.about_start)
-    return None  # A later handoff or payment may be a separate action.
+    return None  # Side-effect claims can describe separate actions on later turns.
 
 
 def merge_claims(structured: Sequence[Claim], spoken: Sequence[Claim]) -> tuple[Claim, ...]:

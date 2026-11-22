@@ -1,0 +1,220 @@
+{
+ "audit_id": "aud-clean-records-update",
+ "auditor": "subpoena/0.1.0",
+ "created_at": "2026-03-02T09:06:16-05:00",
+ "call": {
+  "call_id": "call-clean-records-update",
+  "agent_id": "agent:receptionist",
+  "caller": {
+   "name": "Maya Chen",
+   "phone": "+15550101001"
+  },
+  "started_at": "2026-03-02T09:05:00-05:00",
+  "ended_at": "2026-03-02T09:05:16-05:00",
+  "transcript": [
+   {
+    "index": 0,
+    "speaker": "agent",
+    "text": "Thank you for calling Brightside Dental. How can I help?",
+    "at": "2026-03-02T09:05:04-05:00"
+   },
+   {
+    "index": 1,
+    "speaker": "caller",
+    "text": "Please update my address to 42 Cedar Lane.",
+    "at": "2026-03-02T09:05:08-05:00"
+   },
+   {
+    "index": 2,
+    "speaker": "agent",
+    "text": "I've updated your address on file to 42 Cedar Lane.",
+    "at": "2026-03-02T09:05:12-05:00"
+   },
+   {
+    "index": 3,
+    "speaker": "agent",
+    "text": "Is there anything else? Have a great day.",
+    "at": "2026-03-02T09:05:16-05:00"
+   }
+  ],
+  "raw_transcript": null,
+  "claims": [
+   {
+    "claim_id": "call-clean-records-update-c1",
+    "turn_index": 2,
+    "source": "structured",
+    "utterance": "I've updated your address on file to 42 Cedar Lane.",
+    "corrects_prior": false,
+    "type": "RecordsUpdated",
+    "patient": {
+     "name": "Maya Chen",
+     "phone": "+15550101001"
+    },
+    "field": "address",
+    "new_value": "42 Cedar Lane"
+   }
+  ],
+  "provenance": {
+   "agent_version": "receptionist-sim/0.1.0",
+   "model": null,
+   "prompt_version": "narrator:standard",
+   "human_handoffs": [],
+   "platform": null,
+   "from_address": null,
+   "to_address": null,
+   "completion_callback_at": null
+  }
+ },
+ "outcome": "CLEAN",
+ "verdicts": [
+  {
+   "claim": {
+    "claim_id": "call-clean-records-update-c1",
+    "turn_index": 2,
+    "source": "structured",
+    "utterance": "I've updated your address on file to 42 Cedar Lane.",
+    "corrects_prior": false,
+    "type": "RecordsUpdated",
+    "patient": {
+     "name": "Maya Chen",
+     "phone": "+15550101001"
+    },
+    "field": "address",
+    "new_value": "42 Cedar Lane"
+   },
+   "status": "VERIFIED",
+   "severity": "INFO",
+   "summary": "The patient's address was updated as claimed.",
+   "checks": [
+    {
+     "name": "existence",
+     "passed": true,
+     "detail": "A write by the agent during the call corresponds to this claim."
+    },
+    {
+     "name": "exactness",
+     "passed": true,
+     "detail": "All fields match."
+    },
+    {
+     "name": "side_effects",
+     "passed": null,
+     "detail": "Not applicable."
+    },
+    {
+     "name": "attribution",
+     "passed": true,
+     "detail": "Every backing write carries this call's own stamp."
+    },
+    {
+     "name": "coverage",
+     "passed": true,
+     "detail": "The crm change history for the call window was fully observed."
+    }
+   ],
+   "diffs": [
+    {
+     "field": "patient",
+     "claimed": "Maya Chen (+15550101001)",
+     "actual": "Maya Chen (+15550101001)",
+     "match": true
+    },
+    {
+     "field": "field",
+     "claimed": "address",
+     "actual": "address",
+     "match": true
+    },
+    {
+     "field": "new_value",
+     "claimed": "42 Cedar Lane",
+     "actual": "42 Cedar Lane",
+     "match": true
+    }
+   ],
+   "evidence": [
+    {
+     "source": "crm",
+     "ref": "pat_0001",
+     "note": "Patient record edit during the call (journal #6; net: updated)",
+     "record": {
+      "id": "pat_0001",
+      "name": "Maya Chen",
+      "phone": "+15550101001",
+      "email": null,
+      "address": "42 Cedar Lane"
+     }
+    }
+   ],
+   "remediation": null
+  }
+ ],
+ "findings": [],
+ "trail": [
+  {
+   "seq": 1,
+   "stage": "evidence",
+   "message": "calendar: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 2,
+   "stage": "evidence",
+   "message": "crm: 1 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 3,
+   "stage": "evidence",
+   "message": "messages: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 4,
+   "stage": "evidence",
+   "message": "tickets: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 5,
+   "stage": "claims",
+   "message": "1 structured claim(s); 1 recovered from the transcript, 0 of them never logged by the agent"
+  },
+  {
+   "seq": 6,
+   "stage": "reconcile",
+   "message": "call-clean-records-update-c1 (RecordsUpdated): exact match -> pat_0001"
+  },
+  {
+   "seq": 7,
+   "stage": "verdict",
+   "message": "call-clean-records-update-c1 (RecordsUpdated): VERIFIED"
+  },
+  {
+   "seq": 8,
+   "stage": "verdict",
+   "message": "Outcome: CLEAN"
+  }
+ ],
+ "stats": {
+  "claims": 1,
+  "verified": 1,
+  "mismatch": 0,
+  "not_found": 0,
+  "unverifiable": 0,
+  "findings": 0,
+  "trust_score": 1.0,
+  "max_severity": "INFO"
+ },
+ "extraction": {
+  "extractor": "rules",
+  "degraded": false,
+  "detail": null
+ },
+ "fulfillments": [],
+ "coverage_gaps": [],
+ "seal": {
+  "algorithm": "sha256",
+  "content_hash": "ce36850839190a596fd4602d74ed00c981e030af2074f3b8b664e6470327fed5",
+  "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "chain_hash": "c9abbb3dd04a94b15999de65a2639b5cce9b03889521f8dc902c8fba054619d6",
+  "signature": "a455db2a62088101f1f5d085d5a024a8ac34c14834ac0eeb32e061eef2504e4d",
+  "key_id": "6508b98a7ace"
+ }
+}

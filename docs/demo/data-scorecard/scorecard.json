@@ -1,5 +1,5 @@
 {
-  "audits": 64,
+  "audits": 66,
   "by_claim_type": {
     "AppointmentBooked": {
       "MISMATCH": 5,
@@ -26,6 +26,12 @@
       "VERIFIED": 5
     },
     "PaymentCollected": {
+      "MISMATCH": 1,
+      "NOT_FOUND": 0,
+      "UNVERIFIABLE": 0,
+      "VERIFIED": 1
+    },
+    "RecordsUpdated": {
       "MISMATCH": 1,
       "NOT_FOUND": 0,
       "UNVERIFIABLE": 0,

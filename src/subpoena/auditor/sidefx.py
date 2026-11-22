@@ -13,6 +13,7 @@ from subpoena.models import (
     Message,
     Payment,
     PaymentCollected,
+    RecordsUpdated,
     Severity,
     Ticket,
     Verdict,
@@ -270,5 +271,93 @@ def judge_payment(claim: PaymentCollected, match: Match | None, ctx: AuditContex
         field_severity={"patient": Severity.HIGH, "amount_cents": Severity.HIGH},
         verified=f"The payment was collected as claimed ({payment.id}).",
         mismatch=f"A payment was recorded ({payment.id}) with different details.",
+        remediation=remediation,
+    )
+
+
+# ------------------------------- RecordsUpdated --------------------------- #
+
+
+def _record_diffs(
+    claim: RecordsUpdated, change: NetChange, ids: frozenset[str], ctx: AuditContext
+) -> list[FieldDiff]:
+    before, after = change.before or {}, change.after or {}
+    actual = after.get(claim.field)
+    # A later full-row snapshot can carry a value written by another actor.
+    field_changed = before.get(claim.field) != actual and any(
+        row.op == "update"
+        and (row.before or {}).get(claim.field) != actual
+        and (row.after or {}).get(claim.field) == actual
+        for row in change.changes
+    )
+    diffs = [
+        FieldDiff(
+            field="patient",
+            claimed=ref_label(claim.patient),
+            actual=ctx.patient_label(change.entity_id),
+            match=change.entity_id in ids,
+        ),
+        FieldDiff(
+            field="field",
+            claimed=claim.field,
+            actual=", ".join(change.changed_patient_fields),
+            match=field_changed,
+        ),
+    ]
+    if claim.new_value is not None:
+        value = norm_phone(claim.new_value) if claim.field == "phone" else claim.new_value
+        diffs.append(
+            FieldDiff(
+                field="new_value",
+                claimed=claim.new_value,
+                actual=actual if actual is not None else "(unset)",
+                match=field_changed and value == actual,
+            )
+        )
+    return diffs
+
+
+def candidates_records(
+    claim: RecordsUpdated, ctx: AuditContext, strict: bool
+) -> list[tuple[int, Match]]:
+    ids = ctx.patient_ids_at_start(claim.patient)
+    out: list[tuple[int, Match]] = []
+    for change in ctx.free(Entity.PATIENT):
+        fields = change.changed_patient_fields
+        if not fields:
+            continue
+        diffs = _record_diffs(claim, change, ids, ctx)
+        if strict and not all(d.match for d in diffs):
+            continue
+        score = sum(weight for weight, diff in zip((4, 2, 1), diffs, strict=False) if diff.match)
+        for field in (claim.field,) if claim.field in fields else fields:
+            if ctx.record_field_free(change, field):
+                out.append((score, Match(primary=change, record_field=field)))
+    return out
+
+
+def match_records(claim: RecordsUpdated, ctx: AuditContext, strict: bool) -> Match | None:
+    candidates = candidates_records(claim, ctx, strict)
+    return max(candidates, key=lambda candidate: candidate[0])[1] if candidates else None
+
+
+def judge_records(claim: RecordsUpdated, match: Match | None, ctx: AuditContext) -> Verdict:
+    remediation = "Check the patient record and confirm the correct value with the caller."
+    if match is None or match.primary is None:
+        return not_found(
+            claim,
+            "The agent claimed it updated a patient record, but no corresponding edit was found.",
+            [ctx.journal_evidence(Entity.PATIENT, "No corresponding patient record edit.")],
+            severity=Severity.HIGH,
+            remediation=remediation,
+        )
+    change = match.primary
+    return conclude(
+        claim,
+        _record_diffs(claim, change, ctx.patient_ids_at_start(claim.patient), ctx),
+        [change.evidence("Patient record edit during the call")],
+        field_severity={"patient": Severity.HIGH, "field": Severity.HIGH},
+        verified=f"The patient's {claim.field} was updated as claimed.",
+        mismatch="The patient record edit differs from what the agent claimed.",
         remediation=remediation,
     )

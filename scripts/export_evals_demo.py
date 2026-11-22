@@ -20,6 +20,7 @@ DEMO = ROOT / "docs" / "demo"
 # The results JSON has no timestamp. Record the check-in date for the exact
 # checked-in snapshots without depending on Git history at export time.
 CHECK_IN_DATES = {
+    "a4b870667615d1cde07a603a9aa926777910510adabc8437d8c67969dc3ef6aa": "2026-11-22",
     "bad938d0d1d16e15f1dc8f4798e00ef56228c936b0d4dfcf4ab2bd58e772e700": "2026-11-22",
     "714910e542d1c1588fece3f828d72d7a38a43110fa268a22d8ec76659847bce9": "2026-11-19",
 }

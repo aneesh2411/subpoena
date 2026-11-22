@@ -134,15 +134,15 @@ an authenticated signature.
 to a naive "does a matching record exist" baseline.
 
 <!-- metrics:readme:start -->
-Golden set, 63 calls:
+Golden set, 65 calls:
 
 | Metric | Subpoena | Naive lookup |
 |---|---|---|
-| False claims caught (recall) | 94.7% | 55.3% |
-| False accusations (1 - precision) | 0% | 8.7% |
-| Exact verdict | 98.0% | 73.3% |
+| False claims caught (recall) | 94.9% | 56.4% |
+| False accusations (1 - precision) | 0% | 8.3% |
+| Exact verdict | 98.1% | 72.8% |
 | Unclaimed writes and policy (recall) | 100% | 0% |
-| Calls fully correct | 96.8% | 50.8% |
+| Calls fully correct | 96.9% | 50.8% |
 
 Fuzzed, 500 calls: 100% on every metric.
 <!-- metrics:readme:end -->

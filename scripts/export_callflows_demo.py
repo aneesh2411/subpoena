@@ -20,6 +20,8 @@ SCENARIO_IDS = (
     "clean-handoff-topic",
     "fault-wrong-handoff-topic",
     "clean-payment",
+    "clean-records-update",
+    "fault-records-field-not-written",
     "fault-wrong-payment-amount",
 )
 
@@ -128,6 +130,7 @@ PAGE = """<!doctype html>
     Rescheduled: "Reschedule",
     HandoffCreated: "Handoff",
     PaymentCollected: "Payment",
+    RecordsUpdated: "Record update",
   };
 
   function add(parent, tag, text, className) {
