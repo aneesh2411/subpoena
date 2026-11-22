@@ -52,21 +52,22 @@ class ApprovalRequest(BaseModel):
 class Approval(ApprovalRequest):
     audit_id: str
     created_at: datetime
+    approval_id: int | None = None
 
 
 def append_approval(conn: sqlite3.Connection, audit_id: str, request: ApprovalRequest) -> Approval:
     approval = Approval(**request.model_dump(), audit_id=audit_id, created_at=utcnow())
-    conn.execute(
+    cursor = conn.execute(
         "INSERT INTO approvals(audit_id, body) VALUES (?, ?)",
         (audit_id, approval.model_dump_json()),
     )
-    return approval
+    return approval.model_copy(update={"approval_id": cursor.lastrowid})
 
 
 def list_approvals(conn: sqlite3.Connection, audit_id: str) -> list[Approval]:
     return [
-        Approval.model_validate_json(body)
-        for (body,) in conn.execute(
-            "SELECT body FROM approvals WHERE audit_id = ? ORDER BY seq", (audit_id,)
+        Approval.model_validate_json(body).model_copy(update={"approval_id": seq})
+        for seq, body in conn.execute(
+            "SELECT seq, body FROM approvals WHERE audit_id = ? ORDER BY seq", (audit_id,)
         )
     ]

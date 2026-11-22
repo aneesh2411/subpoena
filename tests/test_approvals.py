@@ -58,7 +58,12 @@ def test_approval_history_is_ordered_persistent_and_audit_local(ledger, monkeypa
         response = client.post(f"{path}/approvals", json=request)
         assert response.status_code == 201, response.text
         record = response.json()["data"]
-        assert record == {**request, "audit_id": BOOKING, "created_at": record["created_at"]}
+        assert record == {
+            **request,
+            "audit_id": BOOKING,
+            "approval_id": len(records) + 1,
+            "created_at": record["created_at"],
+        }
         assert datetime.fromisoformat(record["created_at"]) == timestamp
         records.append(record)
 

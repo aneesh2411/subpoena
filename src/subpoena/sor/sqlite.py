@@ -85,6 +85,9 @@ CREATE TABLE IF NOT EXISTS prescriptions(
     id TEXT PRIMARY KEY, patient_id TEXT NOT NULL REFERENCES patients(id),
     medication TEXT NOT NULL CHECK (length(trim(medication)) BETWEEN 1 AND 4000),
     refilled_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS applied_fixes(
+    audit_id TEXT NOT NULL, claim_id TEXT NOT NULL, approval_id INTEGER NOT NULL,
+    record_id TEXT NOT NULL, PRIMARY KEY(audit_id, claim_id));
 CREATE TABLE IF NOT EXISTS id_seq(entity TEXT PRIMARY KEY, n INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS session_ctx(
     id INTEGER PRIMARY KEY CHECK (id = 1), actor TEXT NOT NULL, now TEXT NOT NULL);
@@ -177,6 +180,39 @@ class SqliteStore:
             prescriptions=_Prescriptions(self, actor, clock),
         )
 
+    def apply_fix(
+        self,
+        audit_id: str,
+        claim_id: str,
+        approval_id: int,
+        actor: str,
+        clock: Clock,
+        write: Callable[[SystemOfRecord], str],
+    ) -> tuple[int, str, bool]:
+        """Commit the adapter write and its retry receipt in one transaction."""
+        with self._lock:
+            self._conn.execute("BEGIN IMMEDIATE")
+            try:
+                existing = self._conn.execute(
+                    "SELECT approval_id, record_id FROM applied_fixes "
+                    "WHERE audit_id = ? AND claim_id = ?",
+                    (audit_id, claim_id),
+                ).fetchone()
+                if existing is not None:
+                    result = (existing["approval_id"], existing["record_id"], False)
+                else:
+                    record_id = write(self.session(actor, clock))
+                    self._conn.execute(
+                        "INSERT INTO applied_fixes VALUES (?, ?, ?, ?)",
+                        (audit_id, claim_id, approval_id, record_id),
+                    )
+                    result = (approval_id, record_id, True)
+                self._conn.commit()
+            except BaseException:
+                self._conn.rollback()
+                raise
+            return result
+
     def close(self) -> None:
         with self._lock:
             self._conn.close()
@@ -186,7 +222,8 @@ class SqliteStore:
     @contextmanager
     def _write(self, actor: str, now: datetime) -> Iterator[sqlite3.Connection]:
         with self._lock:
-            self._conn.execute("BEGIN IMMEDIATE")
+            nested = self._conn.in_transaction
+            self._conn.execute("SAVEPOINT adapter_write" if nested else "BEGIN IMMEDIATE")
             try:
                 self._conn.execute(
                     "UPDATE session_ctx SET actor = ?, now = ? WHERE id = 1",
@@ -194,10 +231,14 @@ class SqliteStore:
                 )
                 yield self._conn
             except BaseException:
-                self._conn.execute("ROLLBACK")
+                if nested:
+                    self._conn.execute("ROLLBACK TO adapter_write")
+                    self._conn.execute("RELEASE adapter_write")
+                else:
+                    self._conn.rollback()
                 raise
             else:
-                self._conn.execute("COMMIT")
+                self._conn.execute("RELEASE adapter_write" if nested else "COMMIT")
 
     def _rows(self, sql: str, params: tuple[Any, ...] = ()) -> list[dict[str, Any]]:
         with self._lock:

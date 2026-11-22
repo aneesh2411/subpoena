@@ -188,11 +188,24 @@ class Auditor:
         )
         return self._sealer.seal(report, prev_hash)
 
-    def recheck(self, call: CallRecord, claim: Claim, *, prev_hash: str) -> AuditReport:
+    def recheck(
+        self,
+        call: CallRecord,
+        claim: Claim,
+        *,
+        prev_hash: str,
+        fix_note: str | None = None,
+        fix_unavailable: str | None = None,
+    ) -> AuditReport:
         """Re-evaluate a previously judged claim through the current evidence cutoff."""
         now = self._clock()
         ctx = AuditContext.open(call, self._sor, self._clinic, now - call.ended_at)
+        if fix_note is not None:
+            ctx.log("fix", fix_note)
+            ctx.log("recheck", f"Re-checking claim {claim.claim_id} after remediation.")
         matches, blocked = self._reconcile((claim,), ctx)
+        if fix_unavailable is not None:
+            blocked[claim.claim_id] = fix_unavailable
         try:
             verdict = self._judge(claim, matches.get(claim.claim_id), blocked, ctx)
         except AdapterUnavailable as exc:

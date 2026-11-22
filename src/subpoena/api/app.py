@@ -5,6 +5,7 @@ Core:
     POST /calls                  ingest a call (transcript + claims)
     POST /audit                  audit a stored or inline call against the system of record
     POST /audit/{id}/claims/{claim_id}/recheck   re-check a sealed claim
+    POST /audit/{id}/claims/{claim_id}/fix   apply an approved fix and re-check
     POST /audit/{id}/approvals   append a human remediation decision
     GET  /audit/{id}/approvals   read a single audit’s approval history
     GET  /audit/{id}/report      the sealed report (JSON, or Markdown with ?format=md)
@@ -44,6 +45,7 @@ from starlette.concurrency import run_in_threadpool
 from subpoena import __version__
 from subpoena.api.alerts import build_alert_feed
 from subpoena.api.approvals import ApprovalRequest
+from subpoena.api.fixes import FixConflict, apply_claim
 from subpoena.api.ingest import parse_delivery
 from subpoena.api.repair_queue import build_repair_queue
 from subpoena.api.review import Hash, ReviewError, TransitionRequest
@@ -59,9 +61,10 @@ from subpoena.auditor import (
     render_markdown,
 )
 from subpoena.llm import llm_from_env
-from subpoena.models import AuditReport, CallRecord
+from subpoena.models import AuditReport, CallRecord, Claim
 from subpoena.scenarios import BY_ID, audit_call, build_world, run_suspect
 from subpoena.sor import SqliteStore
+from subpoena.sor.base import AdapterUnavailable
 from subpoena.util import utcnow
 
 log = logging.getLogger("subpoena.api")
@@ -300,8 +303,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         log.info("audit %s for call %s: %s", report.audit_id, call.call_id, report.outcome.value)
         return _ok(report.model_dump(mode="json"), 201)
 
-    @app.post("/audit/{audit_id}/claims/{claim_id}/recheck", dependencies=guarded)
-    def recheck_claim(audit_id: str, claim_id: str) -> JSONResponse:
+    def sealed_claim(audit_id: str, claim_id: str) -> tuple[AuditReport, Claim]:
         original = store().get_audit(audit_id)
         if original is None:
             raise HTTPException(404, f"audit {audit_id} not found")
@@ -311,15 +313,31 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if original.seal is None:
             raise HTTPException(409, f"audit {audit_id} is not sealed")
 
-        # Keep the reader alive if a demo request stages another system of record.
-        with app.state.stage_lock:
-            auditor = Auditor(
-                app.state.sor.session("auditor", utcnow),
-                sealer=app.state.sealer,
-                clock=utcnow,
-                use_transcript=False,
-            )
-            checked = auditor.recheck(original.call, claim, prev_hash=original.seal.chain_hash)
+        return original, claim
+
+    def check_claim(
+        original: AuditReport,
+        claim: Claim,
+        *,
+        fix_note: str | None = None,
+        fix_unavailable: str | None = None,
+    ) -> AuditReport:
+        assert original.seal is not None
+        auditor = Auditor(
+            app.state.sor.session("auditor", utcnow),
+            sealer=app.state.sealer,
+            clock=utcnow,
+            use_transcript=False,
+        )
+        return auditor.recheck(
+            original.call,
+            claim,
+            prev_hash=original.seal.chain_hash,
+            fix_note=fix_note,
+            fix_unavailable=fix_unavailable,
+        )
+
+    def checked_response(checked: AuditReport) -> JSONResponse:
         assert checked.seal is not None
         return _ok(
             {
@@ -328,6 +346,51 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 "seal": checked.seal.model_dump(mode="json"),
             }
         )
+
+    @app.post("/audit/{audit_id}/claims/{claim_id}/recheck", dependencies=guarded)
+    def recheck_claim(audit_id: str, claim_id: str) -> JSONResponse:
+        original, claim = sealed_claim(audit_id, claim_id)
+        # Keep the reader alive if a demo request stages another system of record.
+        with app.state.stage_lock:
+            checked = check_claim(original, claim)
+        return checked_response(checked)
+
+    @app.post("/audit/{audit_id}/claims/{claim_id}/fix", dependencies=guarded)
+    def fix_claim(audit_id: str, claim_id: str) -> JSONResponse:
+        original, claim = sealed_claim(audit_id, claim_id)
+        approval = next(
+            (
+                entry
+                for entry in store().list_approvals(audit_id)
+                if entry.claim_id == claim_id and entry.action == "resolve"
+            ),
+            None,
+        )
+        if approval is None:
+            raise HTTPException(409, f"missing resolve approval for claim {claim_id}")
+        assert approval.approval_id is not None
+        actor = f"{original.call.agent_id}:{original.call.call_id}"
+        unavailable = None
+        with app.state.stage_lock:
+            try:
+                approval_id, record_id, written = app.state.sor.apply_fix(
+                    audit_id,
+                    claim_id,
+                    approval.approval_id,
+                    actor,
+                    utcnow,
+                    lambda session: apply_claim(session, claim),
+                )
+                action = "Wrote" if written else "Reused prior write of"
+                note = f"{action} {record_id} as {actor} using resolve approval {approval_id}."
+            except AdapterUnavailable as exc:
+                unavailable = str(exc)
+                note = f"Write using resolve approval {approval.approval_id} failed: {exc}."
+            except FixConflict as exc:
+                raise HTTPException(409, str(exc)) from exc
+            checked = check_claim(original, claim, fix_note=note, fix_unavailable=unavailable)
+            store().save_fix_recheck(audit_id, checked)
+        return checked_response(checked)
 
     @app.post("/audit/{audit_id}/approvals", status_code=201, dependencies=guarded)
     def approve_remediation(audit_id: str, req: ApprovalRequest) -> JSONResponse:
@@ -360,7 +423,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def report(
         audit_id: str, format: Annotated[str, Query(pattern="^(json|md)$")] = "json"
     ) -> JSONResponse | PlainTextResponse:
-        found = store().get_audit(audit_id)
+        found = store().get_audit(audit_id) or store().get_fix_recheck(audit_id)
         if found is None:
             raise HTTPException(404, f"audit {audit_id} not found")
         if format == "md":

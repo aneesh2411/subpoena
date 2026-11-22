@@ -229,7 +229,8 @@ def test_api_key_is_enforced_when_configured():
     assert client.get("/").status_code == 200
     for method, path in (("get", "/audits"), ("post", "/calls"), ("get", "/demo/scenarios"),
                          ("get", "/scorecard"), ("get", "/audit/x/report"),
-                         ("post", "/audit/x/claims/y/recheck")):  # fmt: skip
+                         ("post", "/audit/x/claims/y/recheck"),
+                         ("post", "/audit/x/claims/y/fix")):  # fmt: skip
         assert "X-API-Key" in _error(getattr(client, method)(path), 401)
     assert "X-API-Key" in _error(client.get("/audits", headers={"X-API-Key": "wrong"}), 401)
     assert _data(client.get("/audits", headers={"X-API-Key": "s3cret"})) == []
@@ -265,3 +266,109 @@ def test_unhandled_errors_do_not_leak_details(client, monkeypatch):
     quiet = TestClient(client.app, raise_server_exceptions=False)
     response = quiet.get(f"/audit/{audit_id}/report", params={"format": "md"})
     assert _error(response, 500) == "internal error"
+
+
+def _fix_target(client, monkeypatch):
+    call = _data(client.post("/demo/scenarios/fault-phantom-booking-bare/stage"), 201)
+    original = _data(client.post("/audit", json={"call": call}), 201)
+    verdict = original["verdicts"][0]
+    assert verdict["status"] == "NOT_FOUND"
+    claim = AppointmentBooked.model_validate(verdict["claim"])
+    ended = datetime.fromisoformat(call["ended_at"])
+    monkeypatch.setattr("subpoena.api.app.utcnow", lambda: ended + timedelta(minutes=2))
+    return original, claim
+
+
+def _approve_fix(client, audit_path, claim_id, action="resolve"):
+    return _data(
+        client.post(
+            f"{audit_path}/approvals",
+            json={"claim_id": claim_id, "action": action, "actor": "Sam", "note": ""},
+        ),
+        201,
+    )
+
+
+def test_fix_requires_resolve_approval_for_this_audit_and_claim(client, monkeypatch):
+    original, claim = _fix_target(client, monkeypatch)
+    audit_path = f"/audit/{original['audit_id']}"
+    path = f"{audit_path}/claims/{claim.claim_id}/fix"
+    sor = client.app.state.sor
+    before = sor._conn.total_changes
+    assert "missing resolve approval" in _error(client.post(path), 409)
+
+    other = _data(client.post("/audit", json={"call_id": original["call"]["call_id"]}), 201)
+    _approve_fix(client, f"/audit/{other['audit_id']}", claim.claim_id)
+    _approve_fix(client, audit_path, claim.claim_id, action="acknowledge")
+    _approve_fix(client, audit_path, claim.claim_id, action="dismiss")
+    assert claim.claim_id in _error(client.post(path), 409)
+    assert sor._conn.total_changes == before
+
+
+@pytest.mark.parametrize(
+    ("fault", "expected"), [(None, "VERIFIED"), ("hour-off", "MISMATCH"), ("down", "UNVERIFIABLE")]
+)
+def test_approved_fix_is_written_and_rechecked(client, monkeypatch, fault, expected):
+    original, claim = _fix_target(client, monkeypatch)
+    audit_path = f"/audit/{original['audit_id']}"
+    path = f"{audit_path}/claims/{claim.claim_id}"
+    approval = _approve_fix(client, audit_path, claim.claim_id)
+    store = client.app.state.store
+    sor = client.app.state.sor
+    session = sor.session
+    before = store.audit_rows()
+
+    def simulate(actor, clock):
+        adapters = session(actor, clock)
+        if fault == "down":
+            return with_outage(adapters, "calendar")
+        if fault == "hour-off":
+            create = adapters.calendar.create_appointment
+
+            def hour_off(**kwargs):
+                kwargs["start"] += timedelta(hours=1)
+                return create(**kwargs)
+
+            monkeypatch.setattr(adapters.calendar, "create_appointment", hour_off)
+        return adapters
+
+    if fault:
+        monkeypatch.setattr(sor, "session", simulate)
+    checked = _data(client.post(f"{path}/fix"))
+    assert checked["verdict"]["status"] == expected
+    assert checked["verdict"]["claim"] == original["verdicts"][0]["claim"]
+    assert checked["seal"]["prev_hash"] == original["seal"]["chain_hash"]
+    saved = _data(client.get(f"/audit/{checked['audit_id']}/report"))
+    assert saved["verdicts"] == [checked["verdict"]]
+    assert saved["seal"] == checked["seal"]
+    assert client.app.state.sealer.verify(store.get_fix_recheck(checked["audit_id"])).ok
+    events = {event["stage"]: event["message"] for event in saved["trail"]}
+    assert f"resolve approval {approval['approval_id']}" in events["fix"]
+    assert claim.claim_id in events["recheck"]
+
+    call = original["call"]
+    changes = session("test", lambda: datetime.fromisoformat(call["ended_at"])).calendar.changes(
+        datetime.fromisoformat(call["started_at"]),
+        datetime.fromisoformat(call["ended_at"]) + timedelta(minutes=2),
+    )
+    if fault == "down":
+        assert "failed" in events["fix"]
+        assert changes == []
+        monkeypatch.setattr(sor, "session", session)
+        assert _data(client.post(f"{path}/fix"))["verdict"]["status"] == "VERIFIED"
+    else:
+        (change,) = changes
+        assert change.actor == f"{call['agent_id']}:{call['call_id']}"
+        assert change.entity_id in events["fix"]
+        assert _data(client.post(f"{path}/recheck"))["verdict"] == checked["verdict"]
+        if fault == "hour-off":
+            (diff,) = [diff for diff in checked["verdict"]["diffs"] if not diff["match"]]
+            assert diff["field"] == "start"
+        writes = sor._conn.total_changes
+        assert _data(client.post(f"{path}/fix"))["verdict"] == checked["verdict"]
+        assert sor._conn.total_changes == writes
+
+    assert _data(client.get(f"{audit_path}/report")) == original
+    assert _data(client.get(f"{audit_path}/approvals")) == [approval]
+    assert store.audit_rows() == before
+    assert _data(client.get("/ledger/verify", params={"strict": True}))["ok"]

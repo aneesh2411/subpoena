@@ -7,6 +7,7 @@ import threading
 from collections.abc import Callable, Iterator
 
 from subpoena.api import approvals, review_store, revisions
+from subpoena.api.fixes import FIX_SCHEMA
 from subpoena.api.review import Receipt, TransitionRequest
 from subpoena.api.webhook import SCHEMA as WEBHOOK_SCHEMA
 from subpoena.api.webhook import write_transaction
@@ -40,6 +41,7 @@ class AuditStore:
                 + revisions.REVISION_SCHEMA
                 + WEBHOOK_SCHEMA
                 + approvals.APPROVAL_SCHEMA
+                + FIX_SCHEMA
             )
 
     def close(self) -> None:
@@ -139,6 +141,20 @@ class AuditStore:
         with self._lock:
             row = self._conn.execute(
                 "SELECT body FROM audits WHERE audit_id = ?", (audit_id,)
+            ).fetchone()
+        return AuditReport.model_validate_json(row[0]) if row else None
+
+    def save_fix_recheck(self, original_audit_id: str, report: AuditReport) -> None:
+        with self._lock:
+            self._conn.execute(
+                "INSERT INTO fix_rechecks(audit_id, original_audit_id, body) VALUES (?, ?, ?)",
+                (report.audit_id, original_audit_id, report.model_dump_json()),
+            )
+
+    def get_fix_recheck(self, audit_id: str) -> AuditReport | None:
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT body FROM fix_rechecks WHERE audit_id = ?", (audit_id,)
             ).fetchone()
         return AuditReport.model_validate_json(row[0]) if row else None
 
