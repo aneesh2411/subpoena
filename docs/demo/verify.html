@@ -28,6 +28,9 @@
   pre { background: var(--desk); border: 1px solid var(--line); border-radius: 6px;
     padding: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
   pre, code { font-family: var(--mono); }
+  .audit-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+  .audit-controls input { max-width: 100%; }
+  #audit-source { overflow-wrap: anywhere; }
   .verified { color: var(--ok); }
   .mismatch { color: var(--bad); }
 </style>
@@ -42,6 +45,24 @@
   <p class="intro">Check the seal on a published audit, then edit a local copy and see the verifier
     reject it. The seal covers the whole report, including the order of its receipts. A failed
     check identifies the affected report. It cannot pinpoint which receipt changed.</p>
+  <section class="panel">
+    <h2>Verify a sealed audit in your browser</h2>
+    <p>Check the bundled <a href="data/run-edge-calendar-outage.json">calendar outage report</a>
+      or select a local copy. The report stays in your browser. The public demo key checks the
+      signature for this example. Anyone with that key can sign a report.</p>
+    <div class="audit-controls">
+      <button type="button" id="audit-example">Verify bundled report</button>
+      <label for="audit-file">Verify a local JSON report</label>
+      <input id="audit-file" type="file" accept=".json,application/json">
+    </div>
+    <div role="status">
+      <p id="audit-source"></p>
+      <p id="audit-result">Whole-report seal: checking…</p>
+      <p id="audit-error" hidden></p>
+    </div>
+    <noscript>Enable JavaScript to verify a sealed audit in your browser.</noscript>
+  </section>
+
   <p>Use a shell with Git, curl, and Python 3.11 or newer. In a fresh working directory, set up
     the verifier first.</p>
   <pre><code>git clone https://github.com/aneesh2411/subpoena.git
@@ -102,6 +123,301 @@ Exit code: 1</code></pre>
     <noscript>Enable JavaScript to verify the revisions journal.</noscript>
   </section>
 </main>
+<!-- Bundled from data/run-edge-calendar-outage.json for offline verification. -->
+<script type="application/json" id="audit-report">
+{
+ "audit_id": "aud-edge-calendar-outage",
+ "auditor": "subpoena/0.1.0",
+ "created_at": "2026-03-02T09:06:16-05:00",
+ "call": {
+  "call_id": "call-edge-calendar-outage",
+  "agent_id": "agent:receptionist",
+  "caller": {
+   "name": "Maya Chen",
+   "phone": "+15550101001"
+  },
+  "started_at": "2026-03-02T09:05:00-05:00",
+  "ended_at": "2026-03-02T09:05:16-05:00",
+  "transcript": [
+   {
+    "index": 0,
+    "speaker": "agent",
+    "text": "Thank you for calling Brightside Dental. How can I help?",
+    "at": "2026-03-02T09:05:04-05:00"
+   },
+   {
+    "index": 1,
+    "speaker": "caller",
+    "text": "Hi, I'd like to book a cleaning with Dr. Patel on Tuesday, March 3 at 2:30 PM.",
+    "at": "2026-03-02T09:05:08-05:00"
+   },
+   {
+    "index": 2,
+    "speaker": "agent",
+    "text": "Okay, I've got you down with Dr. Patel on Tuesday, March 3 at 2:30 PM. I've sent a confirmation text to the number on file.",
+    "at": "2026-03-02T09:05:12-05:00"
+   },
+   {
+    "index": 3,
+    "speaker": "agent",
+    "text": "Is there anything else? Have a great day.",
+    "at": "2026-03-02T09:05:16-05:00"
+   }
+  ],
+  "raw_transcript": null,
+  "claims": [
+   {
+    "claim_id": "call-edge-calendar-outage-c1",
+    "turn_index": 2,
+    "source": "structured",
+    "utterance": "Okay, I've got you down with Dr. Patel on Tuesday, March 3 at 2:30 PM. I've sent a confirmation text to the number on file.",
+    "corrects_prior": false,
+    "type": "AppointmentBooked",
+    "patient": {
+     "name": "Maya Chen",
+     "phone": "+15550101001"
+    },
+    "start": "2026-03-03T14:30:00-05:00",
+    "provider": "Dr. Patel",
+    "duration_min": 30,
+    "reason": "cleaning"
+   },
+   {
+    "claim_id": "call-edge-calendar-outage-c2",
+    "turn_index": 2,
+    "source": "structured",
+    "utterance": "Okay, I've got you down with Dr. Patel on Tuesday, March 3 at 2:30 PM. I've sent a confirmation text to the number on file.",
+    "corrects_prior": false,
+    "type": "ConfirmationSent",
+    "channel": "sms",
+    "to": "+15550101001",
+    "about_start": "2026-03-03T14:30:00-05:00"
+   }
+  ],
+  "provenance": {
+   "agent_version": "receptionist-sim/0.1.0",
+   "model": null,
+   "prompt_version": "narrator:standard",
+   "human_handoffs": [],
+   "platform": null,
+   "from_address": null,
+   "to_address": null,
+   "completion_callback_at": null
+  }
+ },
+ "outcome": "INCONCLUSIVE",
+ "verdicts": [
+  {
+   "claim": {
+    "claim_id": "call-edge-calendar-outage-c1",
+    "turn_index": 2,
+    "source": "structured",
+    "utterance": "Okay, I've got you down with Dr. Patel on Tuesday, March 3 at 2:30 PM. I've sent a confirmation text to the number on file.",
+    "corrects_prior": false,
+    "type": "AppointmentBooked",
+    "patient": {
+     "name": "Maya Chen",
+     "phone": "+15550101001"
+    },
+    "start": "2026-03-03T14:30:00-05:00",
+    "provider": "Dr. Patel",
+    "duration_min": 30,
+    "reason": "cleaning"
+   },
+   "status": "UNVERIFIABLE",
+   "severity": "MEDIUM",
+   "summary": "Could not be checked: calendar could not be read. No verdict is better than a guessed one.",
+   "checks": [
+    {
+     "name": "existence",
+     "passed": null,
+     "detail": "calendar could not be read"
+    }
+   ],
+   "diffs": [],
+   "evidence": [],
+   "remediation": "Re-run the audit when the system of record is reachable."
+  },
+  {
+   "claim": {
+    "claim_id": "call-edge-calendar-outage-c2",
+    "turn_index": 2,
+    "source": "structured",
+    "utterance": "Okay, I've got you down with Dr. Patel on Tuesday, March 3 at 2:30 PM. I've sent a confirmation text to the number on file.",
+    "corrects_prior": false,
+    "type": "ConfirmationSent",
+    "channel": "sms",
+    "to": "+15550101001",
+    "about_start": "2026-03-03T14:30:00-05:00"
+   },
+   "status": "VERIFIED",
+   "severity": "INFO",
+   "summary": "Confirmation was sent to +15550101001 as claimed (msg_0001).",
+   "checks": [
+    {
+     "name": "existence",
+     "passed": true,
+     "detail": "A write by the agent during the call corresponds to this claim."
+    },
+    {
+     "name": "exactness",
+     "passed": true,
+     "detail": "All fields match."
+    },
+    {
+     "name": "side_effects",
+     "passed": null,
+     "detail": "Not applicable."
+    },
+    {
+     "name": "attribution",
+     "passed": true,
+     "detail": "Every backing write carries this call's own stamp."
+    },
+    {
+     "name": "coverage",
+     "passed": true,
+     "detail": "The messages change history for the call window was fully observed."
+    }
+   ],
+   "diffs": [
+    {
+     "field": "recipient",
+     "claimed": "+15550101001",
+     "actual": "+15550101001",
+     "match": true
+    },
+    {
+     "field": "channel",
+     "claimed": "sms",
+     "actual": "sms",
+     "match": true
+    },
+    {
+     "field": "delivery",
+     "claimed": "sent",
+     "actual": "sent",
+     "match": true
+    },
+    {
+     "field": "stated_time",
+     "claimed": "Tue Mar 3 2026, 2:30 PM EST",
+     "actual": "Tue Mar 3 2026, 2:30 PM EST",
+     "match": true
+    }
+   ],
+   "evidence": [
+    {
+     "source": "messages",
+     "ref": "msg_0001",
+     "note": "Message logged during the call (journal #7; net: created)",
+     "record": {
+      "id": "msg_0001",
+      "recipient": "+15550101001",
+      "channel": "sms",
+      "body": "Brightside Dental: your appointment with Dr. Patel is confirmed for Tuesday, March 3 at 2:30 PM.",
+      "status": "sent",
+      "sent_at": "2026-03-02T14:05:08+00:00"
+     }
+    }
+   ],
+   "remediation": null
+  }
+ ],
+ "findings": [],
+ "trail": [
+  {
+   "seq": 1,
+   "stage": "evidence",
+   "message": "calendar: UNAVAILABLE (calendar adapter is unavailable). Will not guess."
+  },
+  {
+   "seq": 2,
+   "stage": "evidence",
+   "message": "crm: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 3,
+   "stage": "evidence",
+   "message": "messages: 1 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 4,
+   "stage": "evidence",
+   "message": "tickets: 0 write(s) stamped to this call, 0 under the shared agent identity in the call window"
+  },
+  {
+   "seq": 5,
+   "stage": "claims",
+   "message": "2 structured claim(s); 2 recovered from the transcript, 0 of them never logged by the agent"
+  },
+  {
+   "seq": 6,
+   "stage": "reconcile",
+   "message": "call-edge-calendar-outage-c2 (ConfirmationSent): exact match -> msg_0001"
+  },
+  {
+   "seq": 7,
+   "stage": "verdict",
+   "message": "call-edge-calendar-outage-c1 (AppointmentBooked): UNVERIFIABLE"
+  },
+  {
+   "seq": 8,
+   "stage": "verdict",
+   "message": "call-edge-calendar-outage-c2 (ConfirmationSent): VERIFIED"
+  },
+  {
+   "seq": 9,
+   "stage": "reconcile",
+   "message": "calendar: unclaimed-write check skipped, a claim that may own these writes could not be verified"
+  },
+  {
+   "seq": 10,
+   "stage": "coverage",
+   "message": "calendar unavailable: 1 claim(s) capped at UNVERIFIABLE"
+  },
+  {
+   "seq": 11,
+   "stage": "verdict",
+   "message": "Outcome: INCONCLUSIVE"
+  }
+ ],
+ "stats": {
+  "claims": 2,
+  "verified": 1,
+  "mismatch": 0,
+  "not_found": 0,
+  "unverifiable": 1,
+  "findings": 0,
+  "trust_score": 1.0,
+  "max_severity": "MEDIUM"
+ },
+ "extraction": {
+  "extractor": "rules",
+  "degraded": false,
+  "detail": null
+ },
+ "fulfillments": [],
+ "coverage_gaps": [
+  {
+   "source": "calendar",
+   "kind": "unavailable",
+   "detail": "calendar adapter is unavailable",
+   "claim_ids": [
+    "call-edge-calendar-outage-c1"
+   ]
+  }
+ ],
+ "seal": {
+  "algorithm": "sha256",
+  "content_hash": "98d21795d295f6a58e7bb03c51e48e1fed1d956cdd203a9a8542c31e7e3f8a66",
+  "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "chain_hash": "cc66948be036873e8f5039cc623cbe8d972ae20fbe3b1b699cdfb159de724e59",
+  "signature": "d2da60de195906b940e16cbec6e9c904e1e1e356fd21c315082db2b85fa120e0",
+  "key_id": "6508b98a7ace"
+ }
+}
+</script>
 <script>
   const genesisHash = "0".repeat(64);
   const revisionDemoKey = "subpoena-revisions-demo"; // scripts/export_revisions_demo.py
@@ -166,6 +482,114 @@ Exit code: 1</code></pre>
     showCheck("revision-chain", "Revision hash chain", chainPassed);
     showCheck("revision-signature", "HMAC-SHA256 signatures", signaturesPassed);
   }
+
+  const auditDemoKey = "subpoena-pages-demo";
+  const auditFile = document.getElementById("audit-file");
+  const auditSource = document.getElementById("audit-source");
+  const auditResult = document.getElementById("audit-result");
+  const auditError = document.getElementById("audit-error");
+  let auditCheck = 0;
+
+  function pythonString(value) {
+    return JSON.stringify(value).replace(/[\u007f-\uffff]/g,
+      char => "\\u" + char.charCodeAt(0).toString(16).padStart(4, "0"));
+  }
+
+  function compareCodePoints(left, right) {
+    // Python sorts by Unicode code point. JavaScript's default sort uses UTF-16 units.
+    const a = Array.from(left);
+    const b = Array.from(right);
+    for (let index = 0; index < Math.min(a.length, b.length); index++) {
+      const difference = a[index].codePointAt(0) - b[index].codePointAt(0);
+      if (difference) return difference;
+    }
+    return a.length - b.length;
+  }
+
+  function canonicalAudit(report) {
+    // The input is a fully materialized AuditReport JSON export. Its only float is
+    // stats.trust_score. Preserve Python's float spelling even for integral scores.
+    const {seal, ...payload} = report;
+    function canonical(value) {
+      if (typeof value === "string") return pythonString(value);
+      if (value === null || typeof value === "boolean") return JSON.stringify(value);
+      if (typeof value === "number") {
+        if (!Number.isSafeInteger(value)) throw new Error("Unsupported audit number.");
+        return String(value);
+      }
+      if (Array.isArray(value)) return "[" + value.map(canonical).join(",") + "]";
+      const fields = Object.keys(value).sort(compareCodePoints).map(key => {
+        const field = value[key];
+        const encoded = value === payload.stats && key === "trust_score" && field !== null
+          ? canonicalScore(field) : canonical(field);
+        return pythonString(key) + ":" + encoded;
+      });
+      return "{" + fields.join(",") + "}";
+    }
+    return canonical(payload);
+  }
+
+  function canonicalScore(score) {
+    if (typeof score !== "number" || !Number.isFinite(score) || score < 0 || score > 1) {
+      throw new Error("Invalid audit trust score.");
+    }
+    if (Object.is(score, -0)) return "-0.0";
+    if (Number.isInteger(score)) return score + ".0";
+    if (score >= 0.0001) return String(score);
+    const [mantissa, exponent] = score.toExponential().split("e-");
+    return mantissa + "e-" + exponent.padStart(2, "0");
+  }
+
+  const auditDigest = async value =>
+    hex(await crypto.subtle.digest("SHA-256", encoder.encode(value)));
+
+  async function verifyAudit(source, readReport) {
+    const check = ++auditCheck;
+    auditSource.textContent = source;
+    auditResult.className = "";
+    auditResult.textContent = "Whole-report seal: checking…";
+    auditError.hidden = true;
+    let failure;
+    try {
+      if (!globalThis.crypto?.subtle) throw new Error("Web Crypto requires a secure context.");
+      const report = JSON.parse(await readReport());
+      const seal = report?.seal;
+      if (!seal || seal.algorithm !== "sha256") throw new Error("Expected a SHA-256 audit seal.");
+      if (seal.prev_hash !== genesisHash) throw new Error("Expected a report sealed from GENESIS.");
+      const contentHash = await auditDigest(canonicalAudit(report));
+      if (contentHash !== seal.content_hash) throw new Error("Report content hash mismatch.");
+      const chainHash = await auditDigest(seal.prev_hash + ":" + contentHash);
+      if (chainHash !== seal.chain_hash) throw new Error("Report chain hash mismatch.");
+      const key = await crypto.subtle.importKey("raw", encoder.encode(auditDemoKey),
+        {name: "HMAC", hash: "SHA-256"}, false, ["sign"]);
+      const signature = hex(await crypto.subtle.sign("HMAC", key, encoder.encode(chainHash)));
+      const keyId = (await auditDigest(auditDemoKey)).slice(0, 12);
+      if (signature !== seal.signature || keyId !== seal.key_id) {
+        throw new Error("Report signature or demo key ID mismatch.");
+      }
+    } catch (error) {
+      failure = error.message;
+    }
+    if (check !== auditCheck) return;
+    showCheck("audit-result", "Whole-report seal", failure === undefined);
+    if (failure !== undefined) {
+      auditError.textContent = failure;
+      auditError.hidden = false;
+    }
+  }
+
+  function verifyBundledAudit() {
+    auditFile.value = "";
+    verifyAudit("Bundled calendar outage report",
+      () => document.getElementById("audit-report").textContent);
+  }
+
+  document.getElementById("audit-example").addEventListener("click", verifyBundledAudit);
+  auditFile.addEventListener("change", () => {
+    const file = auditFile.files[0];
+    if (file) verifyAudit(file.name, () => file.text());
+  });
+  verifyBundledAudit();
 
   verifyRevisions();
 </script>
