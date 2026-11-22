@@ -23,7 +23,8 @@
 html { scroll-behavior: smooth; }
 body { margin:0; background:var(--desk); color:var(--ink); font:16px/1.6 var(--sans); }
 a { color:var(--accent); text-decoration:none; }
-.visually-hidden, .skip-link:not(:focus) {
+.visually-hidden, .skip-link:not(:focus),
+#scene.is-rendering ~ .hero-receipts .hero-receipt:not(:focus) {
   position:absolute; width:1px; height:1px; padding:0; margin:-1px;
   overflow:hidden; clip-path:inset(50%); white-space:nowrap;
 }
@@ -41,13 +42,18 @@ a { color:var(--accent); text-decoration:none; }
   align-content:space-between; justify-items:start; gap:16px;
   pointer-events:none;
 }
-.hero-receipts[hidden] { display:none; }
+#scene.is-rendering ~ .hero-receipts { position:absolute; inset:0; display:block; }
+#scene.is-rendering ~ .hero-receipts .hero-receipt:not(:focus) { border:0; transform:none; }
+#scene.is-rendering ~ .hero-receipts .hero-receipt:focus {
+  position:fixed; top:12px; left:12px; z-index:11; transform:none;
+}
 .hero-receipt {
   width:min(100%, 200px); padding:12px; border:1px dashed #d9d0b8;
   background:var(--paper); color:var(--paper-ink); font:12px/1.4 var(--mono);
-  box-shadow:0 8px 18px rgba(0,0,0,.25); transform:rotate(-5deg);
+  box-shadow:0 8px 18px rgba(0,0,0,.25); transform:rotate(-5deg); pointer-events:auto;
 }
 .hero-receipt:nth-child(even) { justify-self:end; transform:rotate(5deg); }
+.hero-receipt:focus-visible { outline:2px solid var(--accent); outline-offset:4px; }
 .hero-receipt p { margin:8px 0; }
 .hero-receipt small { display:block; font:inherit; color:#6f6a5c; }
 .hero-receipt strong {
@@ -170,33 +176,32 @@ footer a { margin:0 10px; }
       <a class="btn" href="https://github.com/aneesh2411/subpoena">GitHub</a>
     </div>
   </div>
-  <p class="visually-hidden">
-    Ticket: no receipt. Cancelled: receipt found. Start: receipt does not match.
-    Appointment: receipt found. SMS: could not check. Message: receipt found.
-    Callback: receipt found. Handoff topic: receipt does not match.
-  </p>
-  <div id="hero-receipts" class="hero-receipts" aria-hidden="true">
-    <div class="hero-receipt">
+  <div class="hero-receipts">
+    <a class="hero-receipt" href="demo/index.html#fault-phantom-handoff">
       <small>SYSTEM OF RECORD</small>
       <p>ticket <small>claimed: created</small><small>record: none</small></p>
       <strong>NO RECEIPT</strong>
-    </div>
-    <div class="hero-receipt">
+    </a>
+    <a class="hero-receipt" href="demo/index.html#edge-three-lies">
       <small>SYSTEM OF RECORD</small>
       <p>cancelled <small>claimed: Mar 10 3:00 PM</small><small>record: Mar 10 3:00 PM</small></p>
       <strong class="found">RECEIPT FOUND</strong>
-    </div>
-    <div class="hero-receipt">
+    </a>
+    <a class="hero-receipt" href="demo/index.html#edge-three-lies">
       <small>SYSTEM OF RECORD</small>
       <p>start <small>claimed: 2:30 PM</small><small>record: 3:30 PM</small></p>
       <strong>RECEIPT DOES NOT MATCH</strong>
-    </div>
-    <div class="hero-receipt">
+    </a>
+    <a class="hero-receipt" href="demo/index.html#edge-message-log-outage">
       <small>SYSTEM OF RECORD</small>
       <p>sms <small>claimed: sent</small><small>record: unavailable</small></p>
       <strong class="unverifiable">COULD NOT CHECK</strong>
-    </div>
+    </a>
   </div>
+  <p class="visually-hidden">
+    Appointment: receipt found. Message: receipt found.
+    Callback: receipt found. Handoff topic: receipt does not match.
+  </p>
   <div class="scroll-hint">scroll</div>
 </header>
 
@@ -418,11 +423,9 @@ function initHero(THREE) {
     }
   }
 
-  const fallback = document.getElementById('hero-receipts');
   function render() {
     renderer.render(scene, camera);
-    if (!fallback.hidden) {
-      fallback.hidden = true;
+    if (!canvas.classList.contains('is-rendering')) {
       canvas.classList.add('is-rendering');
       resize();
       renderer.render(scene, camera);
