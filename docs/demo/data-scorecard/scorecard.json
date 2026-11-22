@@ -1,11 +1,11 @@
 {
-  "audits": 68,
+  "audits": 70,
   "by_claim_type": {
     "AppointmentBooked": {
-      "MISMATCH": 5,
+      "MISMATCH": 6,
       "NOT_FOUND": 9,
       "UNVERIFIABLE": 3,
-      "VERIFIED": 27
+      "VERIFIED": 28
     },
     "Cancelled": {
       "MISMATCH": 1,
@@ -17,7 +17,7 @@
       "MISMATCH": 2,
       "NOT_FOUND": 4,
       "UNVERIFIABLE": 1,
-      "VERIFIED": 27
+      "VERIFIED": 28
     },
     "HandoffCreated": {
       "MISMATCH": 2,
