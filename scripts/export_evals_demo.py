@@ -5,9 +5,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
+from collections import Counter, defaultdict
 from datetime import UTC, datetime
 from html import escape
 from pathlib import Path
+
+from subpoena.scenarios import GOLDEN
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "evals" / "results" / "latest.json"
@@ -34,12 +38,12 @@ PAGE = """<!doctype html>
     --mono: ui-monospace, Menlo, Consolas, monospace;
   }}
   * {{ box-sizing: border-box; }}
-  body {{ margin: 0; background: var(--desk); color: var(--ink); font: 15px/1.5 system-ui; }}
+  body {{ margin: 0; background: var(--desk); color: var(--ink); font: 16px/1.5 system-ui; }}
   header {{ border-bottom: 1px solid var(--line); padding: 12px 16px; }}
   main, .bar {{ max-width: 1080px; margin: 0 auto; }}
   .bar {{ display: flex; justify-content: space-between; align-items: center; gap: 12px; }}
   .brand {{ font: 700 18px var(--mono); letter-spacing: .14em; }}
-  a {{ color: var(--accent); }}
+  a {{ color: var(--accent); display: inline-flex; align-items: center; min-height: 44px; }}
   :focus-visible {{ outline: 2px solid var(--accent); outline-offset: 3px; }}
   main {{ padding: 24px 16px 48px; }}
   h1 {{ margin: 0; font-size: clamp(30px, 5vw, 44px); }}
@@ -54,9 +58,8 @@ PAGE = """<!doctype html>
   td {{ font-family: var(--mono); white-space: nowrap; }}
   .metric-label {{ display: none; }}
   @media (max-width: 600px), (max-width: 900px) and (max-height: 500px) and (hover: none) {{
-    body {{ font-size: 16px; overflow-wrap: anywhere; }}
+    body {{ overflow-wrap: anywhere; }}
     .bar {{ flex-wrap: wrap; gap: 4px 12px; }}
-    a {{ display: inline-flex; align-items: center; min-height: 44px; }}
     .panel {{ padding: 12px; }}
     th, td {{ padding: 6px; }}
     td {{ white-space: normal; }}
@@ -137,7 +140,13 @@ def call_metrics(result: dict) -> tuple[str, ...]:
     )
 
 
-def table(title: str, columns: tuple[str, ...], rows: list[tuple[str, ...]]) -> str:
+def table(
+    title: str,
+    columns: tuple[str, ...],
+    rows: list[tuple[str, ...]],
+    *,
+    description: str = "",
+) -> str:
     heading = "".join(f'<th scope="col">{escape(column)}</th>' for column in columns)
     body = []
     for label, *values in rows:
@@ -146,7 +155,8 @@ def table(title: str, columns: tuple[str, ...], rows: list[tuple[str, ...]]) -> 
     return (
         '  <section class="panel">\n'
         f"    <h2>{title}</h2>\n"
-        f'    <div class="table-scroll" tabindex="0" role="region" aria-label="{title}">\n'
+        + (f'    <p class="intro">{escape(description)}</p>\n' if description else "")
+        + f'    <div class="table-scroll" tabindex="0" role="region" aria-label="{title}">\n'
         '      <table role="table">\n'
         f'        <thead role="rowgroup"><tr role="row">{heading}</tr></thead>\n'
         '        <tbody role="rowgroup">\n' + "\n".join(body) + "\n"
@@ -155,6 +165,51 @@ def table(title: str, columns: tuple[str, ...], rows: list[tuple[str, ...]]) -> 
         "    </div>\n"
         "  </section>"
     )
+
+
+# The positional golden scorer records mismatched and missing verdicts in this format.
+EXPECTED_CLAIM_FAILURE = re.compile(
+    r"(\w+)\[(\d+)\]: expected \w+, (?:got (\w+)|auditor saw no claim)"
+)
+KNOWN_GAPS = {scenario.id for scenario in GOLDEN if scenario.known_gap}
+
+
+def claim_accuracy_rows(golden: dict) -> list[tuple[str, ...]]:
+    mismatches = defaultdict(dict)
+    for failure in golden["failures"]:
+        for problem in failure["problems"]:
+            match = EXPECTED_CLAIM_FAILURE.fullmatch(problem)
+            if match:
+                claim_type, index, actual = match.groups()
+                mismatches[failure["scenario"]][claim_type, int(index)] = actual
+
+    total, strict, safe, gaps = Counter(), Counter(), Counter(), Counter()
+    for scenario in GOLDEN:
+        positions = Counter()
+        failures_by_position = mismatches[scenario.id]
+        for claim_type, expected in scenario.expected_claims:
+            position = claim_type, positions[claim_type]
+            positions[claim_type] += 1
+            total[claim_type] += 1
+            if position not in failures_by_position:
+                strict[claim_type] += 1
+                safe[claim_type] += 1
+                continue
+            if failures_by_position[position] != "VERIFIED" or expected.value == "VERIFIED":
+                safe[claim_type] += 1
+            if scenario.id in KNOWN_GAPS:
+                gaps[claim_type] += 1
+
+    return [
+        (
+            claim_type,
+            str(count),
+            percent(strict[claim_type] / count),
+            percent(safe[claim_type] / count),
+            str(gaps[claim_type]),
+        )
+        for claim_type, count in sorted(total.items())
+    ]
 
 
 def failures(suites: tuple[tuple[str, dict], ...]) -> str:
@@ -169,7 +224,9 @@ def failures(suites: tuple[tuple[str, dict], ...]) -> str:
             continue
         lines.append("    <ul>")
         for failure in result["failures"]:
-            lines.append(f"      <li><strong>{escape(failure['scenario'])}</strong><ul>")
+            scenario = failure["scenario"]
+            gap_label = " (known gap)" if scenario in KNOWN_GAPS else ""
+            lines.append(f"      <li><strong>{escape(scenario)}</strong>{gap_label}<ul>")
             for problem in failure["problems"]:
                 lines.append(f"        <li><code>{escape(problem)}</code></li>")
             lines.append("      </ul></li>")
@@ -193,6 +250,16 @@ def render(results: dict, check_in_date: str | None, fingerprint: str) -> str:
                 ("Golden · Naive existence check", *call_metrics(baseline)),
                 ("Golden v2-semantic · Subpoena", *call_metrics(semantic)),
             ],
+        ),
+        table(
+            "Auditor accuracy by claim type",
+            ("Claim type", "Golden claims", "Strict accuracy", "Safe rate", "Known gaps"),
+            claim_accuracy_rows(golden),
+            description=(
+                "Strict accuracy requires an exact verdict match. Safe rate counts expected "
+                "claims without an incorrect VERIFIED verdict. A missing verdict lowers strict "
+                "accuracy and still counts as safe. Known gaps count misses in labeled scenarios."
+            ),
         ),
         table(
             "Fuzz pass rates",
