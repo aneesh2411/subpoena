@@ -112,7 +112,8 @@ def test_ops_coverage_gap_comes_from_separate_sealed_audit(tmp_path):
     booking, confirmation = outage.verdicts
     assert (booking.claim.type, booking.status) == ("AppointmentBooked", VerdictStatus.UNVERIFIABLE)
     assert (confirmation.claim.type, confirmation.status) == (
-        "ConfirmationSent", VerdictStatus.VERIFIED
+        "ConfirmationSent",
+        VerdictStatus.VERIFIED,
     )
     (gap,) = outage.coverage_gaps
     assert (gap.source, gap.kind) == ("calendar", "unavailable")
