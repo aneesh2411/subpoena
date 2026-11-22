@@ -310,6 +310,15 @@ function initHero() {
     { verdict: mismatch, rows: [['topic', 'claimed: records'], ['', 'record: billing']] },
   ];
 
+  // Mulberry32 restarts from the same seed for each hero initialization.
+  let seed = 0x195;
+  function random() {
+    seed = (seed + 0x6d2b79f5) >>> 0;
+    let value = Math.imul(seed ^ (seed >>> 15), seed | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  }
+
   const group = new THREE.Group();
   scene.add(group);
   const cards = [];
@@ -327,8 +336,8 @@ function initHero() {
       Math.sin(ring + Math.PI / 4) * 2.2,
       -1.5 + Math.sin(ring) * 2.4
     );
-    mesh.rotation.set((Math.random() - 0.5) * 0.5, (Math.random() - 0.5) * 0.9, (Math.random() - 0.5) * 0.2);
-    mesh.userData = { phase: Math.random() * Math.PI * 2, speed: 0.4 + Math.random() * 0.4, baseY: mesh.position.y };
+    mesh.rotation.set((random() - 0.5) * 0.5, (random() - 0.5) * 0.9, (random() - 0.5) * 0.2);
+    mesh.userData = { phase: random() * Math.PI * 2, speed: 0.4 + random() * 0.4, baseY: mesh.position.y };
     group.add(mesh);
     cards.push(mesh);
   });
