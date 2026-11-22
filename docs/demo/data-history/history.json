@@ -2115,6 +2115,16 @@
           }
         }
       }
+    },
+    {
+      "commit": "74509d32c77371ef1615e5efc808477156605617",
+      "commit_time": 1795357722,
+      "series": "results",
+      "paths": [
+        "evals/results/latest.json"
+      ],
+      "strict_accuracy": 0.9701,
+      "scenarios": 67
     }
   ],
   "latest_scorecard_diff": {
