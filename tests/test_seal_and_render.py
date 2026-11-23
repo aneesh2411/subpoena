@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+from random import Random
+
 from subpoena.auditor import GENESIS, NaiveAuditor, Sealer, render_markdown
-from subpoena.models import AuditReport, Outcome, VerdictStatus
+from subpoena.auditor.seal import Integrity, canonical_bytes
+from subpoena.models import CLAIM_TYPES, AuditReport, Outcome, VerdictStatus
 from subpoena.scenarios import BY_ID, HERO, run_scenario
 from subpoena.scenarios.world import CLINIC
 
@@ -21,6 +24,54 @@ def test_unsigned_seal_verifies_and_survives_a_json_round_trip():
     restored = AuditReport.model_validate_json(report.model_dump_json())
     check = Sealer().verify(restored)
     assert check.ok and "unsigned" in check.reason
+
+
+def test_canonical_payload_is_independent_of_dict_insertion_order(monkeypatch):
+    sealer = Sealer(KEY)
+    reports = {
+        scenario_id: run_scenario(BY_ID[scenario_id], sealer=sealer).report
+        for scenario_id in (
+            "clean-book",
+            "clean-reschedule",
+            "clean-cancel",
+            "clean-handoff-topic",
+            "clean-payment",
+            "clean-records-update",
+            "clean-prescription-refill",
+        )
+    }
+    assert {
+        verdict.claim.type for report in reports.values() for verdict in report.verdicts
+    } == set(CLAIM_TYPES)
+    original_bytes = {
+        scenario_id: canonical_bytes(report) for scenario_id, report in reports.items()
+    }
+
+    def shuffle_keys(value, rng):
+        if isinstance(value, dict):
+            keys = list(value)
+            rng.shuffle(keys)
+            if keys == list(value):
+                keys.reverse()
+            return {key: shuffle_keys(value[key], rng) for key in keys}
+        if isinstance(value, list):
+            return [shuffle_keys(item, rng) for item in value]
+        return value
+
+    # Shuffle the serializer's output directly. Revalidating shuffled input
+    # would restore Pydantic's field order before canonical_bytes sees it.
+    model_dump = AuditReport.model_dump
+    rng = Random(341)
+
+    def shuffled_dump(report, **kwargs):
+        return shuffle_keys(model_dump(report, **kwargs), rng)
+
+    monkeypatch.setattr(AuditReport, "model_dump", shuffled_dump)
+    for _ in range(10):
+        for scenario_id, report in reports.items():
+            assert canonical_bytes(report) == original_bytes[scenario_id], scenario_id
+            check = sealer.verify(report)
+            assert check.integrity is Integrity.INTACT and check.ok, (scenario_id, check)
 
 
 def test_any_edit_to_a_sealed_report_is_detected():
