@@ -7,6 +7,7 @@ import hashlib
 import json
 import re
 from collections import Counter, defaultdict
+from collections.abc import Callable
 from datetime import UTC, datetime
 from html import escape
 from pathlib import Path
@@ -196,13 +197,22 @@ def table(
     *,
     description: str = "",
     keep_columns: bool = False,
+    row_anchor_prefix: str = "",
+    row_anchor_key: Callable[[str], str] = str.lower,
 ) -> str:
     scroll_class = "table-scroll keep-columns" if keep_columns else "table-scroll"
     heading = "".join(f'<th scope="col">{escape(column)}</th>' for column in columns)
     body = []
     for label, *values in rows:
         cells = "".join(f"<td>{escape(value)}</td>" for value in values)
-        body.append(f'        <tr role="row"><th scope="row">{escape(label)}</th>{cells}</tr>')
+        anchor = (
+            f' id="{escape(row_anchor_prefix + "-" + row_anchor_key(label))}"'
+            if row_anchor_prefix
+            else ""
+        )
+        body.append(
+            f'        <tr role="row"{anchor}><th scope="row">{escape(label)}</th>{cells}</tr>'
+        )
     return (
         f'  <section class="panel" aria-labelledby="{section_id}">\n'
         f'    <h2 id="{section_id}">{escape(title)}</h2>\n'
@@ -341,6 +351,7 @@ def render(
             "Auditor accuracy by claim type",
             CLAIM_ACCURACY_COLUMNS,
             claim_rows[BASELINE_AGENT],
+            row_anchor_prefix="claim-accuracy",
             description=(
                 "Agent version: receptionist-v1. Strict accuracy requires an exact verdict match. "
                 "Safe rate counts expected "
@@ -354,6 +365,7 @@ def render(
                 f"Auditor accuracy by claim type · {version}",
                 CLAIM_ACCURACY_COLUMNS,
                 rows,
+                row_anchor_prefix=f"claim-accuracy-{version}",
             )
             for index, (version, rows) in enumerate(claim_rows.items(), start=1)
             if version != BASELINE_AGENT
@@ -382,6 +394,8 @@ def render(
                 for shape in fuzz_sweep["failure_shapes"]
             ]
             or [("None", "0", "—")],
+            row_anchor_prefix="fuzz-failure-shape",
+            row_anchor_key=lambda label: hashlib.sha256(label.encode()).hexdigest()[:16],
         ),
         table(
             "human-overrides",
@@ -442,6 +456,8 @@ def render(
                         for claim_type, counts in sorted(summary["by_claim_type"].items())
                     ],
                     keep_columns=True,
+                    row_anchor_prefix="extractor-claim-types-"
+                    + re.sub(r"[^a-z0-9]+", "-", summary["label"].lower()).strip("-"),
                 )
                 for index, summary in enumerate(extraction_quality, start=1)
             ],
