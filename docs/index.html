@@ -587,30 +587,37 @@ function initHero(THREE) {
   document.addEventListener('visibilitychange', syncVisibility);
   syncVisibility();
 }
-if ('IntersectionObserver' in window) {
-  // Let the browser complete initial fragment navigation before measuring
-  // proximity: a smooth-scrolled journey would pass the hero and fool the
-  // observer, so fragment arrivals wait for the scroll to settle.
-  addEventListener('load', () => {
-    const begin = () => {
-      const loadObserver = new IntersectionObserver((entries) => {
-        if (!entries.some((entry) => entry.isIntersecting)) return;
-        loadObserver.disconnect();
-        // Keep the static receipts visible if the module cannot load.
-        import('./vendor/three.module.js').then(initHero, () => {});
-      }, { rootMargin: '400px 0px' });
-      loadObserver.observe(canvas);
-    };
-    if (location.hash) {
-      setTimeout(begin, 800);
-    } else {
-      begin();
-    }
-  }, { once: true });
-} else {
-  // No IntersectionObserver: load the scene as before.
-  import('./vendor/three.module.js').then(initHero, () => {});
+
+function loadHero() {
+  // The static receipts are already visible. Skip the Three.js download on Save-Data.
+  if (navigator.connection?.saveData) return;
+
+  if ('IntersectionObserver' in window) {
+    // Let the browser complete initial fragment navigation before measuring
+    // proximity: a smooth-scrolled journey would pass the hero and fool the
+    // observer, so fragment arrivals wait for the scroll to settle.
+    addEventListener('load', () => {
+      const begin = () => {
+        const loadObserver = new IntersectionObserver((entries) => {
+          if (!entries.some((entry) => entry.isIntersecting)) return;
+          loadObserver.disconnect();
+          // Keep the static receipts visible if the module cannot load.
+          import('./vendor/three.module.js').then(initHero, () => {});
+        }, { rootMargin: '400px 0px' });
+        loadObserver.observe(canvas);
+      };
+      if (location.hash) {
+        setTimeout(begin, 800);
+      } else {
+        begin();
+      }
+    }, { once: true });
+  } else {
+    // No IntersectionObserver: load the scene as before.
+    import('./vendor/three.module.js').then(initHero, () => {});
+  }
 }
+loadHero();
 </script>
 </body>
 </html>
