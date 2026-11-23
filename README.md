@@ -167,6 +167,18 @@ These numbers describe the dataset, not the world. A review after the build foun
 shapes the dataset did not contain; all nine are fixed and their shapes now live in the
 dataset. See Limits below.
 
+### Using the eval exit code
+
+`subpoena eval` exits `0` when the run has no unexpected strict failures. Any
+strict failure on a fuzzed call or on a golden case without a known-gap label
+produces a non-zero exit. Labelled golden gaps still count against the score.
+
+Use the command as a CI gate by letting a non-zero exit fail the job. The
+default run reported above already exits non-zero because of one fuzz failure.
+The exit code alone cannot tell a reviewer which case failed, how severe the
+failure was, or what caused it. Review the CLI output for failing cases and
+discrepancies, or save a report with `subpoena eval --report eval-report.md`.
+
 ## How it works
 
 ```
