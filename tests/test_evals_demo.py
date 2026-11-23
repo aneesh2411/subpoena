@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 from hashlib import sha256
 from html import escape
 
-from scripts.export_evals_demo import DEMO, SOURCE, export
+from scripts.export_evals_demo import CHECK_IN_DATES, DEMO, SOURCE, export
 
 
 def test_export_is_deterministic_and_matches_pages(tmp_path):
@@ -110,3 +110,12 @@ def test_changed_snapshot_uses_its_own_values_and_escapes_failure_text(tmp_path)
     assert "<code>expected &lt;missing&gt;, got &lt;verified&gt;</code>" in page
     today = datetime.now(UTC).date().isoformat()
     assert f"Scorecard check-in date <strong>{today}</strong>" in page
+
+
+def test_committed_results_fingerprint_is_date_pinned():
+    """An unpinned snapshot silently dates itself from the export clock."""
+    fingerprint = sha256(SOURCE.read_bytes()).hexdigest()
+    assert fingerprint in CHECK_IN_DATES, (
+        "evals/results/latest.json changed without a CHECK_IN_DATES pin; "
+        "add the new fingerprint with the check-in date"
+    )
