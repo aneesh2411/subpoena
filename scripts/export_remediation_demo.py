@@ -34,6 +34,7 @@ from subpoena.scenarios import BY_ID
 from subpoena.scenarios.world import CLINIC, build_world, run_suspect
 from subpoena.suspect import Book
 
+PRINT_CSS = Path(__file__).with_name("demo_print.css")
 DEFAULT_OUT = Path(__file__).resolve().parents[1] / "docs" / "demo"
 DATA = DEFAULT_OUT / "data"
 DEFAULT_APPROVALS = DATA / "approvals.json"
@@ -88,7 +89,7 @@ PAGE = """<!doctype html>
   td { background: var(--panel); border-block: 1px solid var(--line); vertical-align: top; }
   td:last-child { padding-block: 0; }
   .label { display: none; }
-  @media (max-width: 48rem) {
+  @media screen and (max-width: 48rem), print and (max-width: 36rem) {
     table, tbody { display: block; }
     thead {
       position: absolute; width: 1px; height: 1px; padding: 0;
@@ -102,6 +103,7 @@ PAGE = """<!doctype html>
     td { display: block; padding: .25rem 0; border: 0; }
     .label { display: block; color: var(--dim); }
   }
+@PRINT_CSS@
 </style>
 </head>
 <body>
@@ -431,7 +433,7 @@ def export(
         ):
             conn = None  # Ledgers created before approvals have no approval history.
         remediations = remediation_rows(DATA, conn, simulated_approvals=simulated_approvals)
-    page = PAGE
+    page = PAGE.replace("@PRINT_CSS@", PRINT_CSS.read_text(encoding="utf-8").rstrip())
     if any(row.approval is not None for row in remediations):
         page = page.replace("Other open tasks", "Remediation tasks").replace(
             "A task closes only when the re-check passes.",

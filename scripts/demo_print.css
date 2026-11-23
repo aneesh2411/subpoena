@@ -1,0 +1,52 @@
+@media print {
+  :root {
+    color-scheme: light;
+    --desk: #fff;
+    --panel: #fff;
+    --line: #aaa;
+    --ink: #171717;
+    --dim: #444;
+    --accent: #171717;
+    --ok: #171717;
+    --warn: #171717;
+    --bad: #171717;
+    --unk: #171717;
+  }
+
+  body { font-size: 10pt; }
+  main { max-width: none; padding: 0; overflow-wrap: anywhere; }
+  h1 { font-size: 22pt; }
+  h2, h3 { break-after: avoid; }
+
+  main > a, .toggle, #claim-filter a { display: none; }
+  .rechecks { display: block; }
+  .rechecks article { margin-block: .5rem; }
+  .rechecks article, tbody tr, #calls li { break-inside: avoid; }
+  th, td { padding: .35rem; }
+
+  .closed, .open, .summary { color: var(--ink); }
+  .summary { overflow: visible; text-overflow: clip; white-space: normal; }
+  .row { grid-template-columns: minmax(0, 1fr) auto; }
+  .summary, .stamps { grid-column: 1 / -1; }
+  .severity { grid-column: 2; grid-row: 1; }
+
+  .rechecks a, td a {
+    display: block;
+    min-width: 0;
+    min-height: 0;
+    margin-top: .25rem;
+  }
+
+  /* Evidence paths on these demos are relative to the published demo directory. */
+  .rechecks a[href]::after, td a[href]::after, .row[href]::after {
+    content: "https://aneesh2411.github.io/subpoena/demo/" attr(href);
+    display: block;
+    grid-column: 1 / -1;
+    color: var(--ink);
+    font-size: 9pt;
+    font-weight: normal;
+    overflow-wrap: anywhere;
+  }
+
+  details::details-content { content-visibility: visible; }
+}
