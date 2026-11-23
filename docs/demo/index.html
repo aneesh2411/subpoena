@@ -77,6 +77,10 @@
   .receipt tr.diff td:last-child { color: var(--bad); font-weight: 700; }
   .receipt td:first-child, .receipt th:first-child { width: 24%; }
   .receipt td:last-child, .receipt th:last-child { width: 15%; }
+  .receipt th:last-child span {
+    position: absolute; width: 1px; height: 1px; padding: 0;
+    overflow: hidden; clip-path: inset(50%);
+  }
   .ev { color: var(--paper-dim); font-size: 12px; margin: 3px 0; overflow-wrap: anywhere; }
   .stamp { display: inline-block; font: 800 12px var(--mono); letter-spacing: .14em;
     padding: 4px 9px; border: 2.5px solid currentColor; border-radius: 4px;
@@ -119,6 +123,20 @@
     .turn { max-width: 100%; }
     .receipt th { font-size: 11px; letter-spacing: .04em; }
     .stamp { max-width: 100%; }
+  }
+  @media (max-width: 340px) {
+    .receipt table, .receipt thead, .receipt tbody { display: block; }
+    .receipt tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .receipt th { grid-row: 1; }
+    .receipt th:first-child, .receipt th:last-child {
+      position: absolute; width: 1px; height: 1px; padding: 0;
+      overflow: hidden; clip-path: inset(50%);
+    }
+    .receipt td:first-child, .receipt td:last-child {
+      width: auto; grid-row: 1;
+    }
+    .receipt td:last-child { text-align: right; }
+    .receipt td:nth-child(2), .receipt td:nth-child(3) { grid-row: 2; }
   }
   @media (prefers-reduced-motion: no-preference) {
     .row.enter .cell > * { animation: rise .35s ease-out both; }
@@ -232,14 +250,25 @@ function receiptEl(title, status, severity, summary, diffs, evidence, fix) {
   if (status) el.append(h("div", "stamp " + status, STAMP[status]));
   el.append(h("p", "", summary));
   if (diffs && diffs.length) {
-    const table = h("table"), head = h("tr");
-    ["Field", "Agent claimed", "System of record", ""].forEach((x) => head.append(h("th", "", x)));
-    table.append(head);
+    const table = h("table"), head = h("thead"), headings = h("tr"), body = h("tbody");
+    table.setAttribute("role", "table");
+    head.setAttribute("role", "rowgroup");
+    body.setAttribute("role", "rowgroup");
+    headings.setAttribute("role", "row");
+    ["Field", "Agent claimed", "System of record", "Match"].forEach((label) => {
+      const th = h("th", "");
+      th.append(h("span", "", label));
+      th.scope = "col";
+      headings.append(th);
+    });
+    head.append(headings);
+    table.append(head, body);
     diffs.forEach((d) => {
       const tr = h("tr", d.match ? "" : "diff");
+      tr.setAttribute("role", "row");
       tr.append(h("td", "", d.field), h("td", "", d.claimed), h("td", "", d.actual),
         h("td", "", d.match ? "ok" : "DIFF"));
-      table.append(tr);
+      body.append(tr);
     });
     el.append(table);
   }

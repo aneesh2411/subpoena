@@ -52,7 +52,7 @@
     .panel { padding: 12px; }
     th, td { padding: 6px; }
     td { white-space: normal; }
-    .keep-columns th, .keep-columns td { white-space: nowrap; }
+    .keep-columns table:not(.stacked) :is(th, td) { white-space: nowrap; }
 
     .stacked, .stacked tbody { display: block; }
     .stacked thead {
@@ -281,7 +281,8 @@ unclaimed_appointment_created: expected 1, got 0</th><td>1</td><td>9 (1)</td></t
   </section>
 </main>
 <script>
-  for (const table of document.querySelectorAll(".table-scroll:not(.keep-columns) table")) {
+  const narrowScreen = matchMedia("screen and (max-width: 340px)");
+  for (const table of document.querySelectorAll(".table-scroll table")) {
     const headings = table.tHead.rows[0].cells;
     for (const row of table.tBodies[0].rows) {
       for (const cell of [...row.cells].slice(1)) {
@@ -294,7 +295,13 @@ unclaimed_appointment_created: expected 1, got 0</th><td>1</td><td>9 (1)</td></t
         cell.replaceChildren(label, value);
       }
     }
-    table.classList.add("stacked");
+    if (table.closest(".keep-columns")) {
+      const updateLayout = () => table.classList.toggle("stacked", narrowScreen.matches);
+      narrowScreen.addEventListener("change", updateLayout);
+      updateLayout();
+    } else {
+      table.classList.add("stacked");
+    }
   }
 </script>
 </body>

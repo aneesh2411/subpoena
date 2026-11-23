@@ -87,7 +87,7 @@ PAGE = """<!doctype html>
     .panel {{ padding: 12px; }}
     th, td {{ padding: 6px; }}
     td {{ white-space: normal; }}
-    .keep-columns th, .keep-columns td {{ white-space: nowrap; }}
+    .keep-columns table:not(.stacked) :is(th, td) {{ white-space: nowrap; }}
 
     .stacked, .stacked tbody {{ display: block; }}
     .stacked thead {{
@@ -127,7 +127,8 @@ PAGE = """<!doctype html>
 {content}
 </main>
 <script>
-  for (const table of document.querySelectorAll(".table-scroll:not(.keep-columns) table")) {{
+  const narrowScreen = matchMedia("screen and (max-width: 340px)");
+  for (const table of document.querySelectorAll(".table-scroll table")) {{
     const headings = table.tHead.rows[0].cells;
     for (const row of table.tBodies[0].rows) {{
       for (const cell of [...row.cells].slice(1)) {{
@@ -140,7 +141,13 @@ PAGE = """<!doctype html>
         cell.replaceChildren(label, value);
       }}
     }}
-    table.classList.add("stacked");
+    if (table.closest(".keep-columns")) {{
+      const updateLayout = () => table.classList.toggle("stacked", narrowScreen.matches);
+      narrowScreen.addEventListener("change", updateLayout);
+      updateLayout();
+    }} else {{
+      table.classList.add("stacked");
+    }}
   }}
 </script>
 </body>

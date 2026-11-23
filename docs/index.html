@@ -172,6 +172,18 @@ footer a { margin:0 10px; }
   .stamp { max-width:100%; padding:8px 7px; letter-spacing:.04em; overflow-wrap:anywhere; }
 }
 
+@media (max-width:340px) {
+  .hero { min-height:0; }
+  #scene { display:none; }
+  #scene.is-rendering ~ .hero-receipts .hero-receipt:not(:focus) {
+    opacity:1; pointer-events:auto;
+  }
+  .hero-receipts { grid-template-columns:minmax(0, 1fr); padding:0; }
+  .hero-receipt, .hero-receipt:nth-child(even) {
+    width:100%; padding:12px; font-size:14px; transform:none;
+  }
+}
+
 @media (width < 480px) {
   .stats { grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; }
   .stat { padding:16px 10px; }
