@@ -171,3 +171,47 @@ def test_fuzz_failure_shapes_follow_sweep_input(tmp_path):
         '<th scope="row">expected &lt;missing&gt;\ngot &lt;verified&gt;</th>'
         "<td>5</td><td>12 (2), 15 (3)</td>"
     ) in section
+
+
+def test_eval_row_anchors_follow_row_identity(tmp_path):
+    results = json.loads(SOURCE.read_bytes())
+    source = tmp_path / "snapshot.json"
+    sweep = tmp_path / "fuzz-sweep.json"
+    demo = tmp_path / "demo"
+    shapes = [
+        {"discrepancies": [discrepancy], "failed_calls": 1, "failed_calls_by_seed": {"7": 1}}
+        for discrepancy in ("expected <missing>", "got <verified>")
+    ]
+
+    def anchors():
+        source.write_text(json.dumps(results), encoding="utf-8")
+        sweep.write_text(json.dumps({"failure_shapes": shapes}), encoding="utf-8")
+        export(source, demo, fuzz_sweep=sweep)
+        page = (demo / "evals.html").read_text(encoding="utf-8")
+        ids = re.findall(r' id="([^"]+)"', page)
+        assert len(ids) == len(set(ids))
+        rows = re.findall(r'<tr role="row" id="([^"]+)"><th scope="row">([^<]+)', page)
+        assert len(rows) == 34
+        return dict(rows)
+
+    original = anchors()
+    assert original["claim-accuracy-appointmentbooked"] == "AppointmentBooked"
+    assert (
+        original["claim-accuracy-receptionist-v2-chatty-appointmentbooked"] == "AppointmentBooked"
+    )
+    assert original["extractor-claim-types-rule-based-extractor-appointmentbooked"] == (
+        "AppointmentBooked"
+    )
+    assert original["extractor-claim-types-deterministic-stub-appointmentbooked"] == (
+        "AppointmentBooked"
+    )
+    assert {label for key, label in original.items() if key.startswith("fuzz-failure-shape-")} == {
+        "expected &lt;missing&gt;",
+        "got &lt;verified&gt;",
+    }
+
+    results["extraction_quality"].reverse()
+    shapes.reverse()
+    shapes[0]["failed_calls"] = 2
+    shapes[0]["failed_calls_by_seed"] = {"9": 2}
+    assert anchors() == original
