@@ -300,11 +300,18 @@ def sync(*, check: bool) -> int:
     social = ROOT / "docs/social-preview.png"
     try:
         import generate_social_preview
-    except ImportError:  # Pillow is optional; skip the card when it is absent.
-        generate_social_preview = None
-    if generate_social_preview is not None and social.exists():
+    except ModuleNotFoundError as exc:
+        if exc.name != "PIL":
+            raise
+        print(
+            "WARNING: Pillow is missing. Could not verify docs/social-preview.png "
+            "against the landing stats in docs/index.html. "
+            "Install Pillow and rerun python scripts/sync_docs.py.",
+            file=sys.stderr,
+        )
+    else:
         rendered = generate_social_preview.render_png()
-        if rendered != social.read_bytes():
+        if not social.exists() or rendered != social.read_bytes():
             drifted.append("docs/social-preview.png")
             if not check:
                 social.write_bytes(rendered)

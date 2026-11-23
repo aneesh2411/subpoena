@@ -7,6 +7,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -48,3 +50,14 @@ def test_landing_stats_include_linked_fuzz_strict_accuracy():
         f"fuzz strict accuracy · {fuzz['calls']} generated calls · seed {fuzz['seed']}</a>"
         "</span></div>"
     ) in stats
+
+
+def test_social_preview_matches_landing_stats():
+    pytest.importorskip("PIL", reason="Pillow is required to render the social preview")
+    from scripts.generate_social_preview import render_png
+
+    preview = ROOT / "docs/social-preview.png"
+    assert preview.is_file() and preview.read_bytes() == render_png(), (
+        "docs/social-preview.png is missing or differs from the rendered landing stats. "
+        "Run `python scripts/sync_docs.py` with Pillow installed."
+    )
