@@ -1,0 +1,51 @@
+@media screen {
+  .print-only { display: none; }
+}
+
+@media print {
+  @page { margin: 0.5in; }
+
+  :root {
+    color-scheme: light;
+    --desk: #fff;
+    --panel: #fff;
+    --line: #aaa;
+    --ink: #161616;
+    --dim: #333;
+    --accent: #173866;
+    --bad: #732020;
+    --verified: #205740;
+    --mismatch: #6b3716;
+    --not-found: #732020;
+  }
+
+  body { font-size: 11pt; overflow-wrap: anywhere; }
+  header, main, .brand { padding: 0; }
+  header { padding-bottom: 0.3rem; margin-bottom: 0.6rem; }
+  h1 { font-size: 22pt; }
+  h1, h2, h3, caption { break-after: avoid; }
+
+  .no-print, button, input, select, textarea, label[for] { display: none; }
+  a { display: inline; min-height: 0; }
+  a.print-evidence[href]::after,
+  a.print-source[href]::after {
+    font: 9pt/1.35 system-ui;
+    color: var(--ink);
+  }
+  a.print-evidence[href]::after {
+    content: " (https://aneesh2411.github.io/subpoena/demo/" attr(href) ")";
+  }
+  th a.print-evidence[href]::after, a.print-source[href]::after { display: block; }
+  a.print-source[href]::after { content: attr(href); }
+
+  .panel, .card { padding: 0.5rem; }
+  .card, tr, .trend-chart, .trend-sources li { break-inside: avoid; }
+  .trend-chart { height: 5rem; break-after: avoid; }
+  .trend-sources { padding-inline-start: 1.25rem; }
+
+  .table-scroll { overflow: visible; background: none; }
+  table { font-size: 10pt; }
+  th, td { padding: 0.2rem; }
+  thead th:not(:first-child) { overflow-wrap: normal; }
+  td { white-space: nowrap; }
+}

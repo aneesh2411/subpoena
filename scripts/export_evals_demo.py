@@ -10,6 +10,7 @@ from collections import Counter, defaultdict
 from datetime import UTC, datetime
 from html import escape
 from pathlib import Path
+from shutil import copyfile
 
 from subpoena.evals.overrides import score_overrides
 from subpoena.scenarios import GOLDEN
@@ -24,6 +25,7 @@ OVERRIDES = ROOT / "evals" / "fixtures" / "overrides.json"
 # The results JSON has no timestamp. Record the check-in date for the exact
 # checked-in snapshots without depending on Git history at export time.
 CHECK_IN_DATES = {
+    "01f790ab4b7abe3fa0f2f0e0fcf5ced0cd9dcbad2fe1e1bba49a6e8f1a72f75e": "2026-11-22",
     "c625d2c290dc2757e6cff05edcbd0e0b021b0f532fc0ea9d32600347e7ec4eb0": "2026-11-22",
     "a4b870667615d1cde07a603a9aa926777910510adabc8437d8c67969dc3ef6aa": "2026-11-22",
     "bad938d0d1d16e15f1dc8f4798e00ef56228c936b0d4dfcf4ab2bd58e772e700": "2026-11-22",
@@ -73,7 +75,8 @@ PAGE = """<!doctype html>
   th, td {{ padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--line); }}
   td {{ font-family: var(--mono); white-space: nowrap; }}
   .metric-label {{ display: none; }}
-  @media (max-width: 600px), (max-width: 900px) and (max-height: 500px) and (hover: none) {{
+  @media screen and (max-width: 600px),
+      screen and (max-width: 900px) and (max-height: 500px) and (hover: none) {{
     body {{ overflow-wrap: anywhere; }}
     .bar {{ flex-wrap: wrap; gap: 4px 12px; }}
     .panel {{ padding: 12px; }}
@@ -99,18 +102,19 @@ PAGE = """<!doctype html>
   .failures h3 {{ margin-top: 16px; }}
   .failures strong {{ color: var(--bad); font-family: var(--mono); }}
 </style>
+<link rel="stylesheet" href="print.css">
 </head>
 <body>
 <header><div class="bar">
   <div class="brand">SUBPOENA</div>
-  <a href="./">Back to audit demo</a>
+  <a class="no-print" href="./">Back to audit demo</a>
 </div></header>
 <main>
   <h1>Eval results</h1>
   <p class="intro">Recorded results from <code>evals/results/latest.json</code>.</p>
   <p class="meta">Scorecard check-in date <strong>{date}</strong><br>
     SHA-256 fingerprint <code>{fingerprint}</code></p>
-  <p><a href="data-evals/scorecard.json">Download the scorecard JSON</a></p>
+  <p><a class="print-evidence" href="data-evals/scorecard.json">Download the scorecard JSON</a></p>
 {content}
 </main>
 <script>
@@ -433,6 +437,8 @@ def export(source: Path = SOURCE, demo: Path = DEMO) -> None:
         encoding="utf-8",
         newline="\n",
     )
+    if demo.resolve() != DEMO.resolve():
+        copyfile(DEMO / "print.css", demo / "print.css")
     (demo / "evals.html").write_text(page, encoding="utf-8", newline="\n")
 
 

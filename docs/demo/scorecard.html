@@ -54,14 +54,15 @@
     .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
 </style>
+<link rel="stylesheet" href="print.css">
 </head>
 <body>
 <header><div class="brand">SUBPOENA</div></header>
 <main>
-  <a href="./">Back to audit demo</a>
+  <a class="no-print" href="./">Back to audit demo</a>
   <h1>Agent honesty scorecard</h1>
   <p class="intro">Compare the suspect agent versions across the golden scenarios.
-    See the <a href="evals.html">full evaluation results</a>.</p>
+    See the <a class="print-evidence" href="evals.html">full evaluation results</a>.</p>
   <section class="evaluation" aria-label="Golden evaluations">
     <label for="agent-version">Agent version</label>
     <select id="agent-version" disabled></select>
@@ -77,7 +78,9 @@
     <p>Runs without claim counts for the selected type and agent version are excluded.</p>
     <label for="claim-type">Claim type</label>
     <select id="claim-type" disabled></select>
-    <p id="claim-trend-inbox" hidden><a>View matching calls in the triage inbox</a></p>
+    <p id="claim-trend-inbox" hidden>
+      <a class="print-evidence">View matching calls in the triage inbox</a>
+    </p>
     <p id="claim-trend-summary" role="status">Loading committed scorecards…</p>
     <svg class="trend-chart" id="claim-trend-chart" role="group"
       aria-label="Ground-truth honesty rate for the selected claim type by commit time"
@@ -95,11 +98,21 @@
   </section>
   <h2>Baked audit verdicts</h2>
   <p>Verdict counts by claim type from the demo audits.</p>
-  <a href="data-scorecard/scorecard.json">Download the verdict counts</a>
+  <a class="print-evidence" href="data-scorecard/scorecard.json">Download the verdict counts</a>
   <p id="status" role="status">Loading the scorecard…</p>
   <noscript>Enable JavaScript to view the scorecard.</noscript>
   <p id="summary"></p>
   <div class="grid" id="scorecard"></div>
+  <section class="print-only" aria-label="Trend evidence">
+    <section id="honesty-chart-sources" hidden>
+      <h2>Evidence for the overall honesty trend</h2>
+      <ul class="trend-sources"></ul>
+    </section>
+    <section id="claim-trend-chart-sources" hidden>
+      <h2>Evidence for the claim type honesty trend</h2>
+      <ul class="trend-sources"></ul>
+    </section>
+  </section>
 </main>
 <script>
   const statuses = [
@@ -186,6 +199,10 @@
   function showTrend(points, label, svg, status, dates) {
     svg.replaceChildren();
     dates.replaceChildren();
+    const evidence = document.getElementById(svg.id + "-sources");
+    const sources = evidence.querySelector("ul");
+    sources.replaceChildren();
+    evidence.hidden = !points.length;
     svg.toggleAttribute("hidden", !points.length);
     if (!points.length) {
       status.textContent = "No committed runs with claim counts for " + label + ".";
@@ -206,12 +223,19 @@
       fill: "none", stroke: "currentColor", "vector-effect": "non-scaling-stroke"
     }, svg);
     for (const point of points) {
-      const link = draw("a", {
-        href: "https://github.com/aneesh2411/subpoena/blob/" + point.commit + "/" + point.path,
-        "aria-label": date(point) + " · " + percent(point.rate) + " · " + point.commit.slice(0, 7)
-      }, svg);
-      draw("title", {}, link).textContent = link.getAttribute("aria-label");
+      const href = "https://github.com/aneesh2411/subpoena/blob/" + point.commit + "/" + point.path;
+      const description = date(point) + " · " + percent(point.rate)
+        + " · " + point.commit.slice(0, 7);
+      const link = draw("a", {href, "aria-label": description}, svg);
+      draw("title", {}, link).textContent = description;
       draw("circle", {cx: x(point), cy: y(point), r: 5, fill: "currentColor"}, link);
+      const item = document.createElement("li");
+      const source = document.createElement("a");
+      source.className = "print-source";
+      source.href = href;
+      source.textContent = description;
+      item.append(source);
+      sources.append(item);
     }
   }
 
@@ -233,6 +257,7 @@
       const heading = document.createElement("th");
       heading.scope = "row";
       const link = document.createElement("a");
+      link.className = "print-evidence";
       link.href = inboxURL(claim);
       link.textContent = claim;
       heading.append(link);

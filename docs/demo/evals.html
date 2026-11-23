@@ -41,7 +41,8 @@
   th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--line); }
   td { font-family: var(--mono); white-space: nowrap; }
   .metric-label { display: none; }
-  @media (max-width: 600px), (max-width: 900px) and (max-height: 500px) and (hover: none) {
+  @media screen and (max-width: 600px),
+      screen and (max-width: 900px) and (max-height: 500px) and (hover: none) {
     body { overflow-wrap: anywhere; }
     .bar { flex-wrap: wrap; gap: 4px 12px; }
     .panel { padding: 12px; }
@@ -67,18 +68,19 @@
   .failures h3 { margin-top: 16px; }
   .failures strong { color: var(--bad); font-family: var(--mono); }
 </style>
+<link rel="stylesheet" href="print.css">
 </head>
 <body>
 <header><div class="bar">
   <div class="brand">SUBPOENA</div>
-  <a href="./">Back to audit demo</a>
+  <a class="no-print" href="./">Back to audit demo</a>
 </div></header>
 <main>
   <h1>Eval results</h1>
   <p class="intro">Recorded results from <code>evals/results/latest.json</code>.</p>
   <p class="meta">Scorecard check-in date <strong>2026-11-22</strong><br>
     SHA-256 fingerprint <code>01f790ab4b7abe3fa0f2f0e0fcf5ced0cd9dcbad2fe1e1bba49a6e8f1a72f75e</code></p>
-  <p><a href="data-evals/scorecard.json">Download the scorecard JSON</a></p>
+  <p><a class="print-evidence" href="data-evals/scorecard.json">Download the scorecard JSON</a></p>
   <section class="panel" aria-labelledby="golden-results">
     <h2 id="golden-results">Golden results and naive baseline</h2>
     <div class="table-scroll" tabindex="0" role="region" aria-label="Golden results and naive baseline table">
