@@ -82,6 +82,7 @@ PAGE = """<!doctype html>
     .panel {{ padding: 12px; }}
     th, td {{ padding: 6px; }}
     td {{ white-space: normal; }}
+    .keep-columns th, .keep-columns td {{ white-space: nowrap; }}
 
     .stacked, .stacked tbody {{ display: block; }}
     .stacked thead {{
@@ -118,7 +119,7 @@ PAGE = """<!doctype html>
 {content}
 </main>
 <script>
-  for (const table of document.querySelectorAll(".table-scroll table")) {{
+  for (const table of document.querySelectorAll(".table-scroll:not(.keep-columns) table")) {{
     const headings = table.tHead.rows[0].cells;
     for (const row of table.tBodies[0].rows) {{
       for (const cell of [...row.cells].slice(1)) {{
@@ -150,6 +151,18 @@ def percent(value: float | None) -> str:
     return "—" if value is None else f"{value:.2%}"
 
 
+EXTRACTION_METRICS = ("Precision", "Recall", "Invented", "Missed")
+
+
+def extraction_metrics(counts: dict) -> tuple[str, ...]:
+    return (
+        percent(counts["precision"]),
+        percent(counts["recall"]),
+        str(counts["fp"]),
+        str(counts["fn"]),
+    )
+
+
 def call_metrics(result: dict) -> tuple[str, ...]:
     claims = result["claim_level"]
     return (
@@ -167,7 +180,9 @@ def table(
     rows: list[tuple[str, ...]],
     *,
     description: str = "",
+    keep_columns: bool = False,
 ) -> str:
+    scroll_class = "table-scroll keep-columns" if keep_columns else "table-scroll"
     heading = "".join(f'<th scope="col">{escape(column)}</th>' for column in columns)
     body = []
     for label, *values in rows:
@@ -177,7 +192,7 @@ def table(
         f'  <section class="panel" aria-labelledby="{section_id}">\n'
         f'    <h2 id="{section_id}">{escape(title)}</h2>\n'
         + (f'    <p class="intro">{escape(description)}</p>\n' if description else "")
-        + '    <div class="table-scroll" tabindex="0" role="region" '
+        + f'    <div class="{scroll_class}" tabindex="0" role="region" '
         f'aria-label="{escape(title)} table">\n'
         '      <table role="table">\n'
         f'        <thead role="rowgroup"><tr role="row">{heading}</tr></thead>\n'
@@ -366,25 +381,14 @@ def render(
         ),
     ]
     if extraction_quality := results.get("extraction_quality"):
-        sections.insert(
-            1,
+        sections[1:1] = [
             table(
                 "extractor-quality",
                 "Extractor quality",
-                ("Extractor and claim type", "Precision", "Recall", "Invented", "Missed"),
+                ("Extractor", *EXTRACTION_METRICS),
                 [
-                    (
-                        f"{summary['label']} · {claim_type}",
-                        percent(counts["precision"]),
-                        percent(counts["recall"]),
-                        str(counts["fp"]),
-                        str(counts["fn"]),
-                    )
+                    (summary["label"], *extraction_metrics(summary["overall"]))
                     for summary in extraction_quality
-                    for claim_type, counts in (
-                        ("Overall", summary["overall"]),
-                        *summary["by_claim_type"].items(),
-                    )
                 ],
                 description=(
                     f"Transcript extraction across {extraction_quality[0]['calls']} golden calls "
@@ -393,7 +397,20 @@ def render(
                     "The dash marks an undefined rate."
                 ),
             ),
-        )
+            *[
+                table(
+                    f"extractor-claim-types-{index}",
+                    f"Extraction by claim type · {summary['label']}",
+                    ("Claim type", *EXTRACTION_METRICS),
+                    [
+                        (claim_type, *extraction_metrics(counts))
+                        for claim_type, counts in sorted(summary["by_claim_type"].items())
+                    ],
+                    keep_columns=True,
+                )
+                for index, summary in enumerate(extraction_quality, start=1)
+            ],
+        ]
     return PAGE.format(
         date=check_in_date or "Unavailable",
         fingerprint=fingerprint,

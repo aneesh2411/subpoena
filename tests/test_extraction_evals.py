@@ -62,10 +62,10 @@ def test_recorded_extraction_results_and_page_match_the_harness():
     page = (DEMO / "evals.html").read_text(encoding="utf-8")
     assert '<h2 id="extractor-quality">Extractor quality</h2>' in page
     assert (
-        '<th scope="row">Rule-based extractor · Overall</th>'
+        '<th scope="row">Rule-based extractor</th>'
         "<td>93.81%</td><td>91.20%</td><td>13</td><td>19</td>"
     ) in page
+    stub_table = page.split('aria-labelledby="extractor-claim-types-2">')[1].split("</section>")[0]
     assert (
-        '<th scope="row">Deterministic stub · ConfirmationSent</th>'
-        "<td>—</td><td>0.00%</td><td>0</td><td>66</td>"
-    ) in page
+        '<th scope="row">ConfirmationSent</th><td>—</td><td>0.00%</td><td>0</td><td>66</td>'
+    ) in stub_table

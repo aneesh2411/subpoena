@@ -119,3 +119,25 @@ def test_committed_results_fingerprint_is_date_pinned():
         "evals/results/latest.json changed without a CHECK_IN_DATES pin; "
         "add the new fingerprint with the check-in date"
     )
+
+
+def test_extraction_breakdowns_render_each_extractors_recorded_claim_types():
+    results = json.loads(SOURCE.read_bytes())
+    page = (DEMO / "evals.html").read_text(encoding="utf-8")
+
+    for index, summary in enumerate(results["extraction_quality"], start=1):
+        section = page.split(
+            f'<section class="panel" aria-labelledby="extractor-claim-types-{index}">'
+        )[1].split("</section>")[0]
+        assert f"Extraction by claim type · {summary['label']}" in section
+        assert '<div class="table-scroll keep-columns" tabindex="0"' in section
+        assert section.count('<th scope="row">') == len(summary["by_claim_type"]) == 8
+        for claim_type, counts in summary["by_claim_type"].items():
+            precision, recall = (
+                "—" if counts[metric] is None else f"{counts[metric]:.2%}"
+                for metric in ("precision", "recall")
+            )
+            assert (
+                f'<th scope="row">{claim_type}</th><td>{precision}</td><td>{recall}</td>'
+                f"<td>{counts['fp']}</td><td>{counts['fn']}</td>"
+            ) in section
