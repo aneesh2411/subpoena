@@ -9,7 +9,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from subpoena.api import Settings, create_app
-from subpoena.models import AppointmentBooked, AuditReport
+from subpoena.models import AppointmentBooked, AuditReport, Outcome
 from subpoena.scenarios import BY_ID, HERO, build_world, run_suspect
 from subpoena.sor.base import with_outage
 
@@ -224,6 +224,60 @@ def test_demo_run_ledgers_every_report_and_the_chain_verifies(client):
     assert [v["status"] for v in hero["verdicts"]] == [
         "MISMATCH", "NOT_FOUND", "NOT_FOUND", "VERIFIED",
     ]  # fmt: skip
+
+
+@pytest.mark.parametrize(
+    ("params", "expected"),
+    [
+        ({}, ["unsealed", "escalated", "clean"]),
+        ({"outcome": "CLEAN"}, ["clean"]),
+        ({"outcome": "DISCREPANCIES"}, ["escalated"]),
+        ({"outcome": "INCONCLUSIVE"}, ["unsealed"]),
+        ({"has_escalations": "true"}, ["escalated"]),
+        ({"has_escalations": "false"}, ["unsealed", "clean"]),
+        ({"outcome": "CLEAN", "has_escalations": "false", "limit": 1}, ["clean"]),
+        ({"outcome": "CLEAN", "has_escalations": "true"}, []),
+    ],
+)
+def test_list_audits_filters(client, params, expected):
+    clean = AuditReport.model_validate(_data(client.post("/demo/scenarios/clean-book/run"), 201))
+    fixture = (
+        Path(__file__).resolve().parents[1] / "docs/demo/data-review/ambiguous-assignment.json"
+    )
+    escalated = AuditReport.model_validate_json(fixture.read_bytes()).model_copy(
+        update={
+            "outcome": Outcome.DISCREPANCIES,
+            "created_at": clean.created_at + timedelta(seconds=1),
+        }
+    )
+    store = client.app.state.store
+    store.append(escalated, client.app.state.sealer)
+    unsealed = clean.model_copy(
+        update={
+            "audit_id": "unsealed-audit",
+            "outcome": Outcome.INCONCLUSIVE,
+            "created_at": clean.created_at + timedelta(seconds=2),
+            "seal": None,
+        }
+    )
+    store._conn.execute(
+        "INSERT INTO audits(audit_id, call_id, chain_hash, body) VALUES (?, ?, ?, ?)",
+        (unsealed.audit_id, unsealed.call.call_id, "", unsealed.model_dump_json()),
+    )
+    audits = {
+        "clean": (clean.audit_id, True),
+        "escalated": (escalated.audit_id, True),
+        "unsealed": (unsealed.audit_id, False),
+    }
+    listed = _data(client.get("/audits", params=params))
+    assert [(row["audit_id"], row["sealed"]) for row in listed] == [
+        audits[name] for name in expected
+    ]
+
+
+@pytest.mark.parametrize("param", ["outcome", "has_escalations"])
+def test_list_audits_rejects_invalid_filters(client, param):
+    assert param in _error(client.get("/audits", params={param: "invalid"}), 422)
 
 
 def test_ledger_is_append_only_and_detects_tampering(client):

@@ -12,7 +12,7 @@ from subpoena.api.review import Receipt, TransitionRequest
 from subpoena.api.webhook import SCHEMA as WEBHOOK_SCHEMA
 from subpoena.api.webhook import write_transaction
 from subpoena.auditor.seal import GENESIS, Sealer
-from subpoena.models import AuditReport, CallRecord
+from subpoena.models import AuditReport, CallRecord, Outcome
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS calls(call_id TEXT PRIMARY KEY, body TEXT NOT NULL);
@@ -160,6 +160,29 @@ class AuditStore:
 
     def audits(self, limit: int | None = None, newest_first: bool = False) -> Iterator[AuditReport]:
         for _, _, body in self.audit_rows(limit=limit, newest_first=newest_first):
+            yield AuditReport.model_validate_json(body)
+
+    def recent_audits(
+        self, limit: int, outcome: Outcome | None, has_escalations: bool | None
+    ) -> Iterator[AuditReport]:
+        """Return matching ledger reports, newest appended first."""
+        if outcome is None and has_escalations is None:
+            yield from self.audits(limit=limit, newest_first=True)
+            return
+        with self._lock:
+            rows = self._conn.execute(
+                """
+                SELECT body FROM audits
+                WHERE (? IS NULL OR json_extract(body, '$.outcome') = ?)
+                  AND (? IS NULL OR (COALESCE(
+                      json_array_length(body, '$.escalation_log'), 0
+                  ) > 0) = ?)
+                ORDER BY seq DESC
+                LIMIT ?
+                """,
+                (outcome, outcome, has_escalations, has_escalations, limit),
+            ).fetchall()
+        for (body,) in rows:
             yield AuditReport.model_validate_json(body)
 
     def audit_rows(

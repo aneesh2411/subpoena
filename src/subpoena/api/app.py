@@ -63,7 +63,7 @@ from subpoena.auditor import (
     render_markdown,
 )
 from subpoena.llm import llm_from_env
-from subpoena.models import AuditReport, CallRecord, Claim
+from subpoena.models import AuditReport, CallRecord, Claim, Outcome
 from subpoena.scenarios import BY_ID, audit_call, build_world, run_suspect
 from subpoena.sor import SqliteStore
 from subpoena.sor.base import AdapterUnavailable
@@ -128,6 +128,7 @@ def _summary(report: AuditReport) -> dict[str, Any]:
         "call_id": report.call.call_id,
         "agent_id": report.call.agent_id,
         "outcome": report.outcome.value,
+        "sealed": report.seal is not None,
         "created_at": report.created_at.isoformat(),
         "stats": report.stats.model_dump(mode="json"),
         "extraction": report.extraction.model_dump(mode="json"),
@@ -477,8 +478,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # -- supporting --------------------------------------------------------- #
 
     @app.get("/audits", dependencies=guarded)
-    def list_audits(limit: Annotated[int, Query(ge=1, le=200)] = 50) -> JSONResponse:
-        return _ok([_summary(r) for r in store().audits(limit=limit, newest_first=True)])
+    def list_audits(
+        limit: Annotated[int, Query(ge=1, le=200)] = 50,
+        outcome: Outcome | None = None,
+        has_escalations: bool | None = None,
+    ) -> JSONResponse:
+        return _ok([_summary(r) for r in store().recent_audits(limit, outcome, has_escalations)])
 
     @app.get("/alerts", dependencies=guarded)
     def list_alerts() -> JSONResponse:

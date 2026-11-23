@@ -220,7 +220,7 @@ subpoena serve
 | `POST /calls` | Ingest a call: transcript and claims, plus optional provenance (agent/model/prompt version, human handoffs). Provenance is platform-supplied and unverified, but it is sealed with the report, so a failure is attributable to a specific config. |
 | `POST /audit` | Audit a call against the system of record. |
 | `GET /audit/{id}/report` | Sealed report. `?format=md` for Markdown. |
-| `GET /audits` | Recent audits. |
+| `GET /audits` | Recent audits with seal state. Filter by `outcome` or `has_escalations`. |
 | `GET /scorecard` | Per-agent claim honesty: totals, per-version buckets ordered by first audit, a daily series, and regression flags. A flag fires when a version's verified-rate on a claim type drops at least 10 points below everything earlier, with at least 5 claims on both sides (policy constants in `src/subpoena/api/scorecard.py`). Version strings come from sealed provenance and are ordered by first audit, never parsed. |
 | `GET /ledger/verify` | Re-verify every seal and chain link; `?strict=true` requires authenticated signatures. |
 | `POST /demo/scenarios/{id}/run` | Play a scenario in a sandbox and audit it. |
