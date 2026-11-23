@@ -54,10 +54,20 @@ def test_landing_stats_include_linked_fuzz_strict_accuracy():
 
 def test_social_preview_matches_landing_stats():
     pytest.importorskip("PIL", reason="Pillow is required to render the social preview")
+    import io
+
+    from PIL import Image, ImageChops
+
     from scripts.generate_social_preview import render_png
 
     preview = ROOT / "docs/social-preview.png"
-    assert preview.is_file() and preview.read_bytes() == render_png(), (
-        "docs/social-preview.png is missing or differs from the rendered landing stats. "
+    assert preview.is_file(), "docs/social-preview.png is missing"
+    # Compare pixels, not bytes: PNG encoding varies across Pillow builds, but
+    # a stale stat (the failure this guards) changes the rendered pixels.
+    committed = Image.open(preview).convert("RGB")
+    rendered = Image.open(io.BytesIO(render_png())).convert("RGB")
+    assert committed.size == rendered.size
+    assert ImageChops.difference(committed, rendered).getbbox() is None, (
+        "docs/social-preview.png differs from the rendered landing stats. "
         "Run `python scripts/sync_docs.py` with Pillow installed."
     )
