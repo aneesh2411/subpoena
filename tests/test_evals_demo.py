@@ -141,3 +141,33 @@ def test_extraction_breakdowns_render_each_extractors_recorded_claim_types():
                 f'<th scope="row">{claim_type}</th><td>{precision}</td><td>{recall}</td>'
                 f"<td>{counts['fp']}</td><td>{counts['fn']}</td>"
             ) in section
+
+
+def test_fuzz_failure_shapes_follow_sweep_input(tmp_path):
+    sweep = tmp_path / "fuzz-sweep.json"
+    sweep.write_text(
+        json.dumps(
+            {
+                "failure_shapes": [
+                    {
+                        "discrepancies": ["expected <missing>", "got <verified>"],
+                        "failed_calls": 5,
+                        "failed_calls_by_seed": {"12": 2, "15": 3},
+                    },
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    demo = tmp_path / "demo"
+    export(SOURCE, demo, fuzz_sweep=sweep)
+
+    page = (demo / "evals.html").read_text(encoding="utf-8")
+    section = page.split('aria-labelledby="fuzz-failure-shapes">')[1].split("</section>")[0]
+    assert '<th scope="col">Failure shape</th>' in section
+    assert '<th scope="col">Failed calls</th>' in section
+    assert '<th scope="col">Seeds (failed calls)</th>' in section
+    assert (
+        '<th scope="row">expected &lt;missing&gt;\ngot &lt;verified&gt;</th>'
+        "<td>5</td><td>12 (2), 15 (3)</td>"
+    ) in section

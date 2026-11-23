@@ -40,6 +40,10 @@
   table { width: 100%; border-collapse: collapse; }
   th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--line); }
   td { font-family: var(--mono); white-space: nowrap; }
+  [aria-labelledby="fuzz-failure-shapes"] th[scope=row] {
+    font: 14px/1.5 var(--mono); white-space: pre-line; overflow-wrap: anywhere;
+  }
+  [aria-labelledby="fuzz-failure-shapes"] td { white-space: normal; }
   .metric-label { display: none; }
   @media screen and (max-width: 600px),
       screen and (max-width: 900px) and (max-height: 500px) and (hover: none) {
@@ -61,6 +65,9 @@
     .stacked td {
       display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px;
       padding: 6px 10px;
+    }
+    [aria-labelledby="fuzz-failure-shapes"] .stacked td {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
     }
     .stacked td:last-child { border-bottom: 0; }
     .metric-label { display: block; font-family: system-ui; color: var(--dim); }
@@ -190,6 +197,22 @@
         <tbody role="rowgroup">
         <tr role="row"><th scope="row">Fuzz</th><td>500</td><td>7</td><td>99.80%</td></tr>
         <tr role="row"><th scope="row">Fuzz v2-semantic</th><td>500</td><td>7</td><td>99.80%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section class="panel" aria-labelledby="fuzz-failure-shapes">
+    <h2 id="fuzz-failure-shapes">Fuzz failure shapes</h2>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Fuzz failure shapes table">
+      <table role="table">
+        <thead role="rowgroup"><tr role="row"><th scope="col">Failure shape</th><th scope="col">Failed calls</th><th scope="col">Seeds (failed calls)</th></tr></thead>
+        <tbody role="rowgroup">
+        <tr role="row"><th scope="row">Cancelled: expected MISMATCH, got UNVERIFIABLE
+Cancelled: expected NOT_FOUND, got UNVERIFIABLE</th><td>28</td><td>1 (5), 2 (7), 3 (4), 4 (2), 5 (1), 6 (2), 7 (1), 8 (3), 9 (1), 10 (2)</td></tr>
+        <tr role="row"><th scope="row">ConfirmationSent: expected MISMATCH, got UNVERIFIABLE
+ConfirmationSent: expected NOT_FOUND, got UNVERIFIABLE</th><td>2</td><td>1 (1), 5 (1)</td></tr>
+        <tr role="row"><th scope="row">AppointmentBooked: expected NOT_FOUND, got MISMATCH
+unclaimed_appointment_created: expected 1, got 0</th><td>1</td><td>9 (1)</td></tr>
         </tbody>
       </table>
     </div>

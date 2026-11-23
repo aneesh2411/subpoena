@@ -19,6 +19,7 @@ from subpoena.scenarios.world import BASELINE_AGENT, Scenario
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "evals" / "results" / "latest.json"
+FUZZ_SWEEP = ROOT / "evals" / "fuzz-sweep.json"
 DEMO = ROOT / "docs" / "demo"
 OVERRIDES = ROOT / "evals" / "fixtures" / "overrides.json"
 
@@ -74,6 +75,10 @@ PAGE = """<!doctype html>
   table {{ width: 100%; border-collapse: collapse; }}
   th, td {{ padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--line); }}
   td {{ font-family: var(--mono); white-space: nowrap; }}
+  [aria-labelledby="fuzz-failure-shapes"] th[scope=row] {{
+    font: 14px/1.5 var(--mono); white-space: pre-line; overflow-wrap: anywhere;
+  }}
+  [aria-labelledby="fuzz-failure-shapes"] td {{ white-space: normal; }}
   .metric-label {{ display: none; }}
   @media screen and (max-width: 600px),
       screen and (max-width: 900px) and (max-height: 500px) and (hover: none) {{
@@ -95,6 +100,9 @@ PAGE = """<!doctype html>
     .stacked td {{
       display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px;
       padding: 6px 10px;
+    }}
+    [aria-labelledby="fuzz-failure-shapes"] .stacked td {{
+      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
     }}
     .stacked td:last-child {{ border-bottom: 0; }}
     .metric-label {{ display: block; font-family: system-ui; color: var(--dim); }}
@@ -294,7 +302,11 @@ def failures(suites: tuple[tuple[str, dict], ...]) -> str:
 
 
 def render(
-    results: dict, check_in_date: str | None, fingerprint: str, overrides: dict[str, int]
+    results: dict,
+    check_in_date: str | None,
+    fingerprint: str,
+    overrides: dict[str, int],
+    fuzz_sweep: dict,
 ) -> str:
     golden = results["golden"]
     semantic = results["golden_v2_semantic"]
@@ -347,6 +359,22 @@ def render(
                 (mode, str(run["calls"]), str(run["seed"]), percent(run["call_strict_accuracy"]))
                 for mode, run in (("Fuzz", fuzz), ("Fuzz v2-semantic", fuzz_semantic))
             ],
+        ),
+        table(
+            "fuzz-failure-shapes",
+            "Fuzz failure shapes",
+            ("Failure shape", "Failed calls", "Seeds (failed calls)"),
+            [
+                (
+                    "\n".join(shape["discrepancies"]),
+                    str(shape["failed_calls"]),
+                    ", ".join(
+                        f"{seed} ({count})" for seed, count in shape["failed_calls_by_seed"].items()
+                    ),
+                )
+                for shape in fuzz_sweep["failure_shapes"]
+            ]
+            or [("None", "0", "—")],
         ),
         table(
             "human-overrides",
@@ -418,7 +446,7 @@ def render(
     )
 
 
-def export(source: Path = SOURCE, demo: Path = DEMO) -> None:
+def export(source: Path = SOURCE, demo: Path = DEMO, *, fuzz_sweep: Path = FUZZ_SWEEP) -> None:
     raw = source.read_bytes()
     results = json.loads(raw)
     fingerprint = hashlib.sha256(raw).hexdigest()
@@ -433,7 +461,8 @@ def export(source: Path = SOURCE, demo: Path = DEMO) -> None:
         # New results (eval re-run): date them from this export.
         check_in_date = datetime.now(UTC).date().isoformat()
     overrides = score_overrides(OVERRIDES)
-    page = render(results, check_in_date, fingerprint, overrides)
+    sweep = json.loads(fuzz_sweep.read_text(encoding="utf-8"))
+    page = render(results, check_in_date, fingerprint, overrides, sweep)
     scorecard = {
         "provenance": {
             "source": "evals/results/latest.json",
