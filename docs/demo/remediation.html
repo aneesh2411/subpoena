@@ -28,8 +28,8 @@
     border-radius: .65rem; overflow-wrap: anywhere;
   }
   .rechecks h3, .rechecks p { margin: 0 0 .5rem; }
-  .rechecks h3 > a { display: inline; margin: 0; }
-  .rechecks h3 > a[href]::after { content: none; }
+  .rechecks h3 > a, .rechecks .evidence-ref { display: inline; margin: 0; }
+  .rechecks h3 > a[href]::after, .rechecks .evidence-ref[href]::after { content: none; }
   .closed { color: #8bd9b4; }
   .open { color: #ffc095; }
   table { width: 100%; table-layout: fixed; border-collapse: collapse; }
@@ -73,7 +73,7 @@
       <p><strong class="closed">Closed</strong>
         · <strong>VERIFIED</strong></p>
       <p>Booking for Maya Chen on Tue Mar 3 2026, 2:30 PM EST exists exactly as claimed (apt_0001).</p>
-      <p>Re-check evidence · calendar · apt_0001</p>
+      <p>Re-check evidence · <a class="evidence-ref" href="data/audit-aud-fault-phantom-booking-bare-recheck.json">calendar · apt_0001</a></p>
       <a href="data/audit-aud-fault-phantom-booking-bare-recheck.json">aud-fault-phantom-booking-bare-recheck</a>
       <a href="index.html#fault-phantom-booking-bare">Original call</a>
     </article>
@@ -84,7 +84,7 @@
       <p><strong class="open">Still open</strong>
         · <strong>MISMATCH</strong></p>
       <p>A booking was written (apt_0001) but it is not what the caller was told. start: claimed Tue Mar 3 2026, 2:30 PM EST, actual Tue Mar 3 2026, 3:30 PM EST.</p>
-      <p>Re-check evidence · calendar · apt_0001</p>
+      <p>Re-check evidence · <a class="evidence-ref" href="data/audit-aud-fault-phantom-booking-recheck.json">calendar · apt_0001</a></p>
       <a href="data/audit-aud-fault-phantom-booking-recheck.json">aud-fault-phantom-booking-recheck</a>
       <a href="index.html#fault-phantom-booking">Original call</a>
     </article>

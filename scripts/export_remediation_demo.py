@@ -85,8 +85,8 @@ PAGE = """<!doctype html>
     border-radius: .65rem; overflow-wrap: anywhere;
   }
   .rechecks h3, .rechecks p { margin: 0 0 .5rem; }
-  .rechecks h3 > a { display: inline; margin: 0; }
-  .rechecks h3 > a[href]::after { content: none; }
+  .rechecks h3 > a, .rechecks .evidence-ref { display: inline; margin: 0; }
+  .rechecks h3 > a[href]::after, .rechecks .evidence-ref[href]::after { content: none; }
   .closed { color: #8bd9b4; }
   .open { color: #ffc095; }
   table { width: 100%; table-layout: fixed; border-collapse: collapse; }
@@ -322,7 +322,11 @@ def recheck_html(scenario_id: str, original: AuditReport, report: AuditReport) -
     before = next(v for v in original.verdicts if isinstance(v.claim, AppointmentBooked))
     after = next(v for v in report.verdicts if v.claim.claim_id == before.claim.claim_id)
     state = "Closed" if after.status is VerdictStatus.VERIFIED else "Still open"
-    evidence = ", ".join(f"{item.source} · {item.ref}" for item in after.evidence)
+    report_href = escape(f"data/audit-{report.audit_id}.json")
+    evidence = ", ".join(
+        f'<a class="evidence-ref" href="{report_href}">{escape(f"{item.source} · {item.ref}")}</a>'
+        for item in after.evidence
+    )
     return f"""    <article>
       {fault_title_html(scenario_id)}
       <p>Initially open · {escape(before.status)}</p>
@@ -330,8 +334,8 @@ def recheck_html(scenario_id: str, original: AuditReport, report: AuditReport) -
       <p><strong class="{"closed" if state == "Closed" else "open"}">{state}</strong>
         · <strong>{escape(after.status)}</strong></p>
       <p>{escape(after.summary)}</p>
-      <p>Re-check evidence · {escape(evidence)}</p>
-      <a href="data/audit-{report.audit_id}.json">{report.audit_id}</a>
+      <p>Re-check evidence · {evidence}</p>
+      <a href="{report_href}">{escape(report.audit_id)}</a>
       <a href="index.html#{scenario_id}">Original call</a>
     </article>"""
 
