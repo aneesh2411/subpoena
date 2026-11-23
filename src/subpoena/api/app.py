@@ -10,6 +10,7 @@ Core:
     POST /audit/{id}/approvals   append a human remediation decision
     GET  /audit/{id}/approvals   read a single audit’s approval history
     GET  /audit/{id}/report      the sealed report (JSON, or Markdown with ?format=md)
+    GET  /audits/{id}/report.md   the stored report as Markdown
     GET  /audit/{id}/escalations   the sealed escalation log
 
 Supporting:
@@ -112,6 +113,10 @@ class AuditRequest(BaseModel):
         if (self.call_id is None) == (self.call is None):
             raise ValueError("provide exactly one of call_id or call")
         return self
+
+
+class MarkdownResponse(PlainTextResponse):
+    media_type = "text/markdown"
 
 
 def _ok(data: Any, status: int = 200) -> JSONResponse:
@@ -461,8 +466,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     ) -> JSONResponse | PlainTextResponse:
         found = find_report(audit_id)
         if format == "md":
-            return PlainTextResponse(render_markdown(found), media_type="text/markdown")
+            return MarkdownResponse(render_markdown(found))
         return _ok(found.model_dump(mode="json"))
+
+    @app.get("/audits/{audit_id}/report.md", dependencies=guarded, response_class=MarkdownResponse)
+    def markdown_report(audit_id: str) -> MarkdownResponse:
+        return MarkdownResponse(render_markdown(find_report(audit_id)))
 
     @app.get("/audit/{audit_id}/escalations", dependencies=guarded)
     def escalations(audit_id: str) -> JSONResponse:

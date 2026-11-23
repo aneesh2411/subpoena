@@ -9,6 +9,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from subpoena.api import Settings, create_app
+from subpoena.auditor.render import render_markdown
 from subpoena.models import AppointmentBooked, AuditReport, Outcome
 from subpoena.scenarios import BY_ID, HERO, build_world, run_suspect
 from subpoena.sor.base import with_outage
@@ -126,6 +127,32 @@ def test_duplicate_and_missing_resources(client):
     assert "audit" in _error(client.post("/audit/nope/claims/nope/recheck"), 404)
     report = _data(client.post("/audit", json={"call_id": call["call_id"]}), 201)
     assert "claim" in _error(client.post(f"/audit/{report['audit_id']}/claims/nope/recheck"), 404)
+
+
+def test_markdown_report_matches_canonical_render_for_sealed_audit(client):
+    audit = AuditReport.model_validate(_data(client.post("/demo/scenarios/clean-book/run"), 201))
+    assert audit.seal is not None
+
+    response = client.get(f"/audits/{audit.audit_id}/report.md")
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "text/markdown; charset=utf-8"
+    assert response.text == render_markdown(audit)
+
+
+def test_markdown_report_returns_stored_unsealed_audit(client):
+    audit = AuditReport.model_validate(_data(client.post("/demo/scenarios/clean-book/run"), 201))
+    unsealed = audit.model_copy(update={"audit_id": "unsealed-recheck", "seal": None})
+    client.app.state.store.save_fix_recheck(audit.audit_id, unsealed)
+
+    response = client.get(f"/audits/{unsealed.audit_id}/report.md")
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "text/markdown; charset=utf-8"
+    assert response.text == render_markdown(unsealed)
+    assert "**unsealed**" in response.text
+
+
+def test_markdown_report_returns_not_found_for_unknown_audit(client):
+    assert _error(client.get("/audits/nope/report.md"), 404) == "audit nope not found"
 
 
 def test_escalations_returns_sealed_decisions(client):
