@@ -286,7 +286,9 @@ def render(name: str, results: dict, scorecard: dict) -> str:
         return fa_fuzz_sweep_block(json.loads(FUZZ_SWEEP.read_text(encoding="utf-8")))
     if name == "fa-fuzz-fault-modes":
         sweep = json.loads(FUZZ_SWEEP.read_text(encoding="utf-8"))
-        return fa_fuzz_fault_modes_block(sweep["by_fault_mode"])
+        return fa_fuzz_fault_modes_block(
+            {seed: sweep["by_fault_mode"][seed] for seed in ("7", "3")}
+        )
     if name == "landing-stats":
         return landing_stats_block(results, scorecard)
     raise KeyError(name)

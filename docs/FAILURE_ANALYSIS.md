@@ -297,7 +297,9 @@ above fail closed to `UNVERIFIABLE` rather than accuse on a guess.
 Each cell shows the percentage and fraction of calls with that mode that were fully
 correct. A call with overlapping modes counts once in each applicable row. A row's
 misses can therefore reflect any discrepancy in those calls. A mode with zero calls
-has no measured accuracy.
+has no measured accuracy. Unit tests cover `garbled_handoff`, `off_hours_booking`,
+and `stale_correction`. These three modes have zero calls across the sweep. The other
+23 modes appear in every recorded seed, and the JSON records their per-seed counts.
 
 <!-- metrics:fa-fuzz-fault-modes:start -->
 | Fault mode | Seed 7 strict accuracy | Seed 3 strict accuracy |

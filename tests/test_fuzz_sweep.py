@@ -4,6 +4,8 @@ import json
 from collections import Counter
 from pathlib import Path
 
+from subpoena.suspect import FaultMode
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -31,11 +33,9 @@ def test_fuzz_sweep_covers_all_seeds_and_reconciles_failures():
 
 def test_fuzz_fault_counts_match_seeded_calls_and_positional_failures():
     from subpoena.evals.fuzz import generate
-    from subpoena.suspect import FaultMode
 
     sweep = json.loads((ROOT / "evals/fuzz-sweep.json").read_text())
     by_seed = sweep["by_fault_mode"]
-    assert list(by_seed) == ["7", "3"]
 
     for artifact in ("latest.json", "fuzz-seed-3.json"):
         fuzz = json.loads((ROOT / "evals/results" / artifact).read_text())["fuzz"]
@@ -49,3 +49,23 @@ def test_fuzz_fault_counts_match_seeded_calls_and_positional_failures():
                 "calls": len(call_ids),
                 "fully_correct": len(call_ids - failed_ids),
             }
+
+
+def test_fuzz_sweep_exercises_every_producible_fault_mode_per_seed():
+    sweep = json.loads((ROOT / "evals/fuzz-sweep.json").read_text())
+    by_seed = sweep["by_fault_mode"]
+    assert by_seed.keys() == {str(row["seed"]) for row in sweep["seeds"]}
+
+    unit_tested_modes = {
+        FaultMode.GARBLED_HANDOFF,
+        FaultMode.OFF_HOURS_BOOKING,
+        FaultMode.STALE_CORRECTION,
+    }
+    producible_modes = {mode.value for mode in FaultMode if mode not in unit_tested_modes}
+    assert len(producible_modes) == 23
+
+    for seed, counts in by_seed.items():
+        exercised_modes = {mode for mode, tally in counts.items() if tally["calls"] > 0}
+        assert producible_modes <= exercised_modes, (
+            f"Seed {seed} is missing fault modes: {sorted(producible_modes - exercised_modes)}"
+        )
