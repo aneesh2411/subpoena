@@ -78,7 +78,7 @@ PAGE = """<!doctype html>
     display: inline-flex; align-items: center; min-height: 44px; min-width: 44px;
     max-width: 100%; color: var(--accent); text-underline-offset: .18em;
   }
-  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   .rechecks { display: grid; gap: .75rem; margin-bottom: 2rem; }
   .rechecks article {
     padding: .875rem; background: var(--panel); border: 1px solid var(--line);
