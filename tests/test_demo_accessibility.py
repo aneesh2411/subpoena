@@ -260,3 +260,33 @@ def test_landing_architecture_accessibility():
         )
         for stage in stages
     )
+
+
+def test_eval_and_remediation_social_previews_match_landing():
+    def social_meta(page):
+        parsed = DemoHTML()
+        parsed.feed(page.read_text(encoding="utf-8"))
+        tags = {}
+        for element in parsed.elements:
+            if element.tag != "meta":
+                continue
+            for attr, prefix in (("property", "og:"), ("name", "twitter:")):
+                key = element.attrs.get(attr, "")
+                if key.startswith(prefix):
+                    assert element.parent.tag == "head"
+                    assert key not in tags
+                    tags[key] = element.attrs["content"]
+        return parsed, tags
+
+    _, landing = social_meta(DEMO.parent / "index.html")
+    for filename in ("evals.html", "remediation.html"):
+        page, tags = social_meta(DEMO / filename)
+        title = next(element for element in page.elements if element.tag == "title")
+        assert tags == {
+            **landing,
+            "og:title": content_name(title, {}),
+            "og:description": tags["og:description"],
+            "og:url": f"{landing['og:url']}demo/{filename}",
+        }
+        assert tags["og:description"].strip()
+        assert tags["og:description"] != landing["og:description"]

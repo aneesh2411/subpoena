@@ -40,6 +40,19 @@ PAGE = """<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Subpoena | eval results</title>
+<meta property="og:title" content="Subpoena | eval results">
+<meta property="og:description"
+      content="Review golden-set results, ablations, and fuzz tests from Subpoena.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://aneesh2411.github.io/subpoena/demo/evals.html">
+<meta property="og:image" content="https://aneesh2411.github.io/subpoena/social-preview.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt"
+      content="SUBPOENA, independent outcome auditing for AI voice agents, \
+with six metrics from the landing page.">
+<meta name="twitter:card" content="summary_large_image">
 <style>
   :root {{
     color-scheme: dark;
