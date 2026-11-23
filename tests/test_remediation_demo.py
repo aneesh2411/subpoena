@@ -17,6 +17,7 @@ from subpoena.models import AuditReport
 ROOT = Path(__file__).resolve().parents[1]
 BEFORE_FIX = "aud-fault-wrong-time-apply-fix-before"
 AFTER_FIX = "aud_d7e6234582f5"
+AFTER_REVERT = "aud_ffe49b2fd8b8"
 
 
 def test_remediation_export_is_reproducible(tmp_path: Path) -> None:
@@ -28,7 +29,7 @@ def test_remediation_export_is_reproducible(tmp_path: Path) -> None:
     }
     data = demo / "data"
     expected_files = {"remediation.html", "print.css", f"data/approval-{BEFORE_FIX}.json"}
-    for audit_id in (BEFORE_FIX, AFTER_FIX):
+    for audit_id in (BEFORE_FIX, AFTER_FIX, AFTER_REVERT):
         expected_files.update((f"data/audit-{audit_id}.json", f"data/report-{audit_id}.md"))
     for scenario_id in rechecks:
         audit_id = f"aud-{scenario_id}-recheck"
@@ -208,3 +209,49 @@ def test_simulated_apply_fix_exports_verified_receipt() -> None:
     assert "Simulated resolve approval" in text
     assert approval.note in text
     assert receipt in text
+
+
+def test_simulated_revert_restores_mismatch() -> None:
+    demo = ROOT / "docs/demo"
+    markup = (demo / "remediation.html").read_text()
+    section = markup.split('aria-labelledby="revert-fix-title">', 1)[1].split("</section>", 1)[0]
+    card = ElementTree.fromstring(f"<section>{section}</section>").find("article")
+    assert card is not None
+    paths = [link.attrib["href"] for link in card.findall("a")]
+    assert paths == [
+        f"data/audit-{audit_id}.json" for audit_id in (BEFORE_FIX, AFTER_FIX, AFTER_REVERT)
+    ]
+    original, fixed, reverted = (
+        AuditReport.model_validate_json((demo / path).read_bytes()) for path in paths
+    )
+    sealer = Sealer(SEALING_KEY)
+    assert sealer.verify(original, GENESIS, strict=True).ok
+    assert original.seal is not None
+    assert sealer.verify(fixed, original.seal.chain_hash, strict=True).ok
+    assert sealer.verify(reverted, original.seal.chain_hash, strict=True).ok
+    assert original.call == fixed.call == reverted.call
+    assert original.created_at < fixed.created_at < reverted.created_at
+
+    (fixed_verdict,) = fixed.verdicts
+    (after,) = reverted.verdicts
+    (before,) = (v for v in original.verdicts if v.claim.claim_id == after.claim.claim_id)
+    assert before.claim == fixed_verdict.claim == after.claim
+    assert [before.status, fixed_verdict.status, after.status] == [
+        "MISMATCH",
+        "VERIFIED",
+        "MISMATCH",
+    ]
+    assert [node.text for node in card.findall(".//strong")] == [
+        before.status,
+        fixed_verdict.status,
+        after.status,
+    ]
+    assert [item.ref for item in after.evidence] == [item.ref for item in before.evidence]
+    (fixed_evidence,) = fixed_verdict.evidence
+    assert fixed_evidence.ref not in {item.ref for item in after.evidence}
+    events = {event.stage: event.message for event in reverted.trail}
+    assert events["fix"].startswith(f"Reverted {fixed_evidence.ref} from resolve approval ")
+    assert after.claim.claim_id in events["recheck"]
+    text = "".join(card.itertext())
+    assert events["fix"] in text
+    assert after.summary in text

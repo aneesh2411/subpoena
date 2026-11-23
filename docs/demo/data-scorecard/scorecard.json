@@ -1,8 +1,8 @@
 {
-  "audits": 77,
+  "audits": 78,
   "by_claim_type": {
     "AppointmentBooked": {
-      "MISMATCH": 8,
+      "MISMATCH": 9,
       "NOT_FOUND": 10,
       "UNVERIFIABLE": 3,
       "VERIFIED": 30

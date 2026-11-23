@@ -101,6 +101,20 @@
       <a href="data/audit-aud_d7e6234582f5.json">Sealed fix and re-check report</a>
     </article>
   </section>
+  <section class="rechecks" aria-labelledby="revert-fix-title">
+    <h2 id="revert-fix-title">Revert a fix (simulated)</h2>
+    <article>
+      <h3>Writes a different time than it claims</h3>
+      <p>Before fix · <strong class="open">MISMATCH</strong></p>
+      <p>Fixed · <strong class="closed">VERIFIED</strong></p>
+      <p>Reverted apt_0002 from resolve approval 1.</p>
+      <p>After revert re-check · <strong class="open">MISMATCH</strong></p>
+      <p>A booking was written (apt_0001) but it is not what the caller was told. start: claimed Tue Mar 3 2026, 2:30 PM EST, actual Tue Mar 3 2026, 3:30 PM EST.</p>
+      <a href="data/audit-aud-fault-wrong-time-apply-fix-before.json">Sealed report before fix</a>
+      <a href="data/audit-aud_d7e6234582f5.json">Sealed fix and re-check report</a>
+      <a href="data/audit-aud_ffe49b2fd8b8.json">Sealed revert and re-check report</a>
+    </article>
+  </section>
   <h2 id="queue-items">Remediation tasks</h2>
   <p>Approvals show simulated human decisions in this replay.</p>
   <table role="table" aria-labelledby="queue-items">

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export the remediation queue, sealed re-checks, and simulated apply-fix replay.
+"""Export the remediation queue, sealed re-checks, and simulated fix and revert replays.
 
 Install the dev extra to run the replay through FastAPI's test client.
 """
@@ -12,14 +12,14 @@ import sqlite3
 from collections import defaultdict
 from contextlib import closing, nullcontext
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import datetime, timedelta
 from html import escape
 from pathlib import Path
 from shutil import copyfile
 from types import SimpleNamespace
 from unittest.mock import patch
 from urllib.parse import quote
-from uuid import NAMESPACE_URL, uuid5
+from uuid import NAMESPACE_URL, UUID, uuid5
 
 from export_demo import SEALING_KEY
 from fastapi.testclient import TestClient
@@ -120,6 +120,10 @@ PAGE = """<!doctype html>
   <section class="rechecks" aria-labelledby="apply-fix-title">
     <h2 id="apply-fix-title">Apply a fix (simulated)</h2>
 @APPLY_FIX@
+  </section>
+  <section class="rechecks" aria-labelledby="revert-fix-title">
+    <h2 id="revert-fix-title">Revert a fix (simulated)</h2>
+@REVERT_FIX@
   </section>
   <h2 id="queue-items">Other open tasks</h2>
   <table role="table" aria-labelledby="queue-items">
@@ -318,7 +322,21 @@ def recheck_html(scenario_id: str, original: AuditReport, report: AuditReport) -
     </article>"""
 
 
-def replay_apply_fix() -> tuple[AuditReport, Approval, AuditReport]:
+def replay_fix_request(
+    client: TestClient, path: str, clock: datetime, replay_id: UUID
+) -> AuditReport:
+    # Freeze the endpoint's clock and generated report ID for the static export.
+    with (
+        patch("subpoena.api.app.utcnow", return_value=clock),
+        patch("subpoena.auditor.engine.uuid", SimpleNamespace(uuid4=lambda: replay_id)),
+    ):
+        response = client.post(path)
+    checked_id = response.raise_for_status().json()["data"]["audit_id"]
+    response = client.get(f"/audit/{checked_id}/report")
+    return AuditReport.model_validate(response.raise_for_status().json()["data"])
+
+
+def replay_fix_and_revert() -> tuple[AuditReport, Approval, AuditReport, AuditReport]:
     scenario = BY_ID[APPLY_FIX_SCENARIO]
     original = AuditReport.model_validate_json(
         (DATA / f"audit-aud-{scenario.id}.json").read_bytes()
@@ -351,18 +369,18 @@ def replay_apply_fix() -> tuple[AuditReport, Approval, AuditReport]:
                 )
             approval = Approval.model_validate(response.raise_for_status().json()["data"])
 
-            # Freeze the endpoint's clock and generated report ID for the static export.
+            fix_path = f"{path}/claims/{before.claim.claim_id}/fix"
             fixed_at = approved_at + timedelta(seconds=1)
-            replay_id = uuid5(NAMESPACE_URL, original.audit_id)
-            with (
-                patch("subpoena.api.app.utcnow", return_value=fixed_at),
-                patch("subpoena.auditor.engine.uuid", SimpleNamespace(uuid4=lambda: replay_id)),
-            ):
-                response = client.post(f"{path}/claims/{before.claim.claim_id}/fix")
-            checked_id = response.raise_for_status().json()["data"]["audit_id"]
-            response = client.get(f"/audit/{checked_id}/report")
-            checked = AuditReport.model_validate(response.raise_for_status().json()["data"])
-    return original, approval, checked
+            checked = replay_fix_request(
+                client, fix_path, fixed_at, uuid5(NAMESPACE_URL, original.audit_id)
+            )
+            reverted = replay_fix_request(
+                client,
+                f"{fix_path}/revert",
+                fixed_at + timedelta(seconds=1),
+                uuid5(NAMESPACE_URL, f"{original.audit_id}/revert"),
+            )
+    return original, approval, checked, reverted
 
 
 def apply_fix_html(original: AuditReport, approval: Approval, checked: AuditReport) -> str:
@@ -380,6 +398,24 @@ def apply_fix_html(original: AuditReport, approval: Approval, checked: AuditRepo
       <a href="data/audit-{original.audit_id}.json">Sealed report before fix</a>
       <a href="data/approval-{original.audit_id}.json">Simulated approval record</a>
       <a href="data/audit-{checked.audit_id}.json">Sealed fix and re-check report</a>
+    </article>"""
+
+
+def revert_fix_html(original: AuditReport, checked: AuditReport, reverted: AuditReport) -> str:
+    (fixed,) = checked.verdicts
+    (after,) = reverted.verdicts
+    before = next(v for v in original.verdicts if v.claim.claim_id == after.claim.claim_id)
+    (receipt,) = (event.message for event in reverted.trail if event.stage == "fix")
+    return f"""    <article>
+      <h3>{escape(BY_ID[APPLY_FIX_SCENARIO].title)}</h3>
+      <p>Before fix · <strong class="open">{escape(before.status)}</strong></p>
+      <p>Fixed · <strong class="closed">{escape(fixed.status)}</strong></p>
+      <p>{escape(receipt)}</p>
+      <p>After revert re-check · <strong class="open">{escape(after.status)}</strong></p>
+      <p>{escape(after.summary)}</p>
+      <a href="data/audit-{original.audit_id}.json">Sealed report before fix</a>
+      <a href="data/audit-{checked.audit_id}.json">Sealed fix and re-check report</a>
+      <a href="data/audit-{reverted.audit_id}.json">Sealed revert and re-check report</a>
     </article>"""
 
 
@@ -412,9 +448,10 @@ def export(
         write_report(output_data, report)
         examples.append(recheck_html(scenario_id, original, report))
 
-    original, approval, checked = replay_apply_fix()
+    original, approval, checked, reverted = replay_fix_and_revert()
     write_report(output_data, original)
     write_report(output_data, checked)
+    write_report(output_data, reverted)
     (output_data / f"approval-{original.audit_id}.json").write_text(
         approval.model_dump_json(indent=1, exclude_none=True), encoding="utf-8", newline="\n"
     )
@@ -451,6 +488,7 @@ def export(
     (out / "remediation.html").write_text(
         page.replace("@RECHECKS@", "\n".join(examples))
         .replace("@APPLY_FIX@", apply_fix_html(original, approval, checked))
+        .replace("@REVERT_FIX@", revert_fix_html(original, checked, reverted))
         .replace("@ROWS@", rows),
         encoding="utf-8",
         newline="\n",
