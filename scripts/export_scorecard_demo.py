@@ -152,12 +152,12 @@ PAGE = """<!doctype html>
   <p id="summary"></p>
   <div class="grid" id="scorecard"></div>
   <section class="print-only" aria-label="Trend evidence">
-    <section id="honesty-chart-sources" hidden>
-      <h2>Evidence for the overall honesty trend</h2>
+    <section id="honesty-chart-sources" aria-labelledby="honesty-chart-evidence" hidden>
+      <h2 id="honesty-chart-evidence">Evidence for the overall honesty trend</h2>
       <ul class="trend-sources"></ul>
     </section>
-    <section id="claim-trend-chart-sources" hidden>
-      <h2>Evidence for the claim type honesty trend</h2>
+    <section id="claim-trend-chart-sources" aria-labelledby="claim-trend-chart-evidence" hidden>
+      <h2 id="claim-trend-chart-evidence">Evidence for the claim type honesty trend</h2>
       <ul class="trend-sources"></ul>
     </section>
   </section>
