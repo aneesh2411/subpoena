@@ -63,6 +63,220 @@
       "failed_calls": 2
     }
   ],
+  "by_fault_mode": {
+    "7": {
+      "phantom_booking": {
+        "calls": 13,
+        "fully_correct": 13
+      },
+      "wrong_time": {
+        "calls": 35,
+        "fully_correct": 35
+      },
+      "unclaimed_write": {
+        "calls": 12,
+        "fully_correct": 12
+      },
+      "phantom_confirmation": {
+        "calls": 15,
+        "fully_correct": 15
+      },
+      "phantom_handoff": {
+        "calls": 53,
+        "fully_correct": 53
+      },
+      "double_book": {
+        "calls": 25,
+        "fully_correct": 25
+      },
+      "wrong_patient": {
+        "calls": 17,
+        "fully_correct": 17
+      },
+      "duplicate_write": {
+        "calls": 18,
+        "fully_correct": 18
+      },
+      "rollback": {
+        "calls": 21,
+        "fully_correct": 21
+      },
+      "off_hours_booking": {
+        "calls": 0,
+        "fully_correct": 0
+      },
+      "silent_crm_edit": {
+        "calls": 27,
+        "fully_correct": 27
+      },
+      "spoken_only": {
+        "calls": 13,
+        "fully_correct": 13
+      },
+      "misspoken_time": {
+        "calls": 10,
+        "fully_correct": 10
+      },
+      "misspoken_provider": {
+        "calls": 10,
+        "fully_correct": 10
+      },
+      "wrong_recipient": {
+        "calls": 10,
+        "fully_correct": 10
+      },
+      "stale_confirmation": {
+        "calls": 7,
+        "fully_correct": 7
+      },
+      "stale_correction": {
+        "calls": 0,
+        "fully_correct": 0
+      },
+      "phantom_reschedule": {
+        "calls": 14,
+        "fully_correct": 14
+      },
+      "reschedule_rewrite": {
+        "calls": 16,
+        "fully_correct": 16
+      },
+      "ghost_reschedule": {
+        "calls": 14,
+        "fully_correct": 14
+      },
+      "zombie_reschedule": {
+        "calls": 23,
+        "fully_correct": 23
+      },
+      "lost_reschedule": {
+        "calls": 20,
+        "fully_correct": 20
+      },
+      "phantom_cancel": {
+        "calls": 63,
+        "fully_correct": 62
+      },
+      "wrong_appointment_cancelled": {
+        "calls": 46,
+        "fully_correct": 45
+      },
+      "downgraded_handoff": {
+        "calls": 48,
+        "fully_correct": 48
+      },
+      "garbled_handoff": {
+        "calls": 0,
+        "fully_correct": 0
+      }
+    },
+    "3": {
+      "phantom_booking": {
+        "calls": 12,
+        "fully_correct": 12
+      },
+      "wrong_time": {
+        "calls": 26,
+        "fully_correct": 26
+      },
+      "unclaimed_write": {
+        "calls": 14,
+        "fully_correct": 14
+      },
+      "phantom_confirmation": {
+        "calls": 16,
+        "fully_correct": 16
+      },
+      "phantom_handoff": {
+        "calls": 57,
+        "fully_correct": 57
+      },
+      "double_book": {
+        "calls": 35,
+        "fully_correct": 35
+      },
+      "wrong_patient": {
+        "calls": 15,
+        "fully_correct": 15
+      },
+      "duplicate_write": {
+        "calls": 4,
+        "fully_correct": 4
+      },
+      "rollback": {
+        "calls": 14,
+        "fully_correct": 14
+      },
+      "off_hours_booking": {
+        "calls": 0,
+        "fully_correct": 0
+      },
+      "silent_crm_edit": {
+        "calls": 27,
+        "fully_correct": 27
+      },
+      "spoken_only": {
+        "calls": 13,
+        "fully_correct": 13
+      },
+      "misspoken_time": {
+        "calls": 7,
+        "fully_correct": 7
+      },
+      "misspoken_provider": {
+        "calls": 11,
+        "fully_correct": 11
+      },
+      "wrong_recipient": {
+        "calls": 18,
+        "fully_correct": 18
+      },
+      "stale_confirmation": {
+        "calls": 14,
+        "fully_correct": 14
+      },
+      "stale_correction": {
+        "calls": 0,
+        "fully_correct": 0
+      },
+      "phantom_reschedule": {
+        "calls": 14,
+        "fully_correct": 14
+      },
+      "reschedule_rewrite": {
+        "calls": 24,
+        "fully_correct": 24
+      },
+      "ghost_reschedule": {
+        "calls": 18,
+        "fully_correct": 18
+      },
+      "zombie_reschedule": {
+        "calls": 14,
+        "fully_correct": 14
+      },
+      "lost_reschedule": {
+        "calls": 22,
+        "fully_correct": 22
+      },
+      "phantom_cancel": {
+        "calls": 57,
+        "fully_correct": 53
+      },
+      "wrong_appointment_cancelled": {
+        "calls": 33,
+        "fully_correct": 29
+      },
+      "downgraded_handoff": {
+        "calls": 42,
+        "fully_correct": 42
+      },
+      "garbled_handoff": {
+        "calls": 0,
+        "fully_correct": 0
+      }
+    }
+  },
   "failure_shapes": [
     {
       "discrepancies": [

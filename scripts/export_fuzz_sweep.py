@@ -1,4 +1,4 @@
-"""Export positional fuzz scores and failure shapes across seeds 1 through 10."""
+"""Export positional fuzz scores, fault-mode counts, and failure shapes for seeds 1–10."""
 
 import argparse
 import json
@@ -7,12 +7,13 @@ from collections import Counter
 from pathlib import Path
 
 from subpoena.evals.fuzz import generate
-from subpoena.evals.run import evaluate
+from subpoena.evals.run import by_fault, evaluate
 from subpoena.evals.score import RunScore
 
 OUTPUT = Path(__file__).resolve().parents[1] / "evals" / "fuzz-sweep.json"
 SEEDS = range(1, 11)
 CALLS_PER_SEED = 500
+FAULT_MODE_SEEDS = (7, 3)
 
 
 def failure_shape(run: RunScore) -> tuple[str, ...]:
@@ -25,8 +26,10 @@ def failure_shape(run: RunScore) -> tuple[str, ...]:
 def sweep() -> dict:
     seeds = []
     shapes: dict[tuple[str, ...], Counter[int]] = {}
+    fault_counts = {}
     for seed in SEEDS:
-        summary = evaluate(generate(CALLS_PER_SEED, seed), label="Fuzz seed sweep")
+        scenarios = generate(CALLS_PER_SEED, seed)
+        summary = evaluate(scenarios, label="Fuzz seed sweep")
         seeds.append(
             {
                 "seed": seed,
@@ -35,12 +38,18 @@ def sweep() -> dict:
                 "failed_calls": len(summary.failures),
             }
         )
+        if seed in FAULT_MODE_SEEDS:
+            fault_counts[str(seed)] = {
+                row.mode.value: {"calls": row.scenarios, "fully_correct": row.caught}
+                for row in by_fault(scenarios, summary)
+            }
         for run in summary.failures:
             shapes.setdefault(failure_shape(run), Counter())[seed] += 1
     return {
         "scorer": "positional-v1",
         "calls_per_seed": CALLS_PER_SEED,
         "seeds": seeds,
+        "by_fault_mode": {str(seed): fault_counts[str(seed)] for seed in FAULT_MODE_SEEDS},
         "failure_shapes": [
             {
                 "discrepancies": list(shape),

@@ -27,3 +27,25 @@ def test_fuzz_sweep_covers_all_seeds_and_reconciles_failures():
         assert row["call_strict_accuracy"] == fuzz["call_strict_accuracy"]
         assert round(row["claim_precision"], 4) == fuzz["claim_level"]["precision"]
         assert row["failed_calls"] == len(fuzz["failures"])
+
+
+def test_fuzz_fault_counts_match_seeded_calls_and_positional_failures():
+    from subpoena.evals.fuzz import generate
+    from subpoena.suspect import FaultMode
+
+    sweep = json.loads((ROOT / "evals/fuzz-sweep.json").read_text())
+    by_seed = sweep["by_fault_mode"]
+    assert list(by_seed) == ["7", "3"]
+
+    for artifact in ("latest.json", "fuzz-seed-3.json"):
+        fuzz = json.loads((ROOT / "evals/results" / artifact).read_text())["fuzz"]
+        scenarios = generate(fuzz["calls"], fuzz["seed"])
+        failed_ids = {run["scenario"] for run in fuzz["failures"]}
+        counts = by_seed[str(fuzz["seed"])]
+        assert counts.keys() == {mode.value for mode in FaultMode}
+        for mode in FaultMode:
+            call_ids = {scenario.id for scenario in scenarios if mode in scenario.fault_modes}
+            assert counts[mode.value] == {
+                "calls": len(call_ids),
+                "fully_correct": len(call_ids - failed_ids),
+            }

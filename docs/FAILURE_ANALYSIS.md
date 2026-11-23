@@ -292,6 +292,44 @@ unclaimed-appointment finding. These errors cost strict accuracy without costing
 precision: when the auditor does call a claim false it is always right, and the misses
 above fail closed to `UNVERIFIABLE` rather than accuse on a guess.
 
+#### Strict accuracy by fault mode
+
+Each cell shows the percentage and fraction of calls with that mode that were fully
+correct. A call with overlapping modes counts once in each applicable row. A row's
+misses can therefore reflect any discrepancy in those calls. A mode with zero calls
+has no measured accuracy.
+
+<!-- metrics:fa-fuzz-fault-modes:start -->
+| Fault mode | Seed 7 strict accuracy | Seed 3 strict accuracy |
+|---|---:|---:|
+| `double_book` | 100% (25/25) | 100% (35/35) |
+| `downgraded_handoff` | 100% (48/48) | 100% (42/42) |
+| `duplicate_write` | 100% (18/18) | 100% (4/4) |
+| `garbled_handoff` | n/a (0/0) | n/a (0/0) |
+| `ghost_reschedule` | 100% (14/14) | 100% (18/18) |
+| `lost_reschedule` | 100% (20/20) | 100% (22/22) |
+| `misspoken_provider` | 100% (10/10) | 100% (11/11) |
+| `misspoken_time` | 100% (10/10) | 100% (7/7) |
+| `off_hours_booking` | n/a (0/0) | n/a (0/0) |
+| `phantom_booking` | 100% (13/13) | 100% (12/12) |
+| `phantom_cancel` | 98.4% (62/63) | 93.0% (53/57) |
+| `phantom_confirmation` | 100% (15/15) | 100% (16/16) |
+| `phantom_handoff` | 100% (53/53) | 100% (57/57) |
+| `phantom_reschedule` | 100% (14/14) | 100% (14/14) |
+| `reschedule_rewrite` | 100% (16/16) | 100% (24/24) |
+| `rollback` | 100% (21/21) | 100% (14/14) |
+| `silent_crm_edit` | 100% (27/27) | 100% (27/27) |
+| `spoken_only` | 100% (13/13) | 100% (13/13) |
+| `stale_confirmation` | 100% (7/7) | 100% (14/14) |
+| `stale_correction` | n/a (0/0) | n/a (0/0) |
+| `unclaimed_write` | 100% (12/12) | 100% (14/14) |
+| `wrong_appointment_cancelled` | 97.8% (45/46) | 87.9% (29/33) |
+| `wrong_patient` | 100% (17/17) | 100% (15/15) |
+| `wrong_recipient` | 100% (10/10) | 100% (18/18) |
+| `wrong_time` | 100% (35/35) | 100% (26/26) |
+| `zombie_reschedule` | 100% (23/23) | 100% (14/14) |
+<!-- metrics:fa-fuzz-fault-modes:end -->
+
 The golden set measures the two known transcript gaps separately.
 
 **Precision is measured on a 57-call sample.** Zero false accusations in that sample is

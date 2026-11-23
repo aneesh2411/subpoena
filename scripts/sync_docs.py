@@ -228,6 +228,22 @@ def fa_fuzz_sweep_block(sweep: dict) -> str:
     return "\n".join(lines)
 
 
+def fa_fuzz_fault_modes_block(by_seed: dict) -> str:
+    lines = [
+        "| Fault mode | " + " | ".join(f"Seed {seed} strict accuracy" for seed in by_seed) + " |",
+        "|---|" + "---:|" * len(by_seed),
+    ]
+    modes = sorted({mode for counts in by_seed.values() for mode in counts})
+    for mode in modes:
+        cells = []
+        for counts in by_seed.values():
+            calls = counts[mode]["calls"]
+            correct = counts[mode]["fully_correct"]
+            cells.append(f"{pct(correct / calls if calls else None)} ({correct}/{calls})")
+        lines.append(f"| `{mode}` | " + " | ".join(cells) + " |")
+    return "\n".join(lines)
+
+
 def landing_stats_block(results: dict, scorecard: dict) -> str:
     golden = results["golden"]
     fuzz = results["fuzz"]
@@ -268,6 +284,9 @@ def render(name: str, results: dict, scorecard: dict) -> str:
         return fa_ablations_block(results)
     if name == "fa-fuzz-sweep":
         return fa_fuzz_sweep_block(json.loads(FUZZ_SWEEP.read_text(encoding="utf-8")))
+    if name == "fa-fuzz-fault-modes":
+        sweep = json.loads(FUZZ_SWEEP.read_text(encoding="utf-8"))
+        return fa_fuzz_fault_modes_block(sweep["by_fault_mode"])
     if name == "landing-stats":
         return landing_stats_block(results, scorecard)
     raise KeyError(name)
@@ -275,7 +294,12 @@ def render(name: str, results: dict, scorecard: dict) -> str:
 
 FILES: dict[str, tuple[str, ...]] = {
     "README.md": ("readme",),
-    "docs/FAILURE_ANALYSIS.md": ("fa-results", "fa-ablations", "fa-fuzz-sweep"),
+    "docs/FAILURE_ANALYSIS.md": (
+        "fa-results",
+        "fa-ablations",
+        "fa-fuzz-sweep",
+        "fa-fuzz-fault-modes",
+    ),
     "docs/index.html": ("landing-stats",),
 }
 
