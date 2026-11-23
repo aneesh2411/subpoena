@@ -46,7 +46,8 @@ def test_landing_stats_include_linked_fuzz_strict_accuracy():
     assert stats.count('<div class="stat">') == 6
     assert (
         f'<div class="stat"><b>{accuracy}</b><span>'
-        '<a href="https://github.com/aneesh2411/subpoena/blob/main/docs/FAILURE_ANALYSIS.md">'
+        '<a href="https://github.com/aneesh2411/subpoena/blob/main/docs/FAILURE_ANALYSIS.md'
+        '#fuzz-seed-sweep">'
         f"fuzz strict accuracy · {fuzz['calls']} generated calls · seed {fuzz['seed']}</a>"
         "</span></div>"
     ) in stats

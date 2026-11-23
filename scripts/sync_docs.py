@@ -245,7 +245,8 @@ def landing_stats_block(results: dict, scorecard: dict) -> str:
         (pct(strict), f"sealed strict accuracy · {golden['calls']} golden scenarios"),
         (
             pct(fuzz["call_strict_accuracy"]),
-            '<a href="https://github.com/aneesh2411/subpoena/blob/main/docs/FAILURE_ANALYSIS.md">'
+            '<a href="https://github.com/aneesh2411/subpoena/blob/main/docs/FAILURE_ANALYSIS.md'
+            '#fuzz-seed-sweep">'
             f"fuzz strict accuracy · {fuzz['calls']} generated calls · seed {fuzz['seed']}</a>",
         ),
         (str(fault_mode_count()), "fault modes"),
