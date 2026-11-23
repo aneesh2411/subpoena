@@ -6,19 +6,19 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+from shutil import copyfile
 
 from subpoena.models import CLAIM_TYPES
 
-PRINT_CSS = Path(__file__).with_name("demo_print.css")
 DEFAULT_OUT = Path(__file__).resolve().parents[1] / "docs" / "demo"
 
 
 def export(out: Path = DEFAULT_OUT) -> None:
     out.mkdir(parents=True, exist_ok=True)
+    if out.resolve() != DEFAULT_OUT.resolve():
+        copyfile(DEFAULT_OUT / "print.css", out / "print.css")
     (out / "inbox.html").write_text(
-        PAGE.replace("@CLAIM_TYPES@", json.dumps(CLAIM_TYPES)).replace(
-            "@PRINT_CSS@", PRINT_CSS.read_text(encoding="utf-8").rstrip()
-        ),
+        PAGE.replace("@CLAIM_TYPES@", json.dumps(CLAIM_TYPES)),
         encoding="utf-8",
         newline="\n",
     )
@@ -83,8 +83,8 @@ PAGE = """<!doctype html>
       padding: 12px 16px; }
     .summary, .severity, .stamps { grid-column: auto; grid-row: auto; }
   }
-@PRINT_CSS@
 </style>
+<link rel="stylesheet" href="print.css">
 </head>
 <body>
 <main>

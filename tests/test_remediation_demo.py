@@ -27,7 +27,7 @@ def test_remediation_export_is_reproducible(tmp_path: Path) -> None:
         "fault-phantom-booking": ("Still open", "MISMATCH"),
     }
     data = demo / "data"
-    expected_files = {"remediation.html", f"data/approval-{BEFORE_FIX}.json"}
+    expected_files = {"remediation.html", "print.css", f"data/approval-{BEFORE_FIX}.json"}
     for audit_id in (BEFORE_FIX, AFTER_FIX):
         expected_files.update((f"data/audit-{audit_id}.json", f"data/report-{audit_id}.md"))
     for scenario_id in rechecks:

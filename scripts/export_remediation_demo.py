@@ -15,6 +15,7 @@ from dataclasses import dataclass
 from datetime import timedelta
 from html import escape
 from pathlib import Path
+from shutil import copyfile
 from types import SimpleNamespace
 from unittest.mock import patch
 from urllib.parse import quote
@@ -34,7 +35,6 @@ from subpoena.scenarios import BY_ID
 from subpoena.scenarios.world import CLINIC, build_world, run_suspect
 from subpoena.suspect import Book
 
-PRINT_CSS = Path(__file__).with_name("demo_print.css")
 DEFAULT_OUT = Path(__file__).resolve().parents[1] / "docs" / "demo"
 DATA = DEFAULT_OUT / "data"
 DEFAULT_APPROVALS = DATA / "approvals.json"
@@ -103,8 +103,8 @@ PAGE = """<!doctype html>
     td { display: block; padding: .25rem 0; border: 0; }
     .label { display: block; color: var(--dim); }
   }
-@PRINT_CSS@
 </style>
+<link rel="stylesheet" href="print.css">
 </head>
 <body>
 <main>
@@ -433,7 +433,9 @@ def export(
         ):
             conn = None  # Ledgers created before approvals have no approval history.
         remediations = remediation_rows(DATA, conn, simulated_approvals=simulated_approvals)
-    page = PAGE.replace("@PRINT_CSS@", PRINT_CSS.read_text(encoding="utf-8").rstrip())
+    if out.resolve() != DEFAULT_OUT.resolve():
+        copyfile(DEFAULT_OUT / "print.css", out / "print.css")
+    page = PAGE
     if any(row.approval is not None for row in remediations):
         page = page.replace("Other open tasks", "Remediation tasks").replace(
             "A task closes only when the re-check passes.",

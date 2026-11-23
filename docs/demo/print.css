@@ -17,6 +17,9 @@
     --verified: #205740;
     --mismatch: #6b3716;
     --not-found: #732020;
+    --ok: #205740;
+    --warn: #6b3716;
+    --unk: #333;
   }
 
   body { font-size: 11pt; overflow-wrap: anywhere; }
@@ -42,6 +45,39 @@
   .card, tr, .trend-chart, .trend-sources li { break-inside: avoid; }
   .trend-chart { height: 5rem; break-after: avoid; }
   .trend-sources { padding-inline-start: 1.25rem; }
+
+  /* Repair queue and triage inbox layouts. */
+  main { max-width: none; }
+  main > a, .toggle, #claim-filter a { display: none; }
+  .rechecks { display: block; }
+  .rechecks article { margin-block: .5rem; }
+  .rechecks article, tbody tr, #calls li { break-inside: avoid; }
+
+  .closed, .open, .summary { color: var(--ink); }
+  .summary { overflow: visible; text-overflow: clip; white-space: normal; }
+  .row { grid-template-columns: minmax(0, 1fr) auto; }
+  .summary, .stamps { grid-column: 1 / -1; }
+  .severity { grid-column: 2; grid-row: 1; }
+
+  .rechecks a, td a {
+    display: block;
+    min-width: 0;
+    min-height: 0;
+    margin-top: .25rem;
+  }
+
+  /* Evidence paths on these demos are relative to the published demo directory. */
+  .rechecks a[href]::after, td a[href]::after, .row[href]::after {
+    content: "https://aneesh2411.github.io/subpoena/demo/" attr(href);
+    display: block;
+    grid-column: 1 / -1;
+    color: var(--ink);
+    font-size: 9pt;
+    font-weight: normal;
+    overflow-wrap: anywhere;
+  }
+
+  details::details-content { content-visibility: visible; }
 
   .table-scroll { overflow: visible; background: none; }
   table { font-size: 10pt; }
