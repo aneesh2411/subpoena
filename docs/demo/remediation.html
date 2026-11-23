@@ -28,6 +28,8 @@
     border-radius: .65rem; overflow-wrap: anywhere;
   }
   .rechecks h3, .rechecks p { margin: 0 0 .5rem; }
+  .rechecks h3 > a { display: inline; margin: 0; }
+  .rechecks h3 > a[href]::after { content: none; }
   .closed { color: #8bd9b4; }
   .open { color: #ffc095; }
   table { width: 100%; table-layout: fixed; border-collapse: collapse; }
@@ -65,7 +67,7 @@
   <section class="rechecks" aria-labelledby="rechecks-title">
     <h2 id="rechecks-title">Re-checked tasks</h2>
     <article>
-      <h3>Claims a booking it never wrote (no confirmation)</h3>
+      <h3><a href="https://github.com/aneesh2411/subpoena/blob/main/docs/FAILURE_ANALYSIS.md#fuzz-seed-sweep">Claims a booking it never wrote (no confirmation)</a></h3>
       <p>Initially open · NOT_FOUND</p>
       <p>Create the appointment or call the patient back before they show up.</p>
       <p><strong class="closed">Closed</strong>
@@ -76,7 +78,7 @@
       <a href="index.html#fault-phantom-booking-bare">Original call</a>
     </article>
     <article>
-      <h3>Claims a booking it never wrote</h3>
+      <h3><a href="https://github.com/aneesh2411/subpoena/blob/main/docs/FAILURE_ANALYSIS.md#fuzz-seed-sweep">Claims a booking it never wrote</a></h3>
       <p>Initially open · NOT_FOUND</p>
       <p>Create the appointment or call the patient back before they show up.</p>
       <p><strong class="open">Still open</strong>
@@ -90,7 +92,7 @@
   <section class="rechecks" aria-labelledby="apply-fix-title">
     <h2 id="apply-fix-title">Apply a fix (simulated)</h2>
     <article>
-      <h3>Writes a different time than it claims</h3>
+      <h3><a href="https://github.com/aneesh2411/subpoena/blob/main/docs/FAILURE_ANALYSIS.md#5-what-the-baseline-and-ablations-show">Writes a different time than it claims</a></h3>
       <p>Before fix · <strong class="open">MISMATCH</strong></p>
       <p>Simulated resolve approval · Jordan Lee, front desk · Approved booking the time promised to the caller.</p>
       <p>Fix receipt · Wrote apt_0002 as agent:receptionist:call-fault-wrong-time using resolve approval 1.</p>
@@ -104,7 +106,7 @@
   <section class="rechecks" aria-labelledby="revert-fix-title">
     <h2 id="revert-fix-title">Revert a fix (simulated)</h2>
     <article>
-      <h3>Writes a different time than it claims</h3>
+      <h3><a href="https://github.com/aneesh2411/subpoena/blob/main/docs/FAILURE_ANALYSIS.md#5-what-the-baseline-and-ablations-show">Writes a different time than it claims</a></h3>
       <p>Before fix · <strong class="open">MISMATCH</strong></p>
       <p>Fixed · <strong class="closed">VERIFIED</strong></p>
       <p>Reverted apt_0002 from resolve approval 1.</p>
